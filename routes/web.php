@@ -12,15 +12,19 @@ use App\Http\Controllers\AdminLoaderController;
 use App\Http\Controllers\AdminIgnoreController;
 use App\Http\Controllers\InstallController;
 use App\Http\Controllers\AdminConfigController;
+use App\Http\Controllers\AdminNotificationController;
 use App\Http\Controllers\users\AdminUserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SettingsExportController;
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\AdminBgController;
 use App\Http\Controllers\api\ApiController;
 use App\Http\Controllers\api\FileController;
 use App\Http\Controllers\api\ModController;
+use App\Http\Controllers\api\NotificationController;
+use App\Http\Controllers\api\ServerStatusController;
 use App\Http\Controllers\Admin\UpdateController;
 
 
@@ -37,7 +41,6 @@ Route::get('/', function () {
     $hasRealKey = config('app.key') !== \App\Http\Controllers\InstallController::TEMP_KEY;
 
     // L'application est installée seulement si les DEUX conditions sont vraies
-    // Cela évite les boucles de redirection en cas d'état incohérent
     if (!$isInstalled || !$hasRealKey) {
         return redirect()->route('install.database');
     }
@@ -59,6 +62,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::post('/general/update', [AdminController::class, 'updateGeneral'])->name('admin.general.update');
     Route::get('/security', [AdminSecurityController::class, 'show'])->name('admin.security');
     Route::post('/security/update', [AdminSecurityController::class, 'update'])->name('admin.security.update');
+    Route::patch('/security/maintenance/toggle', [AdminSecurityController::class, 'toggleMaintenance'])->name('admin.security.maintenance.toggle');
 
     Route::get('/server', [AdminServerController::class, 'show'])->name('admin.server');
     Route::post('/server/update', [AdminServerController::class, 'update'])->name('admin.server.update');
@@ -112,6 +116,12 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/update', [UpdateController::class, 'index'])->name('admin.update');
     Route::post('/update', [UpdateController::class, 'update'])->name('admin.update.run');
 
+    Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('admin.notifications');
+    Route::post('/notifications', [AdminNotificationController::class, 'store'])->name('admin.notifications.store');
+    Route::patch('/notifications/{notification}/toggle', [AdminNotificationController::class, 'toggle'])->name('admin.notifications.toggle');
+    Route::delete('/notifications/{notification}', [AdminNotificationController::class, 'destroy'])->name('admin.notifications.destroy');
+
+    Route::get('/audit', [AuditLogController::class, 'index'])->name('admin.audit');
 });
 
 // Routes sans le préfixe 'admin'
@@ -123,6 +133,8 @@ Route::get('/file-manager', function () {
 Route::prefix('utils')->group(function () {
     Route::get('/api', [ApiController::class, 'getOptions']);
     Route::get('/mods', [ModController::class, 'getMods']);
+    Route::get('/notifications', [NotificationController::class, 'getNotifications']);
+    Route::get('/servers-status', [ServerStatusController::class, 'getServersStatus']);
 });
 Route::get('/data', [FileController::class, 'getFiles']);
 

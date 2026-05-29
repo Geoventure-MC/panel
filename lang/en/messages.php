@@ -7,6 +7,8 @@ return [
         'config' => 'Config',
         'file_manager' => 'File Manager',
         'update' => 'System Update',
+        'notifications' => 'Announcements',
+        'audit' => 'Audit Log',
         'configuration' => 'Configuration',
         'general' => 'General',
         'rpc' => 'RPC',
@@ -45,6 +47,11 @@ return [
         'export_btn' => 'Export (.centralcorp)',
         'import_btn' => 'Import',
         'copy_rights' => '© 2025 CentralCorp. All rights reserved.',
+        'maintenance_status' => 'Maintenance Status',
+        'maintenance_on' => 'Maintenance enabled',
+        'maintenance_off' => 'Maintenance disabled',
+        'maintenance_hint' => 'Click to toggle quickly',
+        'maintenance_toggle' => 'Enable/Disable maintenance',
     ],
     'common' => [
         'save' => 'Save',
@@ -302,6 +309,28 @@ return [
         'install_success' => 'Installation completed successfully!',
         'install_error' => 'An error occurred during installation:',
     ],
+    'notifications' => [
+        'title' => 'Announcements',
+        'header' => 'In-app Announcements',
+        'add' => 'New Announcement',
+        'list' => 'Existing Announcements',
+        'none' => 'No announcements yet.',
+        'type' => 'Type',
+        'message' => 'Message',
+        'message_placeholder' => 'Announcement content...',
+        'chars_max' => 'chars max',
+        'url' => 'Link',
+        'expires_at' => 'Expiration',
+    ],
+    'audit' => [
+        'title' => 'Audit Log',
+        'header' => 'Audit Log',
+        'none' => 'No entries in the audit log.',
+        'date' => 'Date',
+        'user' => 'User',
+        'action' => 'Action',
+        'target' => 'Target',
+    ],
     'flash' => [
         // Users
         'user_added' => 'User added successfully',
@@ -315,6 +344,7 @@ return [
         'import_error' => 'Error importing configuration:',
         // Security
         'security_updated' => 'Security options updated successfully!',
+        'maintenance_toggled' => 'Maintenance mode toggled.',
         // RPC
         'rpc_updated' => 'RPC options updated successfully!',
         // UI
@@ -353,5 +383,9 @@ return [
         'update_success' => 'Update installed successfully.',
         'update_none' => 'No update available.',
         'update_error' => 'Error during update:',
+        // Notifications
+        'notification_created' => 'Announcement created successfully.',
+        'notification_toggled' => 'Announcement status updated.',
+        'notification_deleted' => 'Announcement deleted.',
     ],
 ];
