@@ -22,7 +22,7 @@ class DashboardController extends Controller
     private function getReleases()
     {
         try {
-            $response = Http::get('https://github.com/CentralCorp/centralpannel-v2/releases.atom');
+            $response = Http::get('https://github.com/Geoventure-MC/panel/releases.atom');
 
             if (!$response->successful()) {
                 return [];
