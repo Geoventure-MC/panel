@@ -19,7 +19,6 @@
             <p>{{ __('messages.update_page.current_version') }} : <strong>{{ $currentVersion }}</strong></p>
             @if($info)
                 <p>{{ __('messages.update_page.latest_version') }} : <strong>{{ $info['version'] ?? '?' }}</strong></p>
-                <p>{{ __('messages.update_page.php_required') }} : <strong>{{ $info['php_version'] ?? '?' }}</strong></p>
             @else
                 <p>{{ __('messages.update_page.unable_fetch') }}</p>
             @endif
