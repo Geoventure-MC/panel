@@ -60,6 +60,16 @@
                         <i class="bi bi-sort-numeric-up-alt align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.update') }}</span>
                     </a>
                 </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}" href="{{ route('admin.notifications') }}">
+                        <i class="bi bi-megaphone align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.notifications') }}</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.audit') ? 'active' : '' }}" href="{{ route('admin.audit') }}">
+                        <i class="bi bi-journal-text align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.audit') }}</span>
+                    </a>
+                </li>
                 <li class="sidebar-header">
                     {{ __('messages.sidebar.configuration') }}
                 </li>
@@ -215,7 +225,7 @@
 
         const currentTheme = localStorage.getItem('theme') || 'light';
         htmlElement.setAttribute('data-bs-theme', currentTheme);
-        updateFileManagerCss(currentTheme);  // Mettre à jour le CSS du gestionnaire de fichiers
+        updateFileManagerCss(currentTheme);
 
         function updateTooltipAndIcon() {
             const isDarkMode = htmlElement.getAttribute('data-bs-theme') === 'dark';
@@ -231,11 +241,11 @@
 
         function updateFileManagerCss(theme) {
             if (theme === 'dark') {
-                fileManagerCssLink.disabled = true;  // Désactive le CSS clair
-                fileManagerDarkCssLink.disabled = false;  // Active le CSS sombre
+                fileManagerCssLink.disabled = true;
+                fileManagerDarkCssLink.disabled = false;
             } else {
-                fileManagerCssLink.disabled = false;  // Active le CSS clair
-                fileManagerDarkCssLink.disabled = true;  // Désactive le CSS sombre
+                fileManagerCssLink.disabled = false;
+                fileManagerDarkCssLink.disabled = true;
             }
         }
 

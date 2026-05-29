@@ -6,32 +6,80 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="row">
-        <!-- Statistiques -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
+    {{-- Ligne de stats --}}
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">{{ __('messages.dashboard.stats') }}</h5>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0">{{ __('messages.dashboard.account_count') }}</h6>
-                            <h2 class="mb-0">{{ $userCount ?? 0 }}</h2>
+                            <p class="text-muted mb-0">{{ __('messages.dashboard.account_count') }}</p>
+                            <h2 class="mb-0 fw-bold">{{ $userCount ?? 0 }}</h2>
                         </div>
-                        <i class="fas fa-users fa-2x text-primary"></i>
+                        <i class="bi bi-people fs-1 text-primary opacity-75"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Notes de version -->
-        <div class="col-md-8">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 border-{{ $maintenanceActive ? 'warning' : 'success' }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ __('messages.dashboard.maintenance_status') }}</h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span id="maintenanceBadge"
+                                class="badge bg-{{ $maintenanceActive ? 'warning text-dark' : 'success' }} mb-1">
+                                {{ $maintenanceActive ? __('messages.dashboard.maintenance_on') : __('messages.dashboard.maintenance_off') }}
+                            </span>
+                            <p class="text-muted small mb-0">{{ __('messages.dashboard.maintenance_hint') }}</p>
+                        </div>
+                        <button id="maintenanceToggle"
+                            class="btn btn-{{ $maintenanceActive ? 'warning' : 'outline-success' }}"
+                            data-active="{{ $maintenanceActive ? '1' : '0' }}"
+                            data-url="{{ route('admin.security.maintenance.toggle') }}"
+                            title="{{ __('messages.dashboard.maintenance_toggle') }}">
+                            <i id="maintenanceIcon" class="bi bi-{{ $maintenanceActive ? 'tools' : 'check-circle' }}"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ __('messages.dashboard.export_import') }}</h5>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="{{ route('admin.settings.export') }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-download me-1"></i>{{ __('messages.dashboard.export_btn') }}
+                        </a>
+                        <form action="{{ route('admin.settings.import') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <div class="input-group input-group-sm">
+                                <input type="file" class="form-control" name="settings_file" accept=".centralcorp" required>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-upload me-1"></i>{{ __('messages.dashboard.import_btn') }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Notes de version --}}
+    <div class="row">
+        <div class="col-12">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">{{ __('messages.dashboard.release_notes') }}</h5>
-                    <div class="list-group">
+                    <div class="list-group list-group-flush">
                         @if(isset($releases) && count($releases) > 0)
                             @foreach($releases as $release)
-                                <div class="list-group-item">
+                                <div class="list-group-item px-0">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1">
                                             <a href="{{ $release->link }}" target="_blank" class="text-decoration-none">
@@ -40,43 +88,12 @@
                                         </h6>
                                         <small class="text-muted">{{ $release->date }}</small>
                                     </div>
-                                    <p class="mb-1">{{ $release->description }}</p>
+                                    <p class="mb-1 text-muted small">{{ $release->description }}</p>
                                 </div>
                             @endforeach
                         @else
-                            <p class="text-muted">{{ __('messages.dashboard.no_notes') }}</p>
+                            <p class="text-muted mb-0">{{ __('messages.dashboard.no_notes') }}</p>
                         @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Export/Import -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">{{ __('messages.dashboard.export_import') }}</h5>
-                    <div class="d-flex flex-column gap-3">
-                        <div>
-                            <h6 class="mb-2">{{ __('messages.dashboard.export_settings') }}</h6>
-                            <p class="text-muted small mb-2">{{ __('messages.dashboard.export_desc') }}</p>
-                            <a href="{{ route('admin.settings.export') }}" class="btn btn-primary">
-                                <i class="fas fa-download me-2"></i>{{ __('messages.dashboard.export_btn') }}
-                            </a>
-                        </div>
-                        <div>
-                            <h6 class="mb-2">{{ __('messages.dashboard.import_settings') }}</h6>
-                            <p class="text-muted small mb-2">{{ __('messages.dashboard.import_desc') }}</p>
-                            <form action="{{ route('admin.settings.import') }}" method="POST" enctype="multipart/form-data">
-                                @csrf
-                                <div class="input-group">
-                                    <input type="file" class="form-control" name="settings_file" accept=".centralcorp" required>
-                                    <button type="submit" class="btn btn-success">
-                                        <i class="fas fa-upload me-2"></i>{{ __('messages.dashboard.import_btn') }}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -99,3 +116,41 @@
 @endif
 @endsection
 
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('maintenanceToggle');
+    if (!btn) return;
+
+    const labelOn  = @json(__('messages.dashboard.maintenance_on'));
+    const labelOff = @json(__('messages.dashboard.maintenance_off'));
+
+    btn.addEventListener('click', function () {
+        btn.disabled = true;
+        fetch(btn.dataset.url, {
+            method: 'PATCH',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            const active = data.maintenance;
+            const badge  = document.getElementById('maintenanceBadge');
+            const icon   = document.getElementById('maintenanceIcon');
+            const card   = btn.closest('.card');
+
+            btn.className = 'btn btn-' + (active ? 'warning' : 'outline-success');
+            icon.className = 'bi bi-' + (active ? 'tools' : 'check-circle');
+            badge.className = 'badge mb-1 ' + (active ? 'bg-warning text-dark' : 'bg-success');
+            badge.textContent = active ? labelOn : labelOff;
+            card.classList.toggle('border-warning', active);
+            card.classList.toggle('border-success', !active);
+        })
+        .finally(() => { btn.disabled = false; });
+    });
+});
+</script>
+@endsection
