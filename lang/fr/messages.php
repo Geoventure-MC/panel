@@ -115,6 +115,12 @@ return [
         'default_info' => "Information : Le serveur par défaut sera utilisé comme serveur principal pour toutes les connexions du launcher.",
         'confirm_default' => 'Êtes-vous sûr de vouloir définir ce serveur par défaut ?',
         'processing' => 'En cours...',
+        'add_title' => 'Ajouter un serveur manuellement',
+        'add_btn' => 'Ajouter un serveur',
+        'add_save' => 'Ajouter le serveur',
+        'edit' => 'Modifier',
+        'delete' => 'Supprimer',
+        'confirm_delete' => 'Êtes-vous sûr de vouloir supprimer ce serveur ?',
     ],
     'security' => [
         'title' => 'Paramètres de sécurité',
@@ -357,6 +363,9 @@ return [
         'server_not_found' => 'Serveur non trouvé.',
         'server_icon_updated' => 'L\'icône du serveur ":name" a été mise à jour.',
         'server_icon_deleted' => 'L\'icône locale du serveur ":name" a été supprimée.',
+        'server_added' => 'Le serveur ":name" a été ajouté avec succès !',
+        'server_edited' => 'Le serveur ":name" a été modifié avec succès !',
+        'server_deleted' => 'Le serveur ":name" a été supprimé.',
         // Loader
         'loader_updated' => 'Paramètres du loader mis à jour.',
         // Mods

@@ -31,6 +31,7 @@ class ApiController extends Controller
         $rpc = OptionsRPC::first();
         $loader = OptionsLoader::first();
         $server = OptionsServer::where('is_default', true)->first();
+        $allServers = OptionsServer::orderByDesc('is_default')->orderBy('server_name')->get();
         $ignored = OptionsIgnore::pluck('folder_name')->toArray();
         $whitelist = OptionsWhitelist::pluck('users')->toArray();
         $whitelistRoles = OptionsWhitelistRole::pluck('role')->toArray();
@@ -59,6 +60,19 @@ class ApiController extends Controller
                 "ip" => $server ? $server->server_ip : "84.235.238.100",
                 "port" => $server ? $server->server_port : 25566
             ],
+            // Liste complète des serveurs : permet à UN seul panel d'alimenter
+            // les 3 serveurs du launcher (Geoventure, Elandor, Pokeland...).
+            "servers" => $allServers->map(function ($s) {
+                return [
+                    "id"         => $s->server_id,
+                    "name"       => $s->server_name,
+                    "ip"         => $s->server_ip,
+                    "port"       => (int) $s->server_port,
+                    "type"       => $s->type ?? "minecraft",
+                    "icon"       => $s->icon_url,
+                    "is_default" => (bool) $s->is_default,
+                ];
+            })->values()->toArray(),
             "loader" => [
                 "type" => $loader ? $loader->loader_type : "forge",
                 "build" => $loader ? $loader->loader_build_version : "1.7.10-10.13.4.1614-1.7.10",
