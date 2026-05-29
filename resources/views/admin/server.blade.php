@@ -38,11 +38,57 @@
             <div class="alert alert-danger d-flex align-items-center">
                 <i class="fas fa-exclamation-triangle me-2"></i> {{ $error }}
             </div>
-        @elseif(!$options)
+        @endif
+
+        {{-- Formulaire d'ajout manuel d'un serveur (toujours disponible) --}}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="bi bi-plus-circle me-2"></i>{{ __('messages.server.add_title') }}</h5>
+                <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#addServerForm">
+                    <i class="bi bi-plus-lg"></i> {{ __('messages.server.add_btn') }}
+                </button>
+            </div>
+            <div class="collapse" id="addServerForm">
+                <div class="card-body">
+                    <form action="{{ route('admin.server.add') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">{{ __('messages.server.name') }}</label>
+                                <input type="text" name="server_name" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ __('messages.server.address') }}</label>
+                                <input type="text" name="server_ip" class="form-control" placeholder="play.exemple.fr" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">{{ __('messages.server.port') }}</label>
+                                <input type="text" name="server_port" class="form-control" value="25565" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">{{ __('messages.server.type') }}</label>
+                                <input type="text" name="type" class="form-control" value="minecraft">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ __('messages.server.icon') }}</label>
+                                <input type="file" name="icon" class="form-control" accept="image/*">
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-lg"></i> {{ __('messages.server.add_save') }}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        @if(!$options)
             <div class="alert alert-warning d-flex align-items-center">
                 <i class="fas fa-cogs me-2"></i> {{ __('messages.server.config_error') }}
             </div>
-        @else
+        @endif
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-white border-bottom">
                     <h5 class="card-title mb-0">{{ __('messages.server.synced_servers') }}</h5>
@@ -62,7 +108,7 @@
                                         <th>{{ __('messages.server.port') }}</th>
                                         <th>{{ __('messages.server.type') }}</th>
                                         <th>{{ __('messages.server.icon') }}</th>
-                                        <th class="text-center" style="width: 150px;">{{ __('messages.common.actions') }}</th>
+                                        <th class="text-center" style="width: 240px;">{{ __('messages.common.actions') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -110,19 +156,62 @@
                                                 </div>
                                             </td>
                                             <td class="text-center">
-                                                @if(!($defaultServers[$server['id']] ?? false))
-                                                    <form method="POST" action="{{ route('admin.server.set-default') }}" style="display: inline;" class="set-default-form">
-                                                        @csrf
-                                                        <input type="hidden" name="server_id" value="{{ $server['id'] }}">
-                                                        <button type="submit" class="btn btn-sm btn-primary">
-                                                            <i class="bi bi-star"></i> {{ __('messages.server.set_default') }}
+                                                <div class="d-flex flex-column gap-2 align-items-center">
+                                                    @if(!($defaultServers[$server['id']] ?? false))
+                                                        <form method="POST" action="{{ route('admin.server.set-default') }}" style="display: inline;" class="set-default-form">
+                                                            @csrf
+                                                            <input type="hidden" name="server_id" value="{{ $server['id'] }}">
+                                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                                <i class="bi bi-star"></i> {{ __('messages.server.set_default') }}
+                                                            </button>
+                                                        </form>
+                                                    @else
+                                                        <span class="text-success fw-bold">
+                                                            <i class="bi bi-check-circle-fill"></i> {{ __('messages.server.is_default') }}
+                                                        </span>
+                                                    @endif
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#edit-{{ $server['id'] }}" title="{{ __('messages.server.edit') }}">
+                                                            <i class="bi bi-pencil"></i>
                                                         </button>
-                                                    </form>
-                                                @else
-                                                    <span class="text-success fw-bold">
-                                                        <i class="bi bi-check-circle-fill"></i> {{ __('messages.server.is_default') }}
-                                                    </span>
-                                                @endif
+                                                        <form action="{{ route('admin.server.delete', $server['id']) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('messages.server.confirm_delete') }}')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-outline-danger" title="{{ __('messages.server.delete') }}">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {{-- Ligne d'édition repliable --}}
+                                        <tr class="collapse" id="edit-{{ $server['id'] }}">
+                                            <td colspan="6" class="bg-light">
+                                                <form action="{{ route('admin.server.edit', $server['id']) }}" method="POST">
+                                                    @csrf
+                                                    <div class="row g-2 align-items-end">
+                                                        <div class="col-md-4">
+                                                            <label class="form-label mb-1">{{ __('messages.server.name') }}</label>
+                                                            <input type="text" name="server_name" class="form-control form-control-sm" value="{{ $server['name'] }}" required>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <label class="form-label mb-1">{{ __('messages.server.address') }}</label>
+                                                            <input type="text" name="server_ip" class="form-control form-control-sm" value="{{ $server['address'] }}" required>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <label class="form-label mb-1">{{ __('messages.server.port') }}</label>
+                                                            <input type="text" name="server_port" class="form-control form-control-sm" value="{{ $server['port'] }}" required>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <label class="form-label mb-1">{{ __('messages.server.type') }}</label>
+                                                            <input type="text" name="type" class="form-control form-control-sm" value="{{ $server['type'] }}">
+                                                        </div>
+                                                        <div class="col-md-1">
+                                                            <button type="submit" class="btn btn-sm btn-success w-100"><i class="bi bi-check-lg"></i></button>
+                                                        </div>
+                                                    </div>
+                                                </form>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -137,10 +226,9 @@
                     @endif
                 </div>
             </div>
-        @endif
     </div>
 
-    @if($options && !empty($servers))
+    @if(!empty($servers))
         @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', () => {

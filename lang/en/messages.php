@@ -115,6 +115,12 @@ return [
         'default_info' => 'Information: The default server will be used as the main server for all launcher connections.',
         'confirm_default' => 'Are you sure you want to set this as the default server?',
         'processing' => 'Processing...',
+        'add_title' => 'Add a server manually',
+        'add_btn' => 'Add a server',
+        'add_save' => 'Add server',
+        'edit' => 'Edit',
+        'delete' => 'Delete',
+        'confirm_delete' => 'Are you sure you want to delete this server?',
     ],
     'security' => [
         'title' => 'Security Settings',
@@ -357,6 +363,9 @@ return [
         'server_not_found' => 'Server not found.',
         'server_icon_updated' => 'Server ":name" icon has been updated.',
         'server_icon_deleted' => 'Server ":name" local icon has been deleted.',
+        'server_added' => 'Server ":name" has been added successfully!',
+        'server_edited' => 'Server ":name" has been updated successfully!',
+        'server_deleted' => 'Server ":name" has been deleted.',
         // Loader
         'loader_updated' => 'Loader settings updated.',
         // Mods

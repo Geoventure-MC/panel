@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\OptionsServer;
 use App\Models\OptionsGeneral;
+use App\Models\AuditLog;
 use App\Request\AzuriomApi;
 use Illuminate\Http\Request;
 
@@ -190,6 +191,117 @@ class AdminServerController extends Controller
 
         \Log::error('Serveur non trouvé', ['server_id' => $request->server_id]);
         return redirect()->route('admin.server')->with('error', __('messages.flash.server_not_found'));
+    }
+
+    /**
+     * Ajoute manuellement un serveur (sans passer par la synchro Azuriom).
+     * Permet d'avoir plusieurs serveurs dans un seul panel pour le launcher.
+     */
+    public function addServer(Request $request)
+    {
+        $validated = $request->validate([
+            'server_name' => 'required|string|max:255',
+            'server_ip'   => 'required|string|max:255',
+            'server_port' => 'required|string|max:255',
+            'type'        => 'nullable|string|max:255',
+            'icon'        => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
+
+        // Génère un server_id unique (au-dessus des id Azuriom pour éviter les collisions)
+        $nextId = (int) (OptionsServer::max('server_id') ?? 0) + 1;
+        if ($nextId < 1000) {
+            $nextId = 1000;
+        }
+
+        $iconPath = null;
+        if ($request->hasFile('icon')) {
+            $iconPath = $request->file('icon')->store('server_icons', 'public');
+        }
+
+        $isFirst = !OptionsServer::exists();
+
+        $server = OptionsServer::create([
+            'server_id'   => $nextId,
+            'server_name' => $validated['server_name'],
+            'server_ip'   => $validated['server_ip'],
+            'server_port' => $validated['server_port'],
+            'type'        => $validated['type'] ?? 'minecraft',
+            'icon_local'  => $iconPath,
+            'is_default'  => $isFirst, // premier serveur ajouté = défaut
+        ]);
+
+        AuditLog::record('server.add', $server, [
+            'name' => $server->server_name,
+            'ip'   => $server->server_ip,
+            'port' => $server->server_port,
+        ]);
+
+        return redirect()->route('admin.server')->with('success', __('messages.flash.server_added', ['name' => $server->server_name]));
+    }
+
+    /**
+     * Modifie un serveur existant.
+     */
+    public function editServer(Request $request, $serverId)
+    {
+        $validated = $request->validate([
+            'server_name' => 'required|string|max:255',
+            'server_ip'   => 'required|string|max:255',
+            'server_port' => 'required|string|max:255',
+            'type'        => 'nullable|string|max:255',
+        ]);
+
+        $server = OptionsServer::where('server_id', $serverId)->first();
+        if (!$server) {
+            return redirect()->route('admin.server')->with('error', __('messages.flash.server_not_found'));
+        }
+
+        $server->update([
+            'server_name' => $validated['server_name'],
+            'server_ip'   => $validated['server_ip'],
+            'server_port' => $validated['server_port'],
+            'type'        => $validated['type'] ?? $server->type ?? 'minecraft',
+        ]);
+
+        AuditLog::record('server.edit', $server, [
+            'name' => $server->server_name,
+            'ip'   => $server->server_ip,
+            'port' => $server->server_port,
+        ]);
+
+        return redirect()->route('admin.server')->with('success', __('messages.flash.server_edited', ['name' => $server->server_name]));
+    }
+
+    /**
+     * Supprime un serveur.
+     */
+    public function deleteServer($serverId)
+    {
+        $server = OptionsServer::where('server_id', $serverId)->first();
+        if (!$server) {
+            return redirect()->route('admin.server')->with('error', __('messages.flash.server_not_found'));
+        }
+
+        $wasDefault = (bool) $server->is_default;
+        $name = $server->server_name;
+
+        if ($server->icon_local) {
+            \Storage::disk('public')->delete($server->icon_local);
+        }
+
+        AuditLog::record('server.delete', $server, ['name' => $name]);
+        $server->delete();
+
+        // Si on a supprimé le serveur par défaut, en désigner un autre automatiquement
+        if ($wasDefault) {
+            $fallback = OptionsServer::first();
+            if ($fallback) {
+                $fallback->is_default = true;
+                $fallback->save();
+            }
+        }
+
+        return redirect()->route('admin.server')->with('success', __('messages.flash.server_deleted', ['name' => $name]));
     }
 
     /**
