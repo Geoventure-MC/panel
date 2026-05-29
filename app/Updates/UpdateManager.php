@@ -13,7 +13,7 @@ use RuntimeException;
 class UpdateManager
 {
     protected Filesystem $files;
-    protected string $apiUrl = 'https://api.github.com/repos/CentralCorp/centralpanel-v2/releases/latest';
+    protected string $apiUrl = 'https://api.github.com/repos/Geoventure-MC/panel/releases/latest';
     protected string $currentVersion;
 
     public function __construct(Filesystem $files, string $currentVersion)
@@ -29,7 +29,7 @@ class UpdateManager
     {
         try {
             $response = Http::withHeaders([
-                'User-Agent' => 'CentralPanel-UpdateManager',
+                'User-Agent' => 'Geoventure-Panel-UpdateManager',
                 'Accept' => 'application/vnd.github.v3+json',
             ])->timeout(10)->get($this->apiUrl);
 
@@ -92,7 +92,7 @@ class UpdateManager
             $this->files->delete($filePath);
         }
         $response = Http::withHeaders([
-            'User-Agent' => 'CentralPanel-UpdateManager',
+            'User-Agent' => 'Geoventure-Panel-UpdateManager',
         ])->timeout(60)->withOptions(['sink' => $filePath])->get($info['url']);
         if (!$response->successful()) {
             throw new RuntimeException('Failed to download update file.');
