@@ -4,25 +4,47 @@ namespace App\Request;
 
 use Illuminate\Support\Facades\Http;
 use App\Models\OptionsGeneral;
+use App\Models\OptionsAzuriom;
 
 class AzuriomApi
 {
     private $baseUrl;
     private $apiKey;
 
-    public function __construct()
+    public function __construct(?OptionsAzuriom $site = null)
     {
-        $options = OptionsGeneral::first();
-        if (!$options) {
-            throw new \RuntimeException('Les options générales ne sont pas configurées. Veuillez configurer l\'URL Azuriom et la clé API dans les paramètres généraux.');
+        if ($site === null) {
+            $site = OptionsAzuriom::where('is_primary', true)->first()
+                 ?? OptionsAzuriom::first();
         }
 
-        if (!$options->azuriom_url || !$options->azuriom_api_key) {
-            throw new \RuntimeException('L\'URL Azuriom et la clé API doivent être configurées dans les paramètres généraux.');
+        if ($site !== null) {
+            if (!$site->url) {
+                throw new \RuntimeException("L'URL Azuriom doit être configurée dans les paramètres.");
+            }
+            $this->baseUrl = rtrim($site->url, '/');
+            $this->apiKey  = $site->api_key ?? '';
+        } else {
+            // Fallback: backward compat with OptionsGeneral
+            $options = OptionsGeneral::first();
+            if (!$options) {
+                throw new \RuntimeException("Les options générales ne sont pas configurées. Veuillez configurer l'URL Azuriom et la clé API dans les paramètres généraux.");
+            }
+            if (!$options->azuriom_url || !$options->azuriom_api_key) {
+                throw new \RuntimeException("L'URL Azuriom et la clé API doivent être configurées dans les paramètres généraux.");
+            }
+            $this->baseUrl = rtrim($options->azuriom_url, '/');
+            $this->apiKey  = $options->azuriom_api_key;
         }
+    }
 
-        $this->baseUrl = rtrim($options->azuriom_url, '/');
-        $this->apiKey = $options->azuriom_api_key;
+    public static function forServer(int $serverId): self
+    {
+        $site = OptionsAzuriom::where('server_id', $serverId)->first()
+             ?? OptionsAzuriom::where('is_primary', true)->first()
+             ?? OptionsAzuriom::first();
+
+        return new self($site);
     }
 
     private function makeRequest($endpoint)

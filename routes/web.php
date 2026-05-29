@@ -57,6 +57,10 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     Route::get('/config', [AdminConfigController::class, 'show'])->name('admin.config');
     Route::post('/config', [AdminConfigController::class, 'update'])->name('admin.config.update');
+    Route::post('/config/azuriom', [AdminConfigController::class, 'addAzuriom'])->name('admin.config.azuriom.add');
+    Route::post('/config/azuriom/{id}/edit', [AdminConfigController::class, 'editAzuriom'])->name('admin.config.azuriom.edit');
+    Route::delete('/config/azuriom/{id}', [AdminConfigController::class, 'deleteAzuriom'])->name('admin.config.azuriom.delete');
+    Route::post('/config/azuriom/{id}/primary', [AdminConfigController::class, 'setPrimaryAzuriom'])->name('admin.config.azuriom.primary');
 
     Route::get('/general', [AdminController::class, 'general'])->name('admin.general');
     Route::post('/general/update', [AdminController::class, 'updateGeneral'])->name('admin.general.update');

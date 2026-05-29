@@ -13,6 +13,7 @@ use App\Models\OptionsIgnore;
 use App\Models\OptionsWhitelist;
 use App\Models\OptionsWhitelistRole;
 use App\Models\OptionsBg;
+use App\Models\OptionsAzuriom;
 use Illuminate\Support\Facades\DB;
 
 class ApiController extends Controller
@@ -36,6 +37,8 @@ class ApiController extends Controller
         $whitelist = OptionsWhitelist::pluck('users')->toArray();
         $whitelistRoles = OptionsWhitelistRole::pluck('role')->toArray();
         $roles = OptionsBg::all();
+        $azuriomSites = OptionsAzuriom::all()->keyBy('server_id');
+        $primaryAzuriom = OptionsAzuriom::where('is_primary', true)->first() ?? OptionsAzuriom::first();
 
         // Formater les données des rôles
         $roleData = [];
@@ -62,7 +65,7 @@ class ApiController extends Controller
             ],
             // Liste complète des serveurs : permet à UN seul panel d'alimenter
             // les 3 serveurs du launcher (Geoventure, Elandor, Pokeland...).
-            "servers" => $allServers->map(function ($s) {
+            "servers" => $allServers->map(function ($s) use ($azuriomSites, $primaryAzuriom, $general) {
                 return [
                     "id"         => $s->server_id,
                     "name"       => $s->server_name,
@@ -71,6 +74,9 @@ class ApiController extends Controller
                     "type"       => $s->type ?? "minecraft",
                     "icon"       => $s->icon_url,
                     "is_default" => (bool) $s->is_default,
+                    "azauth"     => $azuriomSites->get($s->server_id)?->url
+                                    ?? $primaryAzuriom?->url
+                                    ?? ($general?->azuriom_url ?? null),
                 ];
             })->values()->toArray(),
             "loader" => [
@@ -87,7 +93,12 @@ class ApiController extends Controller
             "splash" => $ui ? $ui->splash : "Ceci est du code",
             "splash_author" => $ui ? $ui->splash_author : "Riptiaz",
             "accent_color" => $ui ? $ui->accent_color : "#FFA500",
-            "azauth" => $general ? $general->azuriom_url : null,
+            "azauth" => $primaryAzuriom ? $primaryAzuriom->url : ($general ? $general->azuriom_url : null),
+            "azuriom_sites" => OptionsAzuriom::all()->map(fn($a) => [
+                'server_id'  => $a->server_id,
+                'url'        => $a->url,
+                'is_primary' => (bool) $a->is_primary,
+            ])->values()->toArray(),
             "rpc_activation" => $rpc ? (bool)$rpc->rpc_activation : true,
             "rpc_id" => $rpc ? $rpc->rpc_id : "114425717056158109",
             "rpc_details" => $rpc ? $rpc->rpc_details : "Dans le launcher 👀",
