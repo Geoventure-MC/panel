@@ -144,5 +144,6 @@ Route::prefix('utils')->group(function () {
     Route::get('/servers-status', [ServerStatusController::class, 'getServersStatus']);
 });
 Route::get('/data', [FileController::class, 'getFiles']);
+Route::get('/api-schema.json', fn() => response()->json(['schemaVersion' => '1.0.0'], 200, [], JSON_UNESCAPED_SLASHES));
 
 Route::get('lang/{locale}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('lang.switch');
