@@ -98,6 +98,17 @@
                                    value="{{ old('max_ram', $options['max_ram'] ?? 4096) }}">
                         </div>
                     </div>
+
+                    <div class="mt-3">
+                        <label for="discord_webhook_url" class="form-label">{{ __('messages.general.discord_webhook') }}</label>
+                        <input type="url"
+                               class="form-control"
+                               id="discord_webhook_url"
+                               name="discord_webhook_url"
+                               placeholder="https://discord.com/api/webhooks/..."
+                               value="{{ old('discord_webhook_url', $options->discord_webhook_url ?? '') }}">
+                        <div class="form-text">{{ __('messages.general.discord_webhook_help') }}</div>
+                    </div>
                 </fieldset>
 
                 <div class="d-grid">

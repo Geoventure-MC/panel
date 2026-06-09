@@ -19,12 +19,16 @@ class AuditLog extends Model
 
     public static function record(string $action, ?object $target = null, array $changes = []): void
     {
+        $targetLabel = $target ? get_class($target) . '#' . ($target->getKey() ?? '?') : null;
+
         static::create([
             'user_id' => Auth::id(),
             'action'  => $action,
-            'target'  => $target ? get_class($target) . '#' . ($target->getKey() ?? '?') : null,
+            'target'  => $targetLabel,
             'changes' => $changes ?: null,
             'ip'      => request()->ip(),
         ]);
+
+        \App\Services\DiscordWebhook::notify($action, $targetLabel, Auth::user()?->name);
     }
 }

@@ -22,6 +22,7 @@ class AdminController extends Controller
             'money_display' => 'nullable|integer',
             'min_ram' => 'required|integer|min:512|max:65536',
             'max_ram' => 'required|integer|min:512|max:65536',
+            'discord_webhook_url' => 'nullable|url|starts_with:https://discord.com/api/webhooks/,https://discordapp.com/api/webhooks/',
         ]);
 
         if ($validator->fails()) {

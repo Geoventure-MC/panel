@@ -21,6 +21,7 @@ class OptionsGeneral extends Model
         'money_display',
         'azuriom_url',
         'azuriom_api_key',
+        'discord_webhook_url',
         'min_ram',
         'max_ram',
     ];

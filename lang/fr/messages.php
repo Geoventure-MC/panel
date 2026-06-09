@@ -94,6 +94,8 @@ return [
         'game_folder_name' => 'Nom du dossier de jeu',
         'min_ram' => 'RAM minimum (MB)',
         'max_ram' => 'RAM maximum (MB)',
+        'discord_webhook' => 'Webhook Discord (actions critiques)',
+        'discord_webhook_help' => "Si renseigné, les actions admin critiques (serveurs, sécurité, utilisateurs…) sont notifiées sur Discord.",
     ],
     'server' => [
         'title' => 'Paramètres Serveur',

@@ -94,6 +94,8 @@ return [
         'game_folder_name' => 'Game Folder Name',
         'min_ram' => 'Minimum RAM (MB)',
         'max_ram' => 'Maximum RAM (MB)',
+        'discord_webhook' => 'Discord webhook (critical actions)',
+        'discord_webhook_help' => 'If set, critical admin actions (servers, security, users...) are posted to Discord.',
     ],
     'server' => [
         'title' => 'Server Settings',
