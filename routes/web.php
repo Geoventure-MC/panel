@@ -142,12 +142,12 @@ Route::get('/file-manager', function () {
     return view('admin.file-manager');
 })->name('admin.file-manager')->middleware('auth');
 
-Route::prefix('utils')->group(function () {
+Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::get('/api', [ApiController::class, 'getOptions']);
     Route::get('/mods', [ModController::class, 'getMods']);
     Route::get('/notifications', [NotificationController::class, 'getNotifications']);
     Route::get('/servers-status', [ServerStatusController::class, 'getServersStatus']);
-    Route::post('/telemetry', [TelemetryController::class, 'store']);
+    Route::post('/telemetry', [TelemetryController::class, 'store'])->middleware('throttle:30,1');
     Route::get('/leaderboards', [LeaderboardController::class, 'getLeaderboards']);
     Route::get('/factions', [FactionController::class, 'getFactions']);
 });
