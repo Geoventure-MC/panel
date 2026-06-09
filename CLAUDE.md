@@ -76,7 +76,17 @@ Correctifs livrés suite aux erreurs d'une session launcher live (502/404/double
 1. **Mode maintenance amélioré** — existe déjà (`options_security.maintenance` + `maintenance_message` exposés dans `/utils/api`). À enrichir : toggle rapide + le launcher bloque le lancement.
 2. **Dashboard stats** — graphiques connexions/joueurs/version launcher (via télémétrie installer).
 3. **Journal d'audit** — log des actions admin (migration + observer + vue).
-4. **`GET /utils/servers-status`** — le launcher l'appelle déjà (pills serveurs) mais l'endpoint n'existe pas encore côté panel → à créer (ping des 3 serveurs).
+
+## ✅ Feature LIVRÉE : `GET /utils/servers-status`
+
+`api/ServerStatusController@getServersStatus` — alimente les pills serveurs du launcher
+(`refreshAllServersStatus` dans `panels/home.js`).
+- Ping de chaque `OptionsServer` via le **Server List Ping (SLP)** Minecraft moderne
+  (handshake + status request) → remonte `online`, `players`, `max_players`, `version`, `latency`.
+- Fallback `fsockopen` : si le SLP échoue mais le port répond, `online=true` (joueurs `null`).
+- Résultat mis en **cache 30s** par serveur (`server_status_{ip}_{port}`).
+- Format renvoyé : `[{ id, name, ip, port, online, players, max_players, version, latency, is_default }]`.
+  Le launcher consomme `status.id` (match `data-server-id`), `status.online` et `status.players`.
 
 ## 🧩 Conventions PANEL (Laravel) — à respecter
 
