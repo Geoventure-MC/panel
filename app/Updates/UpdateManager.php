@@ -167,15 +167,49 @@ class UpdateManager
             throw new RuntimeException("Impossible d'ouvrir le ZIP : {$msg}");
         }
 
-        Log::info("UpdateManager: extracting {$zip->count()} files to {$basePath}");
+        $count = $zip->count();
+        Log::info("UpdateManager: extracting {$count} files to {$basePath}");
 
-        if (!$zip->extractTo($basePath)) {
-            $zip->close();
-            throw new RuntimeException("L'extraction du ZIP a échoué.");
+        // Fichiers protégés par l'hébergeur (aaPanel/宝塔 pose chattr +i sur
+        // .user.ini) : une extraction globale échouerait entièrement dès le
+        // premier fichier non écrasable ("Operation not permitted"). On extrait
+        // donc entrée par entrée, en sautant les fichiers protégés au lieu
+        // d'avorter toute la mise à jour.
+        $skipBasenames = ['.user.ini', '.htaccess'];
+        $skipped = [];
+        $extracted = 0;
+
+        for ($i = 0; $i < $count; $i++) {
+            $name = $zip->getNameIndex($i);
+            if ($name === false) {
+                continue;
+            }
+
+            if (in_array(basename($name), $skipBasenames, true)) {
+                $skipped[] = $name;
+                continue;
+            }
+
+            if (!@$zip->extractTo($basePath, $name)) {
+                // Probablement un fichier immuable/protégé : on le saute.
+                $skipped[] = $name;
+                Log::warning("UpdateManager: fichier protégé ignoré pendant l'extraction : {$name}");
+                continue;
+            }
+
+            $extracted++;
         }
 
         $zip->close();
         $this->files->delete($zipPath);
+
+        if ($extracted === 0) {
+            throw new RuntimeException("L'extraction du ZIP a échoué : aucun fichier extrait.");
+        }
+
+        if (!empty($skipped)) {
+            Log::info('UpdateManager: ' . count($skipped) . ' fichier(s) protégé(s) ignoré(s) : ' . implode(', ', $skipped));
+        }
 
         Log::info('UpdateManager: extraction OK, running migrations...');
 
