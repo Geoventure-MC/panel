@@ -69,7 +69,6 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::patch('/security/maintenance/toggle', [AdminSecurityController::class, 'toggleMaintenance'])->name('admin.security.maintenance.toggle');
 
     Route::get('/server', [AdminServerController::class, 'show'])->name('admin.server');
-    Route::post('/server/update', [AdminServerController::class, 'update'])->name('admin.server.update');
     Route::post('/server/set-default', [AdminServerController::class, 'setDefaultServer'])->name('admin.server.set-default');
     Route::post('/server/sync', [AdminServerController::class, 'sync'])->name('admin.server.sync');
     Route::post('/server/add', [AdminServerController::class, 'addServer'])->name('admin.server.add');

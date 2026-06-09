@@ -74,9 +74,11 @@ class ApiController extends Controller
                     "type"       => $s->type ?? "minecraft",
                     "icon"       => $s->icon_url,
                     "is_default" => (bool) $s->is_default,
+                    // Toujours renvoyer une chaîne (jamais null) : le launcher
+                    // plante sur azauth null (config.js getAzAuthUrl).
                     "azauth"     => $azuriomSites->get($s->server_id)?->url
                                     ?? $primaryAzuriom?->url
-                                    ?? ($general?->azuriom_url ?? null),
+                                    ?? ($general?->azuriom_url ?? ""),
                 ];
             })->values()->toArray(),
             "loader" => [
@@ -93,7 +95,7 @@ class ApiController extends Controller
             "splash" => $ui ? $ui->splash : "Ceci est du code",
             "splash_author" => $ui ? $ui->splash_author : "Riptiaz",
             "accent_color" => $ui ? $ui->accent_color : "#FFA500",
-            "azauth" => $primaryAzuriom ? $primaryAzuriom->url : ($general ? $general->azuriom_url : null),
+            "azauth" => $primaryAzuriom ? $primaryAzuriom->url : ($general && $general->azuriom_url ? $general->azuriom_url : ""),
             "azuriom_sites" => OptionsAzuriom::all()->map(fn($a) => [
                 'server_id'  => $a->server_id,
                 'url'        => $a->url,
