@@ -9,6 +9,7 @@ return [
         'update' => 'System Update',
         'notifications' => 'Announcements',
         'audit' => 'Audit Log',
+        'stats' => 'Statistics',
         'configuration' => 'Configuration',
         'general' => 'General',
         'rpc' => 'RPC',
@@ -350,6 +351,19 @@ return [
         'user' => 'User',
         'action' => 'Action',
         'target' => 'Target',
+    ],
+    'stats' => [
+        'title' => 'Statistics',
+        'header' => 'Launcher statistics',
+        'total_launches' => 'Launches',
+        'unique_players' => 'Unique players',
+        'last_30_days' => 'Last 30 days',
+        'launches_per_day' => 'Launches per day',
+        'launches' => 'Launches',
+        'by_server' => 'By server',
+        'by_version' => 'By launcher version',
+        'by_os' => 'By operating system',
+        'no_data' => 'No telemetry data yet. Statistics will appear once players launch the launcher (opt-in telemetry).',
     ],
     'flash' => [
         // Users

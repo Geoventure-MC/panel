@@ -70,6 +70,11 @@
                         <i class="bi bi-journal-text align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.audit') }}</span>
                     </a>
                 </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.stats') ? 'active' : '' }}" href="{{ route('admin.stats') }}">
+                        <i class="bi bi-bar-chart align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.stats') }}</span>
+                    </a>
+                </li>
                 <li class="sidebar-header">
                     {{ __('messages.sidebar.configuration') }}
                 </li>

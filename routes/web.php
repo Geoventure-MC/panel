@@ -25,7 +25,9 @@ use App\Http\Controllers\api\FileController;
 use App\Http\Controllers\api\ModController;
 use App\Http\Controllers\api\NotificationController;
 use App\Http\Controllers\api\ServerStatusController;
+use App\Http\Controllers\api\TelemetryController;
 use App\Http\Controllers\Admin\UpdateController;
+use App\Http\Controllers\Admin\StatsController;
 
 
 Auth::routes(['register' => false]);
@@ -128,6 +130,8 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::delete('/notifications/{notification}', [AdminNotificationController::class, 'destroy'])->name('admin.notifications.destroy');
 
     Route::get('/audit', [AuditLogController::class, 'index'])->name('admin.audit');
+
+    Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
 });
 
 // Routes sans le préfixe 'admin'
@@ -141,6 +145,7 @@ Route::prefix('utils')->group(function () {
     Route::get('/mods', [ModController::class, 'getMods']);
     Route::get('/notifications', [NotificationController::class, 'getNotifications']);
     Route::get('/servers-status', [ServerStatusController::class, 'getServersStatus']);
+    Route::post('/telemetry', [TelemetryController::class, 'store']);
 });
 Route::get('/data', [FileController::class, 'getFiles']);
 Route::get('/api-schema.json', fn() => response()->json(['schemaVersion' => '1.0.0'], 200, [], JSON_UNESCAPED_SLASHES));

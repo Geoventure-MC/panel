@@ -9,6 +9,7 @@ return [
         'update' => 'Mise à Jour',
         'notifications' => 'Annonces',
         'audit' => "Journal d'audit",
+        'stats' => 'Statistiques',
         'configuration' => 'Configuration',
         'general' => 'Général',
         'rpc' => 'RPC',
@@ -350,6 +351,19 @@ return [
         'user' => 'Utilisateur',
         'action' => 'Action',
         'target' => 'Cible',
+    ],
+    'stats' => [
+        'title' => 'Statistiques',
+        'header' => 'Statistiques du launcher',
+        'total_launches' => 'Lancements',
+        'unique_players' => 'Joueurs uniques',
+        'last_30_days' => '30 derniers jours',
+        'launches_per_day' => 'Lancements par jour',
+        'launches' => 'Lancements',
+        'by_server' => 'Par serveur',
+        'by_version' => 'Par version du launcher',
+        'by_os' => "Par système d'exploitation",
+        'no_data' => "Aucune donnée de télémétrie pour le moment. Les statistiques apparaîtront dès que des joueurs auront lancé le launcher (télémétrie opt-in).",
     ],
     'flash' => [
         // Users

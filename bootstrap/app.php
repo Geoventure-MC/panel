@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
         ]);
+
+        // Endpoint télémétrie appelé par le launcher (pas de session/CSRF).
+        $middleware->validateCsrfTokens(except: [
+            'utils/telemetry',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

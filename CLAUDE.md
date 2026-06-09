@@ -74,8 +74,16 @@ Correctifs livrés suite aux erreurs d'une session launcher live (502/404/double
 ## 📋 Features PANEL à faire (proposées, pas encore codées)
 
 1. **Mode maintenance amélioré** — existe déjà (`options_security.maintenance` + `maintenance_message` exposés dans `/utils/api`). À enrichir : toggle rapide + le launcher bloque le lancement.
-2. **Dashboard stats** — graphiques connexions/joueurs/version launcher (via télémétrie installer).
-3. **Journal d'audit** — log des actions admin (migration + observer + vue).
+2. **Journal d'audit** — log des actions admin (migration + observer + vue).
+
+## ✅ Feature LIVRÉE : Dashboard stats (télémétrie launcher)
+
+Page admin **📊 Statistiques** alimentée par la télémétrie opt-in du launcher.
+- `POST /utils/telemetry` → `api/TelemetryController@store` : reçoit `{ event, serverId, launcherVersion, os }` (accepte aussi l'ancien wrapper `{ action:'telemetry', data:{...} }`). IP **hashée** (sha256, pas de PII). Route **exemptée de CSRF** dans `bootstrap/app.php`.
+- Table `telemetry_events` (migration `2026_06_09_120000`) + modèle `TelemetryEvent`.
+- `Admin\StatsController@index` + `resources/views/admin/stats.blade.php` : lancements/jour (30j), répartition par serveur / version launcher / OS (Chart.js v2.9.4 déjà bundlé dans `admin.js`). Sidebar `bi-bar-chart` + i18n `stats.*`, `sidebar.stats`.
+- Launcher : `utils/telemetry.js` poste maintenant sur `{panel}/utils/telemetry` (payload plat). Reste **opt-in** (`localStorage.telemetry_consent`).
+- ⚠️ Après merge : `php artisan migrate`.
 
 ## ✅ Feature LIVRÉE : `GET /utils/servers-status`
 
