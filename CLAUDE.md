@@ -109,6 +109,7 @@ Correctifs livrés suite aux erreurs d'une session launcher live (502/404/double
 
 - Le panel se télécharge en HTTP direct : `https://github.com/CentralCorp/centralpanel-v2/releases/latest` (public). Dernière base : **v1.0.8** (`panel-1.0.8.zip`).
 - Bug connu launcher : `config.js getAzAuthUrl` plante si `azauth`/`authUrl` est `null` côté panel → bien configurer l'auth (Admin → Général → `azuriom_url`). Le health-check de l'installer le détecte.
+- **Upload de mods lourds (file-manager)** : `config/file-manager.php` n'impose aucune limite (`maxUploadFileSize => null`), mais PHP par défaut bloque (`upload_max_filesize=2M`, `post_max_size=8M`, `max_file_uploads=20`) → l'envoi de plusieurs `.jar` (ex. 109 MB) échoue. Limites relevées dans `public/.user.ini` (PHP-FPM/CGI) **et** `public/.htaccess` (Apache mod_php) : 256M/512M/200 fichiers. ⚠️ Sous **nginx**, ni l'un ni l'autre ne s'applique → régler côté serveur : `client_max_body_size 512m;` (nginx) + `upload_max_filesize`/`post_max_size`/`max_file_uploads` dans le pool PHP-FPM (`www.conf` ou `php.ini`), puis recharger php-fpm + nginx.
 
 ## 🌿 Branches de dev
 
