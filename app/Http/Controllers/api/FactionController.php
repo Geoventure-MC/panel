@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Log;
 /**
  * GET /utils/factions — feeds the launcher Profile "Factions" tab.
  *
- * Reads from the optional external 'game' DB (the GeoFactions plugin's MySQL)
- * using a configurable query (config/geoventure.php). Always fails safe:
- * returns an empty array (200) when unconfigured or on error.
+ * Reads from a configurable external connection (default 'game' → the
+ * GeoFactions plugin's MySQL) using a configurable query (config/geoventure.php).
+ * Always fails safe: returns [] (200) when unconfigured or on error.
  */
 class FactionController extends Controller
 {
@@ -25,21 +25,19 @@ class FactionController extends Controller
 
     private function fetch(): array
     {
-        if (!config('geoventure.game_db_enabled')) {
-            return [];
-        }
-
-        $query = config('geoventure.factions_query');
+        $cfg = config('geoventure.factions', []);
+        $query = $cfg['query'] ?? null;
         if (empty($query)) {
             return [];
         }
 
+        $connection = $cfg['connection'] ?? 'game';
+        $limit = (int) ($cfg['limit'] ?? 50);
         $ttl = (int) config('geoventure.cache_ttl', 60);
-        $limit = (int) config('geoventure.factions_limit', 50);
 
         try {
-            return Cache::remember('geo_factions', $ttl, function () use ($query, $limit) {
-                $rows = DB::connection('game')->select($query);
+            return Cache::remember('geo_factions', $ttl, function () use ($connection, $query, $limit) {
+                $rows = DB::connection($connection)->select($query);
 
                 $out = [];
                 foreach (array_slice($rows, 0, $limit) as $row) {
@@ -47,7 +45,7 @@ class FactionController extends Controller
                     $out[] = [
                         'name'    => $row['name'] ?? '?',
                         'tag'     => $row['tag'] ?? null,
-                        'color'   => $row['color'] ?? null,
+                        'color'   => isset($row['color']) ? (int) $row['color'] : null,
                         'members' => isset($row['members']) ? (int) $row['members'] : null,
                         'online'  => isset($row['online']) ? (int) $row['online'] : null,
                         'power'   => isset($row['power']) ? (int) $row['power'] : null,

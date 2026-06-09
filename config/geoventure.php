@@ -7,44 +7,46 @@ return [
     | Launcher community endpoints (leaderboards & factions)
     |--------------------------------------------------------------------------
     |
-    | The launcher's Profile panel reads /utils/leaderboards and /utils/factions.
-    | This data lives in the external GeoFactions / economy MySQL database (the
-    | Minecraft server), not in the panel. Point the 'game' connection
-    | (config/database.php → GEO_GAME_DB_*) at it, then provide a SELECT query
-    | below that returns the expected columns. Both endpoints fail safe: any
-    | error, or an unconfigured DB, yields an empty array (no 5xx, no 404).
+    | The launcher's Profile panel reads GET /utils/leaderboards and
+    | GET /utils/factions. This data lives in external MySQL databases, NOT in
+    | the panel's own (SQLite) DB:
     |
-    | Expected columns:
-    |   leaderboard → name, coins (or playtime)   [ordered DESC, LIMIT applied]
-    |   factions    → name, tag, color, members, online, power, bank
+    |   - leaderboards → the Azuriom DB ('azuriom' connection): player name + money.
+    |   - factions     → the GeoFactions plugin DB ('game' connection): gf_* tables.
     |
-    | Leave a query null to disable that endpoint (returns []).
+    | Configure the connections in config/database.php (GEO_AZ_DB_* / GEO_GAME_DB_*),
+    | then optionally override the queries below. Both endpoints fail safe: any
+    | error or unreachable DB yields [] (200) so the launcher shows a clean empty
+    | state instead of a 404/500. Set a query to null to disable that endpoint.
     |
     */
 
-    // Whether a game DB is configured at all.
-    'game_db_enabled' => env('GEO_GAME_DB_DATABASE', '') !== '',
-
-    // Cache TTL (seconds) for both endpoints.
     'cache_ttl' => (int) env('GEO_COMMUNITY_CACHE_TTL', 60),
 
-    // Max rows returned.
-    'leaderboard_limit' => (int) env('GEO_LEADERBOARD_LIMIT', 50),
-    'factions_limit' => (int) env('GEO_FACTIONS_LIMIT', 50),
+    'leaderboard' => [
+        // Which DB connection to query (default: the Azuriom DB).
+        'connection' => env('GEO_LEADERBOARD_CONNECTION', 'azuriom'),
+        'limit' => (int) env('GEO_LEADERBOARD_LIMIT', 50),
+        // Must return: name, and one of coins / playtime (ordered DESC).
+        'query' => env(
+            'GEO_LEADERBOARD_QUERY',
+            'SELECT name, money AS coins FROM users WHERE banned = 0 ORDER BY money DESC LIMIT 50'
+        ),
+    ],
 
-    // Raw SELECT queries against the 'game' connection. Override via .env when
-    // the GeoFactions schema differs. Examples below assume common table names;
-    // adjust to your plugin's actual schema.
-    'leaderboard_query' => env(
-        'GEO_LEADERBOARD_QUERY',
-        null
-        // e.g. 'SELECT username AS name, balance AS coins FROM economy_accounts ORDER BY balance DESC LIMIT 50'
-    ),
-
-    'factions_query' => env(
-        'GEO_FACTIONS_QUERY',
-        null
-        // e.g. 'SELECT name, tag, color, member_count AS members, online_count AS online, power, bank FROM factions ORDER BY power DESC LIMIT 50'
-    ),
+    'factions' => [
+        // Which DB connection to query (default: the GeoFactions DB).
+        'connection' => env('GEO_FACTIONS_CONNECTION', 'game'),
+        'limit' => (int) env('GEO_FACTIONS_LIMIT', 50),
+        // Must return: name, tag, color, members, online, power, bank.
+        // 'online' is runtime-only (not in the DB) → reported as null.
+        'query' => env(
+            'GEO_FACTIONS_QUERY',
+            'SELECT f.name, f.tag, f.color, '
+            . '(SELECT COUNT(*) FROM gf_members m WHERE m.faction_id = f.id) AS members, '
+            . 'f.bank AS bank, f.research_points AS power '
+            . 'FROM gf_factions f ORDER BY f.bank DESC LIMIT 50'
+        ),
+    ],
 
 ];

@@ -82,10 +82,10 @@ return [
             ]) : [],
         ],
 
-        // Optional read-only connection to the external GeoFactions/economy
-        // database (the Minecraft server's MySQL). Used by the launcher
-        // leaderboards & factions endpoints. Left unconfigured by default —
-        // when GEO_GAME_DB_DATABASE is empty the endpoints simply return [].
+        // Optional read-only connection to the external GeoFactions database
+        // (the Minecraft server's MySQL). Feeds GET /utils/factions. Left
+        // unconfigured by default — when the DB is unreachable the endpoint
+        // simply returns [] (no 5xx).
         'game' => [
             'driver' => 'mysql',
             'host' => env('GEO_GAME_DB_HOST', '127.0.0.1'),
@@ -93,6 +93,25 @@ return [
             'database' => env('GEO_GAME_DB_DATABASE', ''),
             'username' => env('GEO_GAME_DB_USERNAME', ''),
             'password' => env('GEO_GAME_DB_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => false,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
+        // Optional read-only connection to the Azuriom database (player names +
+        // money). Feeds GET /utils/leaderboards. Same fail-safe behaviour.
+        'azuriom' => [
+            'driver' => 'mysql',
+            'host' => env('GEO_AZ_DB_HOST', '127.0.0.1'),
+            'port' => env('GEO_AZ_DB_PORT', '3306'),
+            'database' => env('GEO_AZ_DB_DATABASE', ''),
+            'username' => env('GEO_AZ_DB_USERNAME', ''),
+            'password' => env('GEO_AZ_DB_PASSWORD', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
