@@ -52,7 +52,7 @@ class ApiController extends Controller
         $data = [
             "maintenance" => $security ? (bool)$security->maintenance : false,
             "maintenance_message" => $security ? $security->maintenance_message : "Please define a maintenance message",
-            "game_version" => $loader ? $loader->minecraft_version : "1.7.10",
+            "game_version" => ($loader && $loader->minecraft_version) ? $loader->minecraft_version : "1.20.1",
             "client_id" => "",
             "verify" => $general ? (bool)$general->file_verification : true,
             "modde" => $general ? (bool)$general->mods_enabled : true,
@@ -82,8 +82,8 @@ class ApiController extends Controller
                 ];
             })->values()->toArray(),
             "loader" => [
-                "type" => $loader ? $loader->loader_type : "forge",
-                "build" => $loader ? $loader->loader_build_version : "1.7.10-10.13.4.1614-1.7.10",
+                "type" => ($loader && $loader->loader_type) ? $loader->loader_type : "forge",
+                "build" => ($loader && $loader->loader_build_version) ? $loader->loader_build_version : "1.20.1-47.4.20",
                 "enable" => $loader ? (bool)$loader->loader_activation : true
             ],
             "ram_min" => $general ? ($general->min_ram / 1024) : 2,
