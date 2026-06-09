@@ -105,6 +105,17 @@ Les notes de release sont générées automatiquement et classées en
 - Stockage des options dans des tables `options_*`
 - i18n FR / EN (`lang/fr`, `lang/en`)
 
+## 🌐 L'écosystème Geoventure-MC
+
+| Repo | Rôle |
+|------|------|
+| [**panel**](https://github.com/Geoventure-MC/panel) | 🖥️ Ce repo — panel d'admin, expose la config au launcher |
+| [**Launcher**](https://github.com/Geoventure-MC/Launcher) | 🚀 Nexus — l'app de jeu (Electron) |
+| [**Installer**](https://github.com/Geoventure-MC/Installer) | 📦 Installe le panel sur le serveur web |
+| [**geoMods**](https://github.com/Geoventure-MC/geoMods) | ⚙️ Mod Forge (machines, économie GeoCoin) |
+| [**Pluginmc**](https://github.com/Geoventure-MC/Pluginmc) | 🏰 GeoFactions — plugin de factions (Bukkit) |
+| [**Plugin-azuriom**](https://github.com/Geoventure-MC/Plugin-azuriom) | 🌍 GeoCountries — classements & notations des pays |
+
 ---
 
 <div align="center">
