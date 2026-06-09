@@ -26,6 +26,8 @@ use App\Http\Controllers\api\ModController;
 use App\Http\Controllers\api\NotificationController;
 use App\Http\Controllers\api\ServerStatusController;
 use App\Http\Controllers\api\TelemetryController;
+use App\Http\Controllers\api\LeaderboardController;
+use App\Http\Controllers\api\FactionController;
 use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Admin\StatsController;
 
@@ -146,6 +148,8 @@ Route::prefix('utils')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'getNotifications']);
     Route::get('/servers-status', [ServerStatusController::class, 'getServersStatus']);
     Route::post('/telemetry', [TelemetryController::class, 'store']);
+    Route::get('/leaderboards', [LeaderboardController::class, 'getLeaderboards']);
+    Route::get('/factions', [FactionController::class, 'getFactions']);
 });
 Route::get('/data', [FileController::class, 'getFiles']);
 Route::get('/api-schema.json', fn() => response()->json(['schemaVersion' => '1.0.0'], 200, [], JSON_UNESCAPED_SLASHES));

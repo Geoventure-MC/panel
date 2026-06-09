@@ -82,6 +82,27 @@ return [
             ]) : [],
         ],
 
+        // Optional read-only connection to the external GeoFactions/economy
+        // database (the Minecraft server's MySQL). Used by the launcher
+        // leaderboards & factions endpoints. Left unconfigured by default —
+        // when GEO_GAME_DB_DATABASE is empty the endpoints simply return [].
+        'game' => [
+            'driver' => 'mysql',
+            'host' => env('GEO_GAME_DB_HOST', '127.0.0.1'),
+            'port' => env('GEO_GAME_DB_PORT', '3306'),
+            'database' => env('GEO_GAME_DB_DATABASE', ''),
+            'username' => env('GEO_GAME_DB_USERNAME', ''),
+            'password' => env('GEO_GAME_DB_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => false,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),
