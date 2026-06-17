@@ -30,6 +30,18 @@ tu configures ici.
 - 🎨 **Interface** — couleur d'accent, splash, alertes, vidéo d'accueil
 - 🎮 **Discord RPC** — presence riche entièrement configurable
 - 📜 **Journal d'audit** — trace des actions admin
+- 📊 **Télémétrie & Statistiques** — réception des événements launcher (opt-in, IP
+  hashée), dashboard admin avec graphiques Chart.js : lancements/jour (30j),
+  répartition par serveur / version launcher / OS
+- 🏓 **Statut serveurs temps réel** — ping SLP (Server List Ping) Minecraft moderne,
+  remonte online/offline, joueurs, version, latence. Cache 30s par serveur.
+- 🏆 **Classements & factions** — endpoints pour le hub profil du launcher
+  (leaderboards, données de faction)
+- 🔔 **Webhooks Discord** — les actions admin critiques déclenchent des
+  notifications vers un webhook Discord configurable
+- 🛡️ **Rate limiting** — limitation de débit sur les endpoints publics `/utils/*`
+- 📦 **Upload de mods lourds** — limites PHP relevées (256 Mo / 512 Mo) pour les
+  fichiers `.jar` volumineux
 - 🔄 **Mises à jour** — la page « Mise à Jour » vérifie les releases GitHub et
   applique la nouvelle version en un clic
 
@@ -42,12 +54,18 @@ Le launcher interroge ces endpoints publics (préfixe `/utils`) :
 | `GET /utils/api` | Toute la config : maintenance, loader, **liste des serveurs**, RPC, UI, whitelist… |
 | `GET /utils/mods` | Mods optionnels |
 | `GET /utils/notifications` | Annonces in-app actives |
-| `GET /utils/servers-status` | Statut en ligne / hors ligne de chaque serveur (ping) |
+| `GET /utils/servers-status` | Statut en ligne / hors ligne de chaque serveur (ping SLP, cache 30s) |
+| `GET /utils/leaderboards` | Classements joueurs pour le hub profil du launcher |
+| `GET /utils/factions` | Données des factions pour le hub profil du launcher |
+| `POST /utils/telemetry` | Réception de la télémétrie launcher (opt-in, IP hashée, exempt CSRF) |
 | `GET /data` | Liste des fichiers du modpack (hash / taille / url) |
 
 > 💡 La clé `servers` de `/utils/api` contient **tous** les serveurs configurés,
 > ce qui permet à un seul panel d'alimenter les différents serveurs du launcher.
 > La clé `status` reste le serveur marqué « par défaut » (compatibilité).
+
+> 🛡️ Tous les endpoints `/utils/*` sont protégés par un **rate limiting** pour
+> éviter les abus.
 
 ## 🚀 Installation
 
