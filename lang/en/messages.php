@@ -293,6 +293,11 @@ return [
         'new_password' => 'New Password (leave blank to keep current)',
         'confirm_delete_user' => 'Are you sure you want to delete this user?',
     ],
+    'roles' => [
+        'label' => 'Role',
+        'superadmin' => 'Super-admin',
+        'moderator' => 'Moderator',
+    ],
     'auth' => [
         'login' => 'Login',
         'login_title' => 'Login',
@@ -406,6 +411,8 @@ return [
         'user_deleted' => 'User deleted successfully',
         'user_delete_self' => 'You cannot delete your own account.',
         'user_delete_last_admin' => 'You cannot delete the last administrator.',
+        'role_updated' => 'User role updated.',
+        'role_last_superadmin' => 'You cannot demote the last super-admin.',
         // General
         'options_updated' => 'Options updated successfully!',
         // Config

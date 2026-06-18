@@ -68,6 +68,34 @@ class AdminUserController extends Controller
         return redirect()->route('admin.users')->with('success', __('messages.flash.user_updated'));
     }
 
+    public function updateRole(Request $request, $id)
+    {
+        // Garde-fou : seul un super-admin peut changer les rôles.
+        abort_unless(auth()->user()->isSuperAdmin(), 403);
+
+        $validated = $request->validate([
+            'role' => 'required|in:superadmin,moderator',
+        ]);
+
+        $user = User::findOrFail($id);
+        $newRole = $validated['role'];
+
+        // Empêche de rétrograder le dernier super-admin (sinon plus aucun accès complet).
+        if ($user->isSuperAdmin() && $newRole !== 'superadmin') {
+            $superadminCount = User::where('role', 'superadmin')->count();
+            if ($superadminCount <= 1) {
+                return redirect()->route('admin.users')
+                    ->with('error', __('messages.flash.role_last_superadmin'));
+            }
+        }
+
+        // is_admin reste la porte d'accès /admin : les deux rôles y ont accès.
+        $user->update(['role' => $newRole, 'is_admin' => true]);
+        AuditLog::record('user.role.update', $user, ['role' => $newRole]);
+
+        return redirect()->route('admin.users')->with('success', __('messages.flash.role_updated'));
+    }
+
     public function delete($id)
     {
         $user = User::findOrFail($id);

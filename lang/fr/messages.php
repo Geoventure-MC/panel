@@ -293,6 +293,11 @@ return [
         'new_password' => 'Nouveau mot de passe (laisser vide pour ne pas changer)',
         'confirm_delete_user' => 'Êtes-vous sûr de vouloir supprimer cet utilisateur ?',
     ],
+    'roles' => [
+        'label' => 'Rôle',
+        'superadmin' => 'Super-admin',
+        'moderator' => 'Modérateur',
+    ],
     'auth' => [
         'login' => 'Connexion',
         'login_title' => 'Connexion',
@@ -406,6 +411,8 @@ return [
         'user_deleted' => 'Utilisateur supprimé avec succès',
         'user_delete_self' => "Vous ne pouvez pas supprimer votre propre compte.",
         'user_delete_last_admin' => "Impossible de supprimer le dernier administrateur.",
+        'role_updated' => "Rôle de l'utilisateur mis à jour.",
+        'role_last_superadmin' => "Impossible de rétrograder le dernier super-admin.",
         // General
         'options_updated' => 'Options mises à jour avec succès !',
         // Config

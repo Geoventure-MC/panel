@@ -48,6 +48,7 @@
             </div>
         </div>
 
+        @if(auth()->user()->isSuperAdmin())
         <div class="col-md-4 mb-3">
             <div class="card h-100">
                 <div class="card-body">
@@ -69,6 +70,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 
     {{-- Notes de version --}}

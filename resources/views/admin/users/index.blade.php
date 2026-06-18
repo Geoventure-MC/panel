@@ -28,6 +28,7 @@
                                 <th>{{ __('messages.users.id') }}</th>
                                 <th>{{ __('messages.users.name') }}</th>
                                 <th>{{ __('messages.users.email') }}</th>
+                                <th>{{ __('messages.roles.label') }}</th>
                                 <th>{{ __('messages.common.actions') }}</th>
                             </tr>
                         </thead>
@@ -37,6 +38,23 @@
                                 <td>{{ $user->id }}</td>
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->email }}</td>
+                                <td>
+                                    @php $role = $user->isSuperAdmin() ? 'superadmin' : ($user->isModerator() ? 'moderator' : ($user->role ?? 'admin')); @endphp
+                                    @if(auth()->user()->isSuperAdmin())
+                                        <form action="{{ route('admin.users.role', $user->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('PUT')
+                                            <select name="role" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
+                                                <option value="superadmin" {{ $role === 'superadmin' ? 'selected' : '' }}>{{ __('messages.roles.superadmin') }}</option>
+                                                <option value="moderator" {{ $role === 'moderator' ? 'selected' : '' }}>{{ __('messages.roles.moderator') }}</option>
+                                            </select>
+                                        </form>
+                                    @else
+                                        <span class="badge bg-{{ $role === 'superadmin' ? 'danger' : 'secondary' }}">
+                                            {{ $role === 'superadmin' ? __('messages.roles.superadmin') : __('messages.roles.moderator') }}
+                                        </span>
+                                    @endif
+                                </td>
                                 <td>
                                     <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-info">
                                         <i class="fas fa-edit"></i> {{ __('messages.common.edit') }}

@@ -61,12 +61,15 @@ Route::get('/', function () {
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('admin.index');
 
-    Route::get('/config', [AdminConfigController::class, 'show'])->name('admin.config');
-    Route::post('/config', [AdminConfigController::class, 'update'])->name('admin.config.update');
-    Route::post('/config/azuriom', [AdminConfigController::class, 'addAzuriom'])->name('admin.config.azuriom.add');
-    Route::post('/config/azuriom/{id}/edit', [AdminConfigController::class, 'editAzuriom'])->name('admin.config.azuriom.edit');
-    Route::delete('/config/azuriom/{id}', [AdminConfigController::class, 'deleteAzuriom'])->name('admin.config.azuriom.delete');
-    Route::post('/config/azuriom/{id}/primary', [AdminConfigController::class, 'setPrimaryAzuriom'])->name('admin.config.azuriom.primary');
+    // Config .env / Azuriom : réservé aux super-admins.
+    Route::middleware('superadmin')->group(function () {
+        Route::get('/config', [AdminConfigController::class, 'show'])->name('admin.config');
+        Route::post('/config', [AdminConfigController::class, 'update'])->name('admin.config.update');
+        Route::post('/config/azuriom', [AdminConfigController::class, 'addAzuriom'])->name('admin.config.azuriom.add');
+        Route::post('/config/azuriom/{id}/edit', [AdminConfigController::class, 'editAzuriom'])->name('admin.config.azuriom.edit');
+        Route::delete('/config/azuriom/{id}', [AdminConfigController::class, 'deleteAzuriom'])->name('admin.config.azuriom.delete');
+        Route::post('/config/azuriom/{id}/primary', [AdminConfigController::class, 'setPrimaryAzuriom'])->name('admin.config.azuriom.primary');
+    });
 
     Route::get('/general', [AdminController::class, 'general'])->name('admin.general');
     Route::post('/general/update', [AdminController::class, 'updateGeneral'])->name('admin.general.update');
@@ -111,22 +114,29 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/rpc', [AdminRpcController::class, 'show'])->name('admin.rpc');
     Route::post('/rpc/update', [AdminRpcController::class, 'update'])->name('admin.rpc.update');
 
-    Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users');
-    Route::get('/users/create', [AdminUserController::class, 'create'])->name('admin.users.create');
-    Route::post('/users/add', [AdminUserController::class, 'add'])->name('admin.users.add');
-    Route::delete('/users/delete/{id}', [AdminUserController::class, 'delete'])->name('admin.users.delete');
-    Route::get('/users/edit/{id}', [AdminUserController::class, 'edit'])->name('admin.users.edit');
-    Route::put('/users/update/{id}', [AdminUserController::class, 'update'])->name('admin.users.update');
+    // Gestion des utilisateurs : réservé aux super-admins.
+    Route::middleware('superadmin')->group(function () {
+        Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users');
+        Route::get('/users/create', [AdminUserController::class, 'create'])->name('admin.users.create');
+        Route::post('/users/add', [AdminUserController::class, 'add'])->name('admin.users.add');
+        Route::delete('/users/delete/{id}', [AdminUserController::class, 'delete'])->name('admin.users.delete');
+        Route::get('/users/edit/{id}', [AdminUserController::class, 'edit'])->name('admin.users.edit');
+        Route::put('/users/update/{id}', [AdminUserController::class, 'update'])->name('admin.users.update');
+        Route::put('/users/role/{id}', [AdminUserController::class, 'updateRole'])->name('admin.users.role');
 
-    Route::get('/settings/export', [SettingsExportController::class, 'export'])->name('admin.settings.export');
-    Route::post('/settings/import', [SettingsExportController::class, 'import'])->name('admin.settings.import');
+        Route::get('/settings/export', [SettingsExportController::class, 'export'])->name('admin.settings.export');
+        Route::post('/settings/import', [SettingsExportController::class, 'import'])->name('admin.settings.import');
+    });
 
     Route::get('/bg', [AdminBgController::class, 'index'])->name('admin.bg');
     Route::post('/bg/update', [AdminBgController::class, 'update'])->name('admin.bg.update');
     Route::delete('/bg/destroy/{role_id}', [AdminBgController::class, 'destroy'])->name('admin.bg.destroy');
 
-    Route::get('/update', [UpdateController::class, 'index'])->name('admin.update');
-    Route::post('/update', [UpdateController::class, 'update'])->name('admin.update.run');
+    // Auto-mise à jour du panel : réservé aux super-admins.
+    Route::middleware('superadmin')->group(function () {
+        Route::get('/update', [UpdateController::class, 'index'])->name('admin.update');
+        Route::post('/update', [UpdateController::class, 'update'])->name('admin.update.run');
+    });
 
     Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('admin.notifications');
     Route::post('/notifications', [AdminNotificationController::class, 'store'])->name('admin.notifications.store');

@@ -21,6 +21,7 @@ class User extends Authenticatable
         'email',
         'password',
         'is_admin',
+        'role',
         'email_verified_at',
     ];
 
@@ -49,10 +50,32 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is admin
+     * Check if user is admin (gate for accessing /admin).
      */
     public function isAdmin(): bool
     {
         return $this->is_admin ?? false;
+    }
+
+    /**
+     * Check if user is a super-admin (full access).
+     * Falls back to is_admin for legacy rows where role is null.
+     */
+    public function isSuperAdmin(): bool
+    {
+        if ($this->role === 'superadmin') {
+            return true;
+        }
+
+        // Compat : un is_admin sans rôle défini reste super-admin.
+        return $this->is_admin && $this->role === null;
+    }
+
+    /**
+     * Check if user is a moderator (limited admin).
+     */
+    public function isModerator(): bool
+    {
+        return $this->role === 'moderator';
     }
 }

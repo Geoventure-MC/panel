@@ -40,6 +40,7 @@
                 <li class="sidebar-header">
                         {{ __('messages.sidebar.panel') }}
                     </li>
+                    @if(auth()->user()->isSuperAdmin())
                     <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.users') ? 'active' : '' }}" href="{{ route('admin.users') }}">
                         <i class="bi bi-people align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.users') }}</span>
@@ -50,16 +51,19 @@
                         <i class="bi bi-gear align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.config') }}</span>
                     </a>
                 </li>
+                @endif
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.file-manager') ? 'active' : '' }}" href="{{ route('admin.file-manager') }}">
                         <i class="bi bi-folder align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.file_manager') }}</span>
                     </a>
                 </li>
+                @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.update') ? 'active' : '' }}" href="{{ route('admin.update') }}">
                         <i class="bi bi-sort-numeric-up-alt align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.update') }}</span>
                     </a>
                 </li>
+                @endif
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}" href="{{ route('admin.notifications') }}">
                         <i class="bi bi-megaphone align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.notifications') }}</span>
