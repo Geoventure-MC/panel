@@ -8,4 +8,9 @@ class OptionsMods extends Model
 {
     protected $table = 'mods'; // Nom de la table dans la base de données
     protected $fillable = ['file', 'name', 'description', 'icon', 'optional', 'recommended'];
+
+    protected $casts = [
+        'optional' => 'boolean',
+        'recommended' => 'boolean',
+    ];
 }

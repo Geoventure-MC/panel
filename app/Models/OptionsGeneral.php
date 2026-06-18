@@ -25,5 +25,16 @@ class OptionsGeneral extends Model
         'min_ram',
         'max_ram',
     ];
+
+    protected $casts = [
+        'mods_enabled' => 'boolean',
+        'file_verification' => 'boolean',
+        'embedded_java' => 'boolean',
+        'email_verified' => 'boolean',
+        'role_display' => 'integer',
+        'money_display' => 'integer',
+        'min_ram' => 'integer',
+        'max_ram' => 'integer',
+    ];
 }
 

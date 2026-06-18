@@ -22,4 +22,8 @@ class OptionsRPC extends Model
         'rpc_button2',
         'rpc_button2_url'
     ];
+
+    protected $casts = [
+        'rpc_activation' => 'boolean',
+    ];
 }

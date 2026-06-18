@@ -388,6 +388,8 @@ return [
         'user_added' => 'Utilisateur ajouté avec succès',
         'user_updated' => 'Utilisateur mis à jour avec succès',
         'user_deleted' => 'Utilisateur supprimé avec succès',
+        'user_delete_self' => "Vous ne pouvez pas supprimer votre propre compte.",
+        'user_delete_last_admin' => "Impossible de supprimer le dernier administrateur.",
         // General
         'options_updated' => 'Options mises à jour avec succès !',
         // Config

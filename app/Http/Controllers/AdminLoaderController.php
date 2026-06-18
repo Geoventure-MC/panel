@@ -39,9 +39,13 @@ class AdminLoaderController extends Controller
 
     public function getForgeBuilds(Request $request)
     {
-        $mcVersion = $request->query('mc_version');
+        $validated = $request->validate([
+            'mc_version' => ['required', 'string', 'regex:/^\d+\.\d+(\.\d+)?$/'],
+        ]);
+
+        $mcVersion = $validated['mc_version'];
         $url = "https://files.minecraftforge.net/net/minecraftforge/forge/index_$mcVersion.html";
-        $response = Http::get($url);
+        $response = Http::timeout(10)->get($url);
         $builds = [];
 
         if ($response->successful()) {

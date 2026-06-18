@@ -38,7 +38,8 @@ class DiscordWebhook
         }
 
         try {
-            Http::timeout(5)->post($url, [
+            // Timeout court : un webhook lent ne doit pas bloquer la requête admin.
+            Http::timeout(3)->connectTimeout(2)->post($url, [
                 'embeds' => [[
                     'title'       => '🛡️ Action admin — ' . $action,
                     'description' => trim(implode("\n", array_filter([

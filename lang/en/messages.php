@@ -388,6 +388,8 @@ return [
         'user_added' => 'User added successfully',
         'user_updated' => 'User updated successfully',
         'user_deleted' => 'User deleted successfully',
+        'user_delete_self' => 'You cannot delete your own account.',
+        'user_delete_last_admin' => 'You cannot delete the last administrator.',
         // General
         'options_updated' => 'Options updated successfully!',
         // Config

@@ -14,5 +14,9 @@ class OptionsLoader extends Model
         'loader_forge_version',
         'loader_build_version',
     ];
+
+    protected $casts = [
+        'loader_activation' => 'boolean',
+    ];
 }
 

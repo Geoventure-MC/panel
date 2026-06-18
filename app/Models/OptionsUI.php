@@ -20,4 +20,10 @@ class OptionsUI extends Model
         'splash_author',
         'accent_color',
     ];
+
+    protected $casts = [
+        'alert_activation' => 'boolean',
+        'alert_scroll' => 'boolean',
+        'video_activation' => 'boolean',
+    ];
 }

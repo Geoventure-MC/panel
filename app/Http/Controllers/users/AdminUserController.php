@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\users;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -70,7 +71,21 @@ class AdminUserController extends Controller
     public function delete($id)
     {
         $user = User::findOrFail($id);
+
+        // Empêche de supprimer son propre compte.
+        if (auth()->id() === $user->id) {
+            return redirect()->route('admin.users')
+                ->with('error', __('messages.flash.user_delete_self'));
+        }
+
+        // Empêche de supprimer le dernier admin (sinon plus aucun accès admin).
+        if ($user->is_admin && User::where('is_admin', true)->count() <= 1) {
+            return redirect()->route('admin.users')
+                ->with('error', __('messages.flash.user_delete_last_admin'));
+        }
+
         $user->delete();
+        AuditLog::record('user.delete', $user);
 
         return redirect()->route('admin.users')->with('success', __('messages.flash.user_deleted'));
     }

@@ -15,4 +15,9 @@ class OptionsSecurity extends Model
         'maintenance_message',
         'whitelist',
     ];
+
+    protected $casts = [
+        'maintenance' => 'boolean',
+        'whitelist' => 'boolean',
+    ];
 }
