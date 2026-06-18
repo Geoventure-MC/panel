@@ -2,7 +2,8 @@ name: Panel Build & Release
 
 on:
   push:
-    branches: [ main ]
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 permissions:
@@ -15,98 +16,72 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      # Détermine le type de bump (major/minor/patch) à partir des messages
-      # de commit depuis le dernier tag, façon "semantic versioning logique".
-      #   - feat / feature                         -> minor
-      #   - BREAKING CHANGE ou "!:" (ex: feat!:)   -> major
-      #   - tout le reste (fix, chore, docs...)    -> patch
-      - name: Determine version bump & changelog
+      - name: Determine version
         id: version
         run: |
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          if [ -z "$LAST_TAG" ]; then
-            RANGE=""
-            echo "Aucun tag précédent, analyse de tout l'historique."
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            VERSION="${{ github.ref_name }}"
+            VERSION="${VERSION#v}"
           else
+            VERSION=$(node -p "require('./package.json').version")
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Version: v${VERSION}"
+
+      - name: Sync version to config/app.php
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          sed -i -E "s/('version'[[:space:]]*=>[[:space:]]*)'[^']*'/\1'${VERSION}'/" config/app.php
+
+      - name: Generate release notes
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
             RANGE="${LAST_TAG}..HEAD"
-            echo "Analyse des commits depuis ${LAST_TAG}."
+          else
+            RANGE=""
           fi
 
-          # Liste des commits (hors merges, hors bumps automatiques)
-          COMMITS=$(git log $RANGE --no-merges --pretty=format:"%s" | grep -v -i "bump version" | grep -v "\[skip ci\]" || true)
+          COMMITS=$(git log $RANGE --no-merges --pretty=format:"%s" | grep -v "\[skip ci\]" || true)
 
-          BUMP="patch"
-          if echo "$COMMITS" | grep -qiE "breaking change|!:"; then
-            BUMP="major"
-          elif echo "$COMMITS" | grep -qiE "^feat(\(|:|/| )|^feature"; then
-            BUMP="minor"
-          fi
-          echo "Type de bump détecté : $BUMP"
-
-          # Applique le bump (package.json) sans créer de tag git
-          npm version "$BUMP" --no-git-tag-version >/dev/null
-          NEW_VERSION=$(node -p "require('./package.json').version")
-          echo "Nouvelle version : v${NEW_VERSION}"
-
-          # Synchronise la version exposée par le panel (config/app.php)
-          # -> c'est celle que la page "Mise à jour" compare aux releases.
-          sed -i -E "s/('version'[[:space:]]*=>[[:space:]]*)'[^']*'/\1'${NEW_VERSION}'/" config/app.php
-
-          # Génère des notes de release "friendly" et catégorisées
           FEATS=$(echo "$COMMITS"  | grep -iE "^feat(\(|:|/| )|^feature" | sed -E "s/^[a-zA-Z]+(\([^)]*\))?:? ?//" | sed 's/^/- /' || true)
           FIXES=$(echo "$COMMITS"  | grep -iE "^fix(\(|:|/| )"          | sed -E "s/^[a-zA-Z]+(\([^)]*\))?:? ?//" | sed 's/^/- /' || true)
           OTHERS=$(echo "$COMMITS" | grep -viE "^feat(\(|:|/| )|^feature|^fix(\(|:|/| )" | sed -E "s/^[a-zA-Z]+(\([^)]*\))?:? ?//" | sed 's/^/- /' || true)
 
           {
-            echo "## 🖥️ Geoventure Panel v${NEW_VERSION}"
+            echo "## Geoventure Panel v${VERSION}"
             echo ""
-            echo "Panel d'administration Geoventure-MC, prêt à l'emploi et **autonome**"
-            echo "(dépendances PHP + assets déjà inclus)."
+            echo "Panel d'administration Geoventure-MC, autonome (PHP + assets inclus)."
             echo ""
             if [ -n "$FEATS" ]; then
-              echo "### ✨ Nouveautés"
+              echo "### Nouveautes"
               echo "$FEATS"
               echo ""
             fi
             if [ -n "$FIXES" ]; then
-              echo "### 🐛 Corrections"
+              echo "### Corrections"
               echo "$FIXES"
               echo ""
             fi
             if [ -n "$OTHERS" ]; then
-              echo "### 🔧 Autres changements"
+              echo "### Autres changements"
               echo "$OTHERS"
               echo ""
             fi
             echo "---"
             echo ""
-            echo "### 📦 Installation"
+            echo "### Installation"
             echo ""
-            echo "Cette archive est téléchargée **automatiquement par l'installer Geoventure**."
-            echo "Tu n'as normalement rien à faire ici manuellement : utilise l'installer."
+            echo "Cette archive est telechargee automatiquement par l'installer Geoventure."
             echo ""
-            echo "> Asset à télécharger : \`panel-${NEW_VERSION}.zip\`"
+            echo "> Asset : \`panel-${VERSION}.zip\`"
             echo ""
-            echo "### 📝 Notes"
-            echo ""
-            echo "- Après extraction sur le serveur web, ouvre ton domaine pour lancer l'assistant d'installation."
-            echo "- Si tu mets à jour un panel existant, pense à lancer \`php artisan migrate\`."
+            echo "- Apres extraction, ouvrir le domaine pour lancer l'assistant d'installation."
+            echo "- Mise a jour : lancer \`php artisan migrate\`."
           } > RELEASE_NOTES.md
-
-          # Commit du bump (package.json + config/app.php)
-          git add package.json config/app.php
-          git commit -m "chore: bump version to v${NEW_VERSION} [skip ci]"
-          git push origin main
-
-          echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
 
       - name: Setup PHP 8.2
         uses: shivammathur/setup-php@v2
@@ -150,7 +125,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
-          name: "\U0001F5A5️ Geoventure Panel v${{ steps.version.outputs.version }}"
+          name: "Geoventure Panel v${{ steps.version.outputs.version }}"
           body_path: RELEASE_NOTES.md
           files: panel-${{ steps.version.outputs.version }}.zip
         env:
