@@ -2,8 +2,7 @@ name: Panel Build & Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -13,32 +12,69 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - uses: actions/checkout@v4
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Determine version
-        id: version
+      - name: Configure git
         run: |
-          if [[ "${{ github.ref_type }}" == "tag" ]]; then
-            VERSION="${{ github.ref_name }}"
-            VERSION="${VERSION#v}"
-          else
-            VERSION=$(node -p "require('./package.json').version")
-          fi
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "Version: v${VERSION}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Sync version to config/app.php
+      - name: Decide release
+        id: decide
         run: |
-          VERSION=${{ steps.version.outputs.version }}
-          sed -i -E "s/('version'[[:space:]]*=>[[:space:]]*)'[^']*'/\1'${VERSION}'/" config/app.php
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "release=true" >> "$GITHUB_OUTPUT"
+            echo "bump=patch"   >> "$GITHUB_OUTPUT"
+            echo "Manual dispatch -> release (patch)"; exit 0
+          fi
+          LAST_TAG=$(git describe --tags --match 'v*' --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then RANGE="${LAST_TAG}..HEAD"; else RANGE=""; fi
+          LOG=$(git log $RANGE --no-merges --pretty=format:'%s' | grep -v '\[skip ci\]' || true)
+          if [ -z "$(printf '%s' "$LOG" | tr -d '[:space:]')" ]; then
+            echo "No new commits -> skip"; echo "release=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          NONTRIVIAL=0; BUMP="patch"
+          while IFS= read -r MSG; do
+            [ -z "$MSG" ] && continue
+            case "$MSG" in
+              docs:*|chore:*|style:*|ci:*|test:*|refactor:*|build:*) continue ;;
+              "📝"*|"📚"*|"🔄"*|"✅"*|"🔖"*|"💚"*|"👷"*|"📄"*) continue ;;
+            esac
+            NONTRIVIAL=1
+            if printf '%s' "$MSG" | grep -qiE 'breaking change|!:'; then BUMP="major";
+            elif printf '%s' "$MSG" | grep -qiE '^feat(\(.+\))?:|^feature|✨|🎉|🚀'; then
+              [ "$BUMP" != "major" ] && BUMP="minor"; fi
+          done <<EOF
+          $LOG
+          EOF
+          if [ "$NONTRIVIAL" = "0" ]; then
+            echo "Only trivial commits -> skip release"; echo "release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "release=true" >> "$GITHUB_OUTPUT"; echo "bump=$BUMP" >> "$GITHUB_OUTPUT"
+            echo "Release -> bump=$BUMP"
+          fi
+
+      - name: Compute version
+        id: version
+        if: steps.decide.outputs.release == 'true'
+        run: |
+          BUMP="${{ steps.decide.outputs.bump }}"
+          npm version "$BUMP" --no-git-tag-version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          sed -i -E "s/('version'[[:space:]]*=>[[:space:]]*)'[^']*'/\1'${NEW_VERSION}'/" config/app.php
+          echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Version: v${NEW_VERSION}"
 
       - name: Generate release notes
+        if: steps.decide.outputs.release == 'true'
         run: |
           VERSION=${{ steps.version.outputs.version }}
-          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [ -n "$LAST_TAG" ]; then
             RANGE="${LAST_TAG}..HEAD"
           else
@@ -84,6 +120,7 @@ jobs:
           } > RELEASE_NOTES.md
 
       - name: Setup PHP 8.2
+        if: steps.decide.outputs.release == 'true'
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
@@ -91,20 +128,24 @@ jobs:
           tools: composer
 
       - name: Install PHP dependencies (production)
+        if: steps.decide.outputs.release == 'true'
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
       - name: Setup Node.js 18
+        if: steps.decide.outputs.release == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
 
       - name: Install & build frontend assets
+        if: steps.decide.outputs.release == 'true'
         run: |
           npm ci
           npm run production
 
       - name: Build self-contained panel package
+        if: steps.decide.outputs.release == 'true'
         run: |
           VERSION=${{ steps.version.outputs.version }}
           zip -r "panel-${VERSION}.zip" . \
@@ -121,7 +162,15 @@ jobs:
           echo "Created panel-${VERSION}.zip"
           ls -lh "panel-${VERSION}.zip"
 
+      - name: Commit version bump
+        if: steps.decide.outputs.release == 'true'
+        run: |
+          git add package.json config/app.php
+          git commit -m "chore: release v${{ steps.version.outputs.version }} [skip ci]" || exit 0
+          git push origin HEAD:main
+
       - name: Create GitHub Release
+        if: steps.decide.outputs.release == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
