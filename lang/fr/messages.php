@@ -134,6 +134,15 @@ return [
         'maintenance_msg' => 'Message de maintenance',
         'maintenance_placeholder' => 'Ex : Le launcher est temporairement indisponible...',
     ],
+    'maintenance' => [
+        'title' => 'Mode maintenance',
+        'state_on' => 'ACTIVÉ',
+        'state_off' => 'DÉSACTIVÉ',
+        'enable' => 'Activer la maintenance',
+        'disable' => 'Désactiver la maintenance',
+        'hint' => 'Bascule rapide : bloque le lancement du jeu côté launcher.',
+        'message_placeholder' => "Message affiché aux joueurs pendant la maintenance...",
+    ],
     'rpc' => [
         'title' => 'Paramètres RPC',
         'activation' => 'Activation',
@@ -406,6 +415,8 @@ return [
         // Security
         'security_updated' => 'Options de sécurité mises à jour avec succès !',
         'maintenance_toggled' => 'Mode maintenance basculé.',
+        'maintenance_enabled' => 'Mode maintenance activé.',
+        'maintenance_disabled' => 'Mode maintenance désactivé.',
         // RPC
         'rpc_updated' => 'Options RPC mises à jour avec succès !',
         // UI

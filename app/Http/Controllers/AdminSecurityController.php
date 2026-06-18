@@ -39,14 +39,32 @@ class AdminSecurityController extends Controller
         return redirect()->route('admin.security')->with('success', __('messages.flash.security_updated'));
     }
 
-    public function toggleMaintenance()
+    public function toggleMaintenance(Request $request)
     {
         $security = OptionsSecurity::first();
-        if ($security) {
-            $security->update(['maintenance' => !$security->maintenance]);
-            AuditLog::record('security.maintenance.toggle', $security);
+        if (!$security) {
+            $security = OptionsSecurity::create([
+                'maintenance'         => 0,
+                'maintenance_message' => 'Maintenance en cours.',
+            ]);
         }
 
-        return response()->json(['maintenance' => (bool) ($security?->fresh()->maintenance ?? false)]);
+        $newState = !$security->maintenance;
+        $update = ['maintenance' => $newState];
+
+        // Permet d'éditer le message au moment du basculement.
+        if ($request->filled('maintenance_message')) {
+            $validated = $request->validate([
+                'maintenance_message' => 'string|max:255',
+            ]);
+            $update['maintenance_message'] = $validated['maintenance_message'];
+        }
+
+        $security->update($update);
+        AuditLog::record('security.maintenance.toggle', $security, ['maintenance' => $newState]);
+
+        $flash = $newState ? 'maintenance_enabled' : 'maintenance_disabled';
+
+        return redirect()->back()->with('success', __('messages.flash.' . $flash));
     }
 }

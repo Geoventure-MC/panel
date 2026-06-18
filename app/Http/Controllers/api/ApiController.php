@@ -51,7 +51,9 @@ class ApiController extends Controller
 
         $data = [
             "maintenance" => $security ? (bool)$security->maintenance : false,
-            "maintenance_message" => $security ? $security->maintenance_message : "Please define a maintenance message",
+            "maintenance_message" => ($security && $security->maintenance_message)
+                ? $security->maintenance_message
+                : "Maintenance in progress, please try again later.",
             "game_version" => ($loader && $loader->minecraft_version) ? $loader->minecraft_version : "1.20.1",
             "client_id" => "",
             "verify" => $general ? (bool)$general->file_verification : true,

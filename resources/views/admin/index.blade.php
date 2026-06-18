@@ -35,13 +35,14 @@
                             </span>
                             <p class="text-muted small mb-0">{{ __('messages.dashboard.maintenance_hint') }}</p>
                         </div>
-                        <button id="maintenanceToggle"
-                            class="btn btn-{{ $maintenanceActive ? 'warning' : 'outline-success' }}"
-                            data-active="{{ $maintenanceActive ? '1' : '0' }}"
-                            data-url="{{ route('admin.security.maintenance.toggle') }}"
-                            title="{{ __('messages.dashboard.maintenance_toggle') }}">
-                            <i id="maintenanceIcon" class="bi bi-{{ $maintenanceActive ? 'tools' : 'check-circle' }}"></i>
-                        </button>
+                        <form action="{{ route('admin.maintenance.toggle') }}" method="POST" class="m-0">
+                            @csrf
+                            <button type="submit"
+                                class="btn btn-{{ $maintenanceActive ? 'warning' : 'outline-success' }}"
+                                title="{{ __('messages.dashboard.maintenance_toggle') }}">
+                                <i class="bi bi-{{ $maintenanceActive ? 'tools' : 'check-circle' }}"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -114,43 +115,4 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
-@endsection
-
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const btn = document.getElementById('maintenanceToggle');
-    if (!btn) return;
-
-    const labelOn  = @json(__('messages.dashboard.maintenance_on'));
-    const labelOff = @json(__('messages.dashboard.maintenance_off'));
-
-    btn.addEventListener('click', function () {
-        btn.disabled = true;
-        fetch(btn.dataset.url, {
-            method: 'PATCH',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        })
-        .then(r => r.json())
-        .then(data => {
-            const active = data.maintenance;
-            const badge  = document.getElementById('maintenanceBadge');
-            const icon   = document.getElementById('maintenanceIcon');
-            const card   = btn.closest('.card');
-
-            btn.className = 'btn btn-' + (active ? 'warning' : 'outline-success');
-            icon.className = 'bi bi-' + (active ? 'tools' : 'check-circle');
-            badge.className = 'badge mb-1 ' + (active ? 'bg-warning text-dark' : 'bg-success');
-            badge.textContent = active ? labelOn : labelOff;
-            card.classList.toggle('border-warning', active);
-            card.classList.toggle('border-success', !active);
-        })
-        .finally(() => { btn.disabled = false; });
-    });
-});
-</script>
 @endsection

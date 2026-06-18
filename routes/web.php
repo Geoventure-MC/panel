@@ -72,7 +72,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::post('/general/update', [AdminController::class, 'updateGeneral'])->name('admin.general.update');
     Route::get('/security', [AdminSecurityController::class, 'show'])->name('admin.security');
     Route::post('/security/update', [AdminSecurityController::class, 'update'])->name('admin.security.update');
-    Route::patch('/security/maintenance/toggle', [AdminSecurityController::class, 'toggleMaintenance'])->name('admin.security.maintenance.toggle');
+    Route::post('/maintenance/toggle', [AdminSecurityController::class, 'toggleMaintenance'])->name('admin.maintenance.toggle');
 
     Route::get('/server', [AdminServerController::class, 'show'])->name('admin.server');
     Route::post('/server/set-default', [AdminServerController::class, 'setDefaultServer'])->name('admin.server.set-default');
