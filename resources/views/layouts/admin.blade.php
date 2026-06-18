@@ -66,8 +66,8 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.audit') ? 'active' : '' }}" href="{{ route('admin.audit') }}">
-                        <i class="bi bi-journal-text align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.audit') }}</span>
+                    <a class="sidebar-link {{ request()->routeIs('admin.audit.*') ? 'active' : '' }}" href="{{ route('admin.audit.index') }}">
+                        <i class="bi bi-clock-history align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.audit') }}</span>
                     </a>
                 </li>
                 <li class="sidebar-item">

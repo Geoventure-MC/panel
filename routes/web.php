@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SettingsExportController;
-use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\AdminAuditController;
 use App\Http\Controllers\AdminBgController;
 use App\Http\Controllers\api\ApiController;
 use App\Http\Controllers\api\FileController;
@@ -139,7 +139,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::patch('/community-mods/{mod}/toggle', [AdminCommunityModController::class, 'toggle'])->name('admin.community-mods.toggle');
     Route::delete('/community-mods/{mod}', [AdminCommunityModController::class, 'destroy'])->name('admin.community-mods.destroy');
 
-    Route::get('/audit', [AuditLogController::class, 'index'])->name('admin.audit');
+    Route::get('/audit', [AdminAuditController::class, 'index'])->name('admin.audit.index');
 
     Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
 });

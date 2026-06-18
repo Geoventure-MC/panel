@@ -354,6 +354,13 @@ return [
         'user' => 'User',
         'action' => 'Action',
         'target' => 'Target',
+        'details' => 'Details',
+        'ip' => 'IP',
+        'filter_action' => 'Filter by action',
+        'filter_user' => 'Filter by user',
+        'filter_all' => 'All',
+        'filter_apply' => 'Filter',
+        'filter_reset' => 'Reset',
     ],
     'stats' => [
         'title' => 'Statistics',
