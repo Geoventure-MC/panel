@@ -23,7 +23,7 @@ class AdminSecurityController extends Controller
 
     public function update(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'maintenance'         => 'boolean',
             'maintenance_message' => 'required|string|max:255',
         ]);
@@ -31,7 +31,8 @@ class AdminSecurityController extends Controller
         $securityOptions = OptionsSecurity::first();
 
         if ($securityOptions) {
-            $securityOptions->update($request->all());
+            // Seuls les champs validés sont écrits (pas de mass-assignment libre).
+            $securityOptions->update($validated);
             AuditLog::record('security.update', $securityOptions);
         }
 

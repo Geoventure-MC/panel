@@ -171,6 +171,25 @@ class InstallController extends Controller
         File::put(base_path('.env'), $envContent);
     }
 
+    /**
+     * Échappe une valeur destinée au fichier .env : retire les sauts de ligne,
+     * échappe \, " et $, puis entoure de guillemets doubles. Les valeurs déjà
+     * entourées de guillemets sont conservées telles quelles (après nettoyage
+     * des sauts de ligne) pour ne pas double-quoter les littéraux fournis.
+     */
+    private function escapeEnvValue(string $value): string
+    {
+        $value = str_replace(["\r", "\n"], '', $value);
+
+        if (strlen($value) >= 2 && str_starts_with($value, '"') && str_ends_with($value, '"')) {
+            return $value;
+        }
+
+        $value = str_replace(['\\', '"', '$'], ['\\\\', '\\"', '\\$'], $value);
+
+        return '"' . $value . '"';
+    }
+
     private function updateEnvValues(array $values)
     {
         $envPath = base_path('.env');
@@ -178,10 +197,12 @@ class InstallController extends Controller
 
         foreach ($values as $key => $value) {
             $pattern = "/^{$key}=.*/m";
-            $replacement = "{$key}={$value}";
+            $replacement = "{$key}=" . $this->escapeEnvValue((string) $value);
 
+            // preg_replace_callback : le remplacement n'est pas réinterprété
+            // (pas de backreferences accidentelles via $ dans la valeur).
             if (preg_match($pattern, $envContent)) {
-                $envContent = preg_replace($pattern, $replacement, $envContent);
+                $envContent = preg_replace_callback($pattern, fn () => $replacement, $envContent);
             } else {
                 $envContent .= "\n{$replacement}";
             }

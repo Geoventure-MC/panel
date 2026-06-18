@@ -33,7 +33,10 @@ class AdminController extends Controller
 
         $options = OptionsGeneral::first();
         if ($options) {
-            $options->update($request->all());
+            // Mise à jour explicite des seuls champs validés : empêche le
+            // mass-assignment de secrets (azuriom_api_key…) via des champs POST
+            // supplémentaires gérés ailleurs.
+            $options->update($validator->validated());
         }
 
         return redirect()->route('admin.general')->with('success', __('messages.flash.options_updated'));

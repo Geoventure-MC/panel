@@ -33,6 +33,14 @@ class AdminModController extends Controller
 
     public function updateOptionalMod(Request $request)
     {
+        $request->validate([
+            'mod_id'               => 'required|integer|exists:mods,id',
+            'optional_name'        => 'required|string|max:150',
+            'optional_description' => 'nullable|string|max:1000',
+            'optional_recommended' => 'nullable|boolean',
+            'optional_image'       => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
+        ]);
+
         $mod = OptionsMods::findOrFail($request->mod_id);
         $mod->name = $request->optional_name;
         $mod->description = $request->optional_description;
@@ -63,6 +71,12 @@ class AdminModController extends Controller
 
     public function addOptionalMod(Request $request)
     {
+        $request->validate([
+            'file'        => 'required|string|max:255',
+            'name'        => 'required|string|max:150',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
         $mod = new OptionsMods();
         $mod->file = $request->file;
         $mod->name = $request->name;

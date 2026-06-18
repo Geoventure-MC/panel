@@ -23,6 +23,19 @@ class AdminConfigController extends Controller
         return view('admin.config', compact('options', 'azuriomSites', 'servers'));
     }
 
+    /**
+     * Échappe une valeur destinée au fichier .env : retire les sauts de ligne,
+     * échappe \, " et $, puis entoure de guillemets doubles. Empêche
+     * l'injection de variables supplémentaires dans le .env.
+     */
+    private function escapeEnvValue(string $value): string
+    {
+        $value = str_replace(["\r", "\n"], '', $value);
+        $value = str_replace(['\\', '"', '$'], ['\\\\', '\\"', '\\$'], $value);
+
+        return '"' . $value . '"';
+    }
+
     public function update(Request $request)
     {
         $validated = $request->validate([
@@ -35,9 +48,10 @@ class AdminConfigController extends Controller
             // Mettre à jour le nom de l'application dans le fichier .env
             $envPath = base_path('.env');
             $envContent = File::get($envPath);
-            $newEnvContent = preg_replace(
+            $replacement = 'APP_NAME=' . $this->escapeEnvValue($validated['app_name']);
+            $newEnvContent = preg_replace_callback(
                 '/^APP_NAME=.*/m',
-                'APP_NAME="' . $validated['app_name'] . '"',
+                fn () => $replacement,
                 $envContent
             );
             File::put($envPath, $newEnvContent);

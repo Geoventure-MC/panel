@@ -17,7 +17,7 @@ class AdminLoaderController extends Controller
 
     public function update(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'minecraft_version' => 'required|string',
             'loader_activation' => 'required|boolean',
             'loader_type' => 'required|string',
@@ -30,7 +30,8 @@ class AdminLoaderController extends Controller
             $optionsLoader = new OptionsLoader();
         }
 
-        $optionsLoader->fill($request->all());
+        // Seuls les champs validés sont écrits (pas de mass-assignment libre).
+        $optionsLoader->fill($validated);
         $optionsLoader->save();
 
         return redirect()->back()->with('success', __('messages.flash.loader_updated'));
