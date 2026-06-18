@@ -160,7 +160,7 @@ Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::get('/factions', [FactionController::class, 'getFactions']);
     Route::get('/community-mods', [CommunityModController::class, 'getCommunityMods']);
 });
-Route::get('/data', [FileController::class, 'getFiles']);
+Route::get('/data', [FileController::class, 'getFiles'])->middleware('throttle:120,1');
 Route::get('/api/centralcorp/community-mods', [CommunityModController::class, 'getCommunityMods']);
 Route::get('/api-schema.json', fn() => response()->json(['schemaVersion' => '1.0.0'], 200, [], JSON_UNESCAPED_SLASHES));
 

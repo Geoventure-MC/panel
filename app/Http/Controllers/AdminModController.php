@@ -12,7 +12,9 @@ class AdminModController extends Controller
     {
         $modsDir = storage_path('app/public/data/mods');
 
-        $jarFiles = glob($modsDir . '/*.jar');
+        // glob() peut renvoyer false (dossier absent / erreur) → foreach(false)
+        // déclencherait une TypeError. On retombe sur un tableau vide.
+        $jarFiles = glob($modsDir . '/*.jar') ?: [];
         $modsData = [];
 
         foreach ($jarFiles as $index => $jarFile) {
