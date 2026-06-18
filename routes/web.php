@@ -58,7 +58,7 @@ Route::get('/', function () {
 });
 
 // Routes avec le préfixe 'admin' (groupées)
-Route::prefix('admin')->middleware('auth')->group(function () {
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('admin.index');
 
     Route::get('/config', [AdminConfigController::class, 'show'])->name('admin.config');
