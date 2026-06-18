@@ -19,17 +19,64 @@ use Illuminate\Support\Facades\Schema;
 
 class SettingsExportController extends Controller
 {
+    /**
+     * Tables autorisées à l'import/export. Toute clé hors de cette liste est
+     * rejetée pour empêcher un fichier malveillant de truncate/insérer dans
+     * des tables arbitraires (users, sessions, migrations…).
+     */
+    private const ALLOWED_TABLES = [
+        'options_general',
+        'options_ui',
+        'options_server',
+        'options_rpc',
+        'options_security',
+        'options_loader',
+        'ignored_folders',
+        'whitelist',
+        'whitelist_roles',
+        'mods',
+        'community_mods',
+    ];
+
+    /**
+     * Colonnes secrètes masquées à l'export.
+     */
+    private const SECRET_COLUMNS = [
+        'azuriom_api_key',
+        'discord_webhook_url',
+    ];
+
+    /**
+     * Masque les valeurs secrètes (et toute colonne password/token/secret).
+     */
+    private function redactSecrets($rows)
+    {
+        return collect($rows)->map(function ($row) {
+            $arr = (array) $row;
+            foreach ($arr as $key => $value) {
+                $lower = strtolower((string) $key);
+                if (in_array($lower, self::SECRET_COLUMNS, true)
+                    || str_contains($lower, 'password')
+                    || str_contains($lower, 'token')
+                    || str_contains($lower, 'secret')) {
+                    $arr[$key] = '';
+                }
+            }
+            return $arr;
+        })->all();
+    }
+
     public function export()
     {
         $settings = [
             'version' => '1.0',
             'export_date' => now()->format('Y-m-d H:i:s'),
             'data' => [
-                'options_general' => OptionsGeneral::all(),
+                'options_general' => $this->redactSecrets(OptionsGeneral::all()),
                 'options_ui' => OptionsUI::all(),
                 'options_server' => OptionsServer::all(),
-                'options_rpc' => OptionsRPC::all(),
-                'options_security' => OptionsSecurity::all(),
+                'options_rpc' => $this->redactSecrets(OptionsRPC::all()),
+                'options_security' => $this->redactSecrets(OptionsSecurity::all()),
                 'options_loader' => OptionsLoader::all(),
                 'ignored_folders' => OptionsIgnore::all(),
                 'whitelist' => OptionsWhitelist::all(),
@@ -66,6 +113,11 @@ class SettingsExportController extends Controller
         DB::beginTransaction();
         try {
             foreach ($settings['data'] as $table => $data) {
+                // N'autoriser que les tables de configuration connues.
+                if (!in_array($table, self::ALLOWED_TABLES, true)) {
+                    throw new \Exception("La table {$table} n'est pas autorisée à l'import.");
+                }
+
                 // Vérifier si la table existe
                 if (!Schema::hasTable($table)) {
                     throw new \Exception("La table {$table} n'existe pas.");
