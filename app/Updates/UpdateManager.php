@@ -39,11 +39,13 @@ class UpdateManager
 
             $zipUrl  = null;
             $fileName = null;
+            $assetSize = null;
 
             foreach ($data['assets'] ?? [] as $asset) {
                 if (str_ends_with($asset['name'], '.zip')) {
-                    $zipUrl   = $asset['browser_download_url'];
-                    $fileName = $asset['name'];
+                    $zipUrl    = $asset['browser_download_url'];
+                    $fileName  = $asset['name'];
+                    $assetSize = $asset['size'] ?? null;
                     break;
                 }
             }
@@ -65,6 +67,7 @@ class UpdateManager
                 'url'     => $zipUrl,
                 'file'    => $fileName,
                 'hash'    => null,
+                'size'    => $assetSize,
             ];
         } catch (\Exception $e) {
             Log::error('UpdateManager fetch error: ' . $e->getMessage());
@@ -138,6 +141,23 @@ class UpdateManager
             throw new RuntimeException("Fichier téléchargé trop petit ({$size} octets) — probablement vide ou erreur réseau.");
         }
 
+        // Vérifie la taille annoncée par GitHub si disponible (intégrité basique).
+        if (!empty($info['size']) && (int) $info['size'] !== (int) $size) {
+            $this->files->delete($filePath);
+            throw new RuntimeException(
+                "Taille du fichier téléchargée ({$size}) différente de celle annoncée ({$info['size']}) — téléchargement corrompu."
+            );
+        }
+
+        // Vérifie le SHA256 si fourni dans les métadonnées de la release.
+        if (!empty($info['hash'])) {
+            $actual = hash_file('sha256', $filePath);
+            if (!hash_equals(strtolower($info['hash']), strtolower($actual))) {
+                $this->files->delete($filePath);
+                throw new RuntimeException("Empreinte SHA256 invalide — téléchargement rejeté.");
+            }
+        }
+
         return $filePath;
     }
 
@@ -147,6 +167,19 @@ class UpdateManager
 
         if (!is_writable($basePath)) {
             throw new RuntimeException("Le dossier racine n'est pas accessible en écriture : {$basePath}");
+        }
+
+        // Vérifie que le fichier est bien un ZIP (magic bytes "PK\x03\x04" /
+        // "PK\x05\x06" pour un zip vide) avant de tenter l'extraction.
+        $fh = @fopen($zipPath, 'rb');
+        if ($fh === false) {
+            throw new RuntimeException("Impossible de lire le fichier téléchargé : {$zipPath}");
+        }
+        $magic = fread($fh, 4);
+        fclose($fh);
+        if ($magic !== "PK\x03\x04" && $magic !== "PK\x05\x06") {
+            $this->files->delete($zipPath);
+            throw new RuntimeException("Le fichier téléchargé n'est pas une archive ZIP valide.");
         }
 
         $zip = new ZipArchive();
@@ -169,6 +202,41 @@ class UpdateManager
 
         $count = $zip->count();
         Log::info("UpdateManager: extracting {$count} files to {$basePath}");
+
+        // Garde anti zip-slip : on rejette toute entrée dont le chemin résolu
+        // échapperait au dossier racine (../, chemin absolu, etc.). On valide
+        // toutes les entrées AVANT d'extraire quoi que ce soit.
+        $realBase = rtrim(str_replace('\\', '/', realpath($basePath) ?: $basePath), '/');
+        for ($i = 0; $i < $count; $i++) {
+            $entry = $zip->getNameIndex($i);
+            if ($entry === false) {
+                continue;
+            }
+
+            // Rejette les chemins absolus (unix et windows).
+            if (str_starts_with($entry, '/') || preg_match('#^[A-Za-z]:[\\\\/]#', $entry)) {
+                $zip->close();
+                throw new RuntimeException("Archive rejetée (zip-slip) : chemin absolu interdit « {$entry} ».");
+            }
+
+            $target = $realBase . '/' . ltrim(str_replace('\\', '/', $entry), '/');
+            // Normalise les segments '.' et '..' sans toucher au disque
+            // (l'entrée n'existe pas encore).
+            $parts = [];
+            foreach (explode('/', $target) as $segment) {
+                if ($segment === '..') {
+                    array_pop($parts);
+                } elseif ($segment !== '.' && $segment !== '') {
+                    $parts[] = $segment;
+                }
+            }
+            $resolved = '/' . implode('/', $parts);
+
+            if ($resolved !== $realBase && !str_starts_with($resolved, $realBase . '/')) {
+                $zip->close();
+                throw new RuntimeException("Archive rejetée (zip-slip) : « {$entry} » sort du dossier racine.");
+            }
+        }
 
         // Fichiers protégés par l'hébergeur (aaPanel/宝塔 pose chattr +i sur
         // .user.ini) : une extraction globale échouerait entièrement dès le
@@ -230,7 +298,7 @@ class UpdateManager
             return false;
         }
 
-        Log::info("UpdateManager: updating from v{$this->currentVersion} to v{$info['version']}");
+        Log::warning("UpdateManager: applying release tag v{$info['version']} (from v{$this->currentVersion})");
 
         $zipPath = $this->downloadUpdate($info);
         $this->installUpdate($zipPath);
