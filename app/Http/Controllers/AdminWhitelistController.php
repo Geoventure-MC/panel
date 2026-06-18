@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\OptionsWhitelist;
 use App\Models\OptionsWhitelistRole;
 use Illuminate\Http\Request;
@@ -135,18 +136,24 @@ class AdminWhitelistController extends Controller
             }
         }
 
+        AuditLog::record('whitelist.update', $securityOptions);
+
         return redirect()->route('admin.whitelist')->with('success', __('messages.flash.whitelist_updated'));
     }
 
     public function destroyUser($id)
     {
-        OptionsWhitelist::findOrFail($id)->delete();
+        $entry = OptionsWhitelist::findOrFail($id);
+        $entry->delete();
+        AuditLog::record('whitelist.user.delete', $entry);
         return redirect()->route('admin.whitelist')->with('success', __('messages.flash.whitelist_user_deleted'));
     }
 
     public function destroyRole($id)
     {
-        OptionsWhitelistRole::findOrFail($id)->delete();
+        $entry = OptionsWhitelistRole::findOrFail($id);
+        $entry->delete();
+        AuditLog::record('whitelist.role.delete', $entry);
         return redirect()->route('admin.whitelist')->with('success', __('messages.flash.whitelist_role_deleted'));
     }
 }

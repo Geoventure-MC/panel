@@ -130,31 +130,14 @@ class AdminServerController extends Controller
             'server_id' => 'required|integer'
         ]);
 
-        \Log::info('Tentative de définition du serveur par défaut', ['server_id' => $request->server_id]);
-
         // Mettre à jour tous les serveurs pour désélectionner le serveur par défaut
-        $updatedCount = OptionsServer::where('is_default', true)->update(['is_default' => false]);
-        \Log::info('Serveurs désélectionnés', ['count' => $updatedCount]);
+        OptionsServer::where('is_default', true)->update(['is_default' => false]);
 
         // Mettre à jour le serveur sélectionné comme serveur par défaut
         $server = OptionsServer::where('server_id', $request->server_id)->first();
         if ($server) {
             $server->is_default = true;
-            $saved = $server->save();
-
-            \Log::info('Serveur par défaut mis à jour', [
-                'server_id' => $request->server_id,
-                'server_name' => $server->server_name,
-                'saved' => $saved,
-                'is_default' => $server->is_default
-            ]);
-
-            // Vérification supplémentaire
-            $verification = OptionsServer::where('server_id', $request->server_id)->first();
-            \Log::info('Vérification après sauvegarde', [
-                'server_id' => $verification->server_id,
-                'is_default' => $verification->is_default
-            ]);
+            $server->save();
 
             return redirect()->route('admin.server')->with('success', __('messages.flash.server_set_default', ['name' => $server->server_name]));
         }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\OptionsIgnore;
 use Illuminate\Http\Request;
 
@@ -30,12 +31,16 @@ class AdminIgnoreController extends Controller
             }
         }
 
+        AuditLog::record('ignore.update');
+
         return redirect()->route('admin.ignore')->with('success', __('messages.flash.ignore_updated'));
     }
 
     public function destroyFolder($id)
     {
-        OptionsIgnore::findOrFail($id)->delete();
+        $folder = OptionsIgnore::findOrFail($id);
+        $folder->delete();
+        AuditLog::record('ignore.folder.delete', $folder);
         return redirect()->route('admin.ignore')->with('success', __('messages.flash.ignore_deleted'));
     }
 }
