@@ -24,6 +24,7 @@ return [
         'interface' => 'Interface',
         'ui' => 'UI',
         'background' => 'Background',
+        'community_mods' => 'Community Mods',
     ],
     'navbar' => [
         'discord' => 'Discord',
@@ -367,6 +368,21 @@ return [
         'by_os' => 'By operating system',
         'no_data' => 'No telemetry data yet. Statistics will appear once players launch the launcher (opt-in telemetry).',
     ],
+    'community_mods' => [
+        'title' => 'Community Mods',
+        'header' => 'Community Mods Management',
+        'add' => 'Add a mod',
+        'edit' => 'Edit mod',
+        'list' => 'Community mods list',
+        'none' => 'No community mods yet.',
+        'name' => 'Name',
+        'name_placeholder' => 'Mod name',
+        'description' => 'Description',
+        'description_placeholder' => 'Short mod description...',
+        'filename' => 'Filename',
+        'url' => 'Download URL',
+        'icon' => 'Icon URL',
+    ],
     'flash' => [
         // Users
         'user_added' => 'User added successfully',
@@ -422,6 +438,11 @@ return [
         'update_success' => 'Update installed successfully.',
         'update_none' => 'No update available.',
         'update_error' => 'Error during update:',
+        // Community Mods
+        'community_mod_created' => 'Community mod added successfully.',
+        'community_mod_updated' => 'Community mod updated successfully.',
+        'community_mod_toggled' => 'Community mod status updated.',
+        'community_mod_deleted' => 'Community mod deleted.',
         // Notifications
         'notification_created' => 'Announcement created successfully.',
         'notification_toggled' => 'Announcement status updated.',

@@ -24,6 +24,7 @@ return [
         'interface' => 'Interface',
         'ui' => 'UI',
         'background' => 'Arrière-plan',
+        'community_mods' => 'Mods Communauté',
     ],
     'navbar' => [
         'discord' => 'Discord',
@@ -367,6 +368,21 @@ return [
         'by_os' => "Par système d'exploitation",
         'no_data' => "Aucune donnée de télémétrie pour le moment. Les statistiques apparaîtront dès que des joueurs auront lancé le launcher (télémétrie opt-in).",
     ],
+    'community_mods' => [
+        'title' => 'Mods Communauté',
+        'header' => 'Gestion des mods communauté',
+        'add' => 'Ajouter un mod',
+        'edit' => 'Modifier le mod',
+        'list' => 'Liste des mods communauté',
+        'none' => 'Aucun mod communauté pour le moment.',
+        'name' => 'Nom',
+        'name_placeholder' => 'Nom du mod',
+        'description' => 'Description',
+        'description_placeholder' => 'Description courte du mod...',
+        'filename' => 'Nom de fichier',
+        'url' => 'URL de téléchargement',
+        'icon' => 'URL icône',
+    ],
     'flash' => [
         // Users
         'user_added' => 'Utilisateur ajouté avec succès',
@@ -422,6 +438,11 @@ return [
         'update_success' => 'Mise à jour installée avec succès.',
         'update_none' => 'Aucune mise à jour disponible.',
         'update_error' => 'Erreur lors de la mise à jour :',
+        // Community Mods
+        'community_mod_created' => 'Mod communauté ajouté avec succès.',
+        'community_mod_updated' => 'Mod communauté mis à jour avec succès.',
+        'community_mod_toggled' => 'Statut du mod communauté modifié.',
+        'community_mod_deleted' => 'Mod communauté supprimé.',
         // Notifications
         'notification_created' => 'Annonce créée avec succès.',
         'notification_toggled' => "Statut de l'annonce modifié.",

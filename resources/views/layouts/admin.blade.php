@@ -120,6 +120,11 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.community-mods*') ? 'active' : '' }}" href="{{ route('admin.community-mods') }}">
+                        <i class="bi bi-puzzle align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.community_mods') }}</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.loader') ? 'active' : '' }}" href="{{ route('admin.loader') }}">
                         <i class="bi bi-cloud-arrow-down"></i> <span class="align-middle">{{ __('messages.sidebar.loader') }}</span>
                     </a>

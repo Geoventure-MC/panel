@@ -13,6 +13,7 @@ use App\Http\Controllers\AdminIgnoreController;
 use App\Http\Controllers\InstallController;
 use App\Http\Controllers\AdminConfigController;
 use App\Http\Controllers\AdminNotificationController;
+use App\Http\Controllers\AdminCommunityModController;
 use App\Http\Controllers\users\AdminUserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -28,6 +29,7 @@ use App\Http\Controllers\api\ServerStatusController;
 use App\Http\Controllers\api\TelemetryController;
 use App\Http\Controllers\api\LeaderboardController;
 use App\Http\Controllers\api\FactionController;
+use App\Http\Controllers\api\CommunityModController;
 use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Admin\StatsController;
 
@@ -131,6 +133,12 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::patch('/notifications/{notification}/toggle', [AdminNotificationController::class, 'toggle'])->name('admin.notifications.toggle');
     Route::delete('/notifications/{notification}', [AdminNotificationController::class, 'destroy'])->name('admin.notifications.destroy');
 
+    Route::get('/community-mods', [AdminCommunityModController::class, 'index'])->name('admin.community-mods');
+    Route::post('/community-mods', [AdminCommunityModController::class, 'store'])->name('admin.community-mods.store');
+    Route::put('/community-mods/{mod}', [AdminCommunityModController::class, 'update'])->name('admin.community-mods.update');
+    Route::patch('/community-mods/{mod}/toggle', [AdminCommunityModController::class, 'toggle'])->name('admin.community-mods.toggle');
+    Route::delete('/community-mods/{mod}', [AdminCommunityModController::class, 'destroy'])->name('admin.community-mods.destroy');
+
     Route::get('/audit', [AuditLogController::class, 'index'])->name('admin.audit');
 
     Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
@@ -150,8 +158,10 @@ Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::post('/telemetry', [TelemetryController::class, 'store'])->middleware('throttle:30,1');
     Route::get('/leaderboards', [LeaderboardController::class, 'getLeaderboards']);
     Route::get('/factions', [FactionController::class, 'getFactions']);
+    Route::get('/community-mods', [CommunityModController::class, 'getCommunityMods']);
 });
 Route::get('/data', [FileController::class, 'getFiles']);
+Route::get('/api/centralcorp/community-mods', [CommunityModController::class, 'getCommunityMods']);
 Route::get('/api-schema.json', fn() => response()->json(['schemaVersion' => '1.0.0'], 200, [], JSON_UNESCAPED_SLASHES));
 
 Route::get('lang/{locale}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('lang.switch');
