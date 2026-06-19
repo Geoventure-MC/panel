@@ -22,14 +22,33 @@ class AdminWhitelistController extends Controller
         }
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = OptionsWhitelist::all();
-        $roles = OptionsWhitelistRole::all();
+        $search = trim((string) $request->query('search', ''));
+
+        $users = OptionsWhitelist::query()
+            ->when($search !== '', fn ($q) => $q->where('users', 'like', '%' . $search . '%'))
+            ->orderBy('users')
+            ->paginate(30, ['*'], 'users_page')
+            ->withQueryString();
+
+        $roles = OptionsWhitelistRole::query()
+            ->when($search !== '', fn ($q) => $q->where('role', 'like', '%' . $search . '%'))
+            ->orderBy('role')
+            ->paginate(30, ['*'], 'roles_page')
+            ->withQueryString();
+
         $securityOptions = OptionsSecurity::first();
         $hasAzuriomApi = $this->azuriomApi !== null;
-        
-        return view('admin.whitelist', compact('users', 'roles', 'securityOptions', 'hasAzuriomApi'));
+
+        // Historique : actions whitelist tirées du journal d'audit.
+        $history = AuditLog::with('user')
+            ->where('action', 'like', 'whitelist.%')
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get();
+
+        return view('admin.whitelist', compact('users', 'roles', 'securityOptions', 'hasAzuriomApi', 'search', 'history'));
     }
 
     /**
@@ -122,7 +141,10 @@ class AdminWhitelistController extends Controller
         if ($request->input('whitelist_users')) {
             foreach ($request->input('whitelist_users') as $username) {
                 if (trim($username) !== '') {
-                    OptionsWhitelist::firstOrCreate(['users' => trim($username)]);
+                    $entry = OptionsWhitelist::firstOrCreate(['users' => trim($username)]);
+                    if ($entry->wasRecentlyCreated) {
+                        AuditLog::record('whitelist.user.add', $entry, ['users' => $entry->users]);
+                    }
                 }
             }
         }
@@ -131,7 +153,10 @@ class AdminWhitelistController extends Controller
         if ($request->input('azuriom_roles')) {
             foreach ($request->input('azuriom_roles') as $role) {
                 if (trim($role) !== '') {
-                    OptionsWhitelistRole::firstOrCreate(['role' => trim($role)]);
+                    $entry = OptionsWhitelistRole::firstOrCreate(['role' => trim($role)]);
+                    if ($entry->wasRecentlyCreated) {
+                        AuditLog::record('whitelist.role.add', $entry, ['role' => $entry->role]);
+                    }
                 }
             }
         }
@@ -145,7 +170,7 @@ class AdminWhitelistController extends Controller
     {
         $entry = OptionsWhitelist::findOrFail($id);
         $entry->delete();
-        AuditLog::record('whitelist.user.delete', $entry);
+        AuditLog::record('whitelist.user.delete', $entry, ['users' => $entry->users]);
         return redirect()->route('admin.whitelist')->with('success', __('messages.flash.whitelist_user_deleted'));
     }
 
@@ -153,7 +178,7 @@ class AdminWhitelistController extends Controller
     {
         $entry = OptionsWhitelistRole::findOrFail($id);
         $entry->delete();
-        AuditLog::record('whitelist.role.delete', $entry);
+        AuditLog::record('whitelist.role.delete', $entry, ['role' => $entry->role]);
         return redirect()->route('admin.whitelist')->with('success', __('messages.flash.whitelist_role_deleted'));
     }
 }

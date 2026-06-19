@@ -92,18 +92,39 @@
             </div>
         </div>
 
+        <!-- Recherche dans la whitelist -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form method="GET" action="{{ route('admin.whitelist') }}" class="row g-2 align-items-center">
+                    <div class="col">
+                        <input type="text" class="form-control" name="search" value="{{ $search }}"
+                               placeholder="🔍 {{ __('messages.whitelist.search_placeholder') }}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">{{ __('messages.whitelist.search_btn') }}</button>
+                    </div>
+                    @if($search !== '')
+                        <div class="col-auto">
+                            <a href="{{ route('admin.whitelist') }}" class="btn btn-outline-secondary">{{ __('messages.whitelist.search_reset') }}</a>
+                        </div>
+                    @endif
+                </form>
+            </div>
+        </div>
+
         <!-- Liste des utilisateurs dans la Whitelist -->
         <h3 class="mb-3">{{ __('messages.whitelist.users_in_whitelist') }}</h3>
         <div class="card shadow-sm mb-4">
             <div class="card-body">
                 @if($users->isEmpty())
-                    <p class="text-muted">{{ __('messages.whitelist.no_users') }}</p>
+                    <p class="text-muted">{{ $search !== '' ? __('messages.whitelist.no_results') : __('messages.whitelist.no_users') }}</p>
                 @else
                     <ul class="list-group" id="whitelistedUsersList">
                         @foreach($users as $user)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <span class="text-truncate whitelist-username" style="max-width: 200px;">{{ $user->users }}</span>
-                                <form action="{{ route('admin.whitelist.destroyUser', $user->id) }}" method="POST" class="ms-2">
+                                <form action="{{ route('admin.whitelist.destroyUser', $user->id) }}" method="POST" class="ms-2"
+                                      onsubmit="return confirm('{{ __('messages.whitelist.confirm_delete') }}');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger">{{ __('messages.common.delete') }}</button>
@@ -111,6 +132,7 @@
                             </li>
                         @endforeach
                     </ul>
+                    <div class="mt-3">{{ $users->links() }}</div>
                 @endif
             </div>
         </div>
@@ -120,13 +142,14 @@
         <div class="card shadow-sm mb-4">
             <div class="card-body">
                 @if($roles->isEmpty())
-                    <p class="text-muted">{{ __('messages.whitelist.no_roles') }}</p>
+                    <p class="text-muted">{{ $search !== '' ? __('messages.whitelist.no_results') : __('messages.whitelist.no_roles') }}</p>
                 @else
                     <ul class="list-group" id="whitelistedRolesList">
                         @foreach($roles as $role)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <span class="text-truncate whitelist-rolename" style="max-width: 200px;">{{ $role->role }}</span>
-                                <form action="{{ route('admin.whitelist.destroyRole', $role->id) }}" method="POST" class="ms-2">
+                                <form action="{{ route('admin.whitelist.destroyRole', $role->id) }}" method="POST" class="ms-2"
+                                      onsubmit="return confirm('{{ __('messages.whitelist.confirm_delete') }}');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger">{{ __('messages.common.delete') }}</button>
@@ -134,6 +157,54 @@
                             </li>
                         @endforeach
                     </ul>
+                    <div class="mt-3">{{ $roles->links() }}</div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Historique des changements -->
+        <h3 class="mb-3">{{ __('messages.whitelist.history_title') }}</h3>
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-0">
+                @if($history->isEmpty())
+                    <p class="text-muted p-4 mb-0">{{ __('messages.whitelist.history_none') }}</p>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>{{ __('messages.whitelist.history_date') }}</th>
+                                    <th>{{ __('messages.whitelist.history_admin') }}</th>
+                                    <th>{{ __('messages.whitelist.history_action') }}</th>
+                                    <th>{{ __('messages.whitelist.history_target') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($history as $log)
+                                    @php
+                                        $target = $log->changes['users'] ?? $log->changes['role'] ?? '—';
+                                        $isAdd = \Illuminate\Support\Str::contains($log->action, '.add');
+                                        $isDelete = \Illuminate\Support\Str::contains($log->action, '.delete');
+                                    @endphp
+                                    <tr>
+                                        <td class="text-muted small text-nowrap">{{ $log->created_at->format('d/m/Y H:i:s') }}</td>
+                                        <td>{{ $log->user?->name ?? '—' }}</td>
+                                        <td>
+                                            @if($isAdd)
+                                                <span class="badge bg-success">{{ __('messages.whitelist.history_added') }}</span>
+                                            @elseif($isDelete)
+                                                <span class="badge bg-danger">{{ __('messages.whitelist.history_removed') }}</span>
+                                            @else
+                                                <span class="badge bg-secondary">{{ __('messages.whitelist.history_changed') }}</span>
+                                            @endif
+                                            <code class="small ms-1">{{ $log->action }}</code>
+                                        </td>
+                                        <td class="text-muted small">{{ $target }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 @endif
             </div>
         </div>
