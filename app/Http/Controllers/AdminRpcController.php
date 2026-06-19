@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\OptionsRPC;
 use Illuminate\Http\Request;
 
@@ -35,7 +36,9 @@ class AdminRpcController extends Controller
             'rpc_id' => 'required|string|max:100',
             'rpc_details' => 'required|string|max:255',
             'rpc_state' => 'required|string|max:255',
+            'rpc_large_image' => 'nullable|string|max:255',
             'rpc_large_text' => 'required|string|max:255',
+            'rpc_small_image' => 'nullable|string|max:255',
             'rpc_small_text' => 'required|string|max:255',
             'rpc_button1' => 'nullable|string|max:50',
             'rpc_button1_url' => 'nullable|url|max:200',
@@ -47,6 +50,7 @@ class AdminRpcController extends Controller
 
         if ($rpcOptions) {
             $rpcOptions->update($request->all());
+            AuditLog::record('rpc.update', $rpcOptions);
         }
 
         return redirect()->route('admin.rpc')->with('success', __('messages.flash.rpc_updated'));
