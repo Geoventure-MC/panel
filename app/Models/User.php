@@ -59,16 +59,19 @@ class User extends Authenticatable
 
     /**
      * Check if user is a super-admin (full access).
-     * Falls back to is_admin for legacy rows where role is null.
+     *
+     * Principe ANTI-LOCKOUT : seul un compte explicitement « moderator » est
+     * restreint. Tout autre admin (role 'superadmin', valeur par défaut 'admin',
+     * ou role null sur d'anciennes lignes) garde l'accès complet — sinon un
+     * compte resté à la valeur par défaut 'admin' perdrait Users/Config/MAJ.
      */
     public function isSuperAdmin(): bool
     {
-        if ($this->role === 'superadmin') {
-            return true;
+        if (!$this->is_admin) {
+            return false;
         }
 
-        // Compat : un is_admin sans rôle défini reste super-admin.
-        return $this->is_admin && $this->role === null;
+        return $this->role !== 'moderator';
     }
 
     /**
