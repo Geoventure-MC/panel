@@ -79,11 +79,14 @@ Correctifs livrés suite aux erreurs d'une session launcher live (502/404/double
 
 ## 📋 Features PANEL à faire
 
-1. **Mode maintenance amélioré** — existe déjà (`options_security.maintenance` + `maintenance_message` exposés dans `/utils/api`). À enrichir : toggle rapide + le launcher bloque le lancement.
-2. **Journal d'audit** — log des actions admin (migration + observer + vue).
+_(backlog vidé — voir « livrées » ci-dessous)_
 
 ## ✅ Features PANEL livrées (consolidation 2026-06-18)
 
+- **Mode maintenance enrichi** — toggle rapide 1 clic (`admin.maintenance.toggle`) + message éditable ; le launcher bloque le lancement
+- **Journal d'audit** — `AuditLog` + page `admin.audit.index` (paginée, filtres user/action)
+- **Rôles & permissions** — `superadmin` / `moderator` (colonne `users.role`, middleware `superadmin`)
+- **Sécurité** — contrôle admin (`EnsureUserIsAdmin`), self-update anti zip-slip, import settings restreint, validations uploads, anti mass-assignment, escape `.env`
 - **Annonces / Notifications** — table `options_notifications`, admin CRUD, `GET /utils/notifications`
 - **Télémétrie & Statistiques** — `POST /utils/telemetry`, page admin stats avec Chart.js
 - **Statut serveurs** — `GET /utils/servers-status`, ping SLP Minecraft, cache 30s
