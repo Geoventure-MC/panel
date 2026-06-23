@@ -152,6 +152,11 @@
                         <i class="bi bi-image align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.background') }}</span>
                     </a>
                 </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.launcher-content*') ? 'active' : '' }}" href="{{ route('admin.launcher-content') }}">
+                        <i class="bi bi-layout-text-window-reverse align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.launcher_content') }}</span>
+                    </a>
+                </li>
 
             </ul>
 

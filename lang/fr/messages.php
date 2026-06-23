@@ -25,6 +25,7 @@ return [
         'ui' => 'UI',
         'background' => 'Arrière-plan',
         'community_mods' => 'Mods Communauté',
+        'launcher_content' => 'Contenu Launcher',
     ],
     'navbar' => [
         'discord' => 'Discord',
@@ -427,6 +428,26 @@ return [
         'url' => 'URL de téléchargement',
         'icon' => 'URL icône',
     ],
+    'launcher_content' => [
+        'title' => 'Contenu du Launcher',
+        'add' => 'Ajouter un contenu',
+        'section' => 'Section',
+        'section_news_banner' => "Bannière d'actualité",
+        'section_shortcut' => 'Raccourci',
+        'section_discover' => 'À découvrir',
+        'item_title' => 'Titre',
+        'description' => 'Description',
+        'icon' => 'Icône',
+        'image_url' => 'URL image',
+        'url' => 'Lien',
+        'sort_order' => 'Ordre',
+        'active' => 'Actif',
+        'actions' => 'Actions',
+        'no_items' => 'Aucun contenu pour cette section.',
+        'tab_news' => 'Actualités',
+        'tab_shortcuts' => 'Raccourcis',
+        'tab_discover' => 'À découvrir',
+    ],
     'flash' => [
         // Users
         'user_added' => 'Utilisateur ajouté avec succès',
@@ -497,6 +518,11 @@ return [
         'notification_created' => 'Annonce créée avec succès.',
         'notification_toggled' => "Statut de l'annonce modifié.",
         'notification_deleted' => 'Annonce supprimée.',
+        // Launcher Content
+        'launcher_content_created' => 'Contenu ajouté avec succès.',
+        'launcher_content_updated' => 'Contenu mis à jour.',
+        'launcher_content_toggled' => 'Statut modifié.',
+        'launcher_content_deleted' => 'Contenu supprimé.',
         // Azuriom sites
         'azuriom_added' => 'Site Azuriom ":name" ajouté avec succès.',
         'azuriom_edited' => 'Site Azuriom ":name" modifié avec succès.',

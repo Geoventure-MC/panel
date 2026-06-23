@@ -14,6 +14,7 @@ use App\Http\Controllers\InstallController;
 use App\Http\Controllers\AdminConfigController;
 use App\Http\Controllers\AdminNotificationController;
 use App\Http\Controllers\AdminCommunityModController;
+use App\Http\Controllers\AdminLauncherContentController;
 use App\Http\Controllers\users\AdminUserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -25,6 +26,7 @@ use App\Http\Controllers\api\ApiController;
 use App\Http\Controllers\api\FileController;
 use App\Http\Controllers\api\ModController;
 use App\Http\Controllers\api\NotificationController;
+use App\Http\Controllers\api\LauncherContentController;
 use App\Http\Controllers\api\ServerStatusController;
 use App\Http\Controllers\api\TelemetryController;
 use App\Http\Controllers\api\LeaderboardController;
@@ -152,6 +154,12 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/audit', [AdminAuditController::class, 'index'])->name('admin.audit.index');
 
     Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
+
+    Route::get('/launcher-content', [AdminLauncherContentController::class, 'index'])->name('admin.launcher-content');
+    Route::post('/launcher-content', [AdminLauncherContentController::class, 'store'])->name('admin.launcher-content.store');
+    Route::put('/launcher-content/{item}', [AdminLauncherContentController::class, 'update'])->name('admin.launcher-content.update');
+    Route::patch('/launcher-content/{item}/toggle', [AdminLauncherContentController::class, 'toggle'])->name('admin.launcher-content.toggle');
+    Route::delete('/launcher-content/{item}', [AdminLauncherContentController::class, 'destroy'])->name('admin.launcher-content.destroy');
 });
 
 // Routes sans le préfixe 'admin'
@@ -169,6 +177,7 @@ Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::get('/leaderboards', [LeaderboardController::class, 'getLeaderboards']);
     Route::get('/factions', [FactionController::class, 'getFactions']);
     Route::get('/community-mods', [CommunityModController::class, 'getCommunityMods']);
+    Route::get('/launcher-content', [LauncherContentController::class, 'getLauncherContent']);
 });
 Route::get('/data', [FileController::class, 'getFiles'])->middleware('throttle:120,1');
 Route::get('/api/centralcorp/community-mods', [CommunityModController::class, 'getCommunityMods']);
