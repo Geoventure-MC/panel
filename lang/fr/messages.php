@@ -32,6 +32,7 @@ return [
         'ui' => 'UI',
         'background' => 'Arrière-plan',
         'community_mods' => 'Mods Communauté',
+
         'launcher_content' => 'Contenu Launcher',
     ],
     'navbar' => [
@@ -578,6 +579,7 @@ return [
         'author_placeholder' => 'Pseudo du créateur',
         'version' => 'Version',
     ],
+
     'launcher_content' => [
         'title' => 'Contenu du Launcher',
         'add' => 'Ajouter un contenu',
@@ -710,6 +712,7 @@ return [
         'achievement_updated' => 'Succès mis à jour avec succès.',
         'achievement_toggled' => 'Statut du succès modifié.',
         'achievement_deleted' => 'Succès supprimé.',
+
         // Launcher Content
         'launcher_content_created' => 'Contenu ajouté avec succès.',
         'launcher_content_updated' => 'Contenu mis à jour.',

@@ -35,6 +35,7 @@ use App\Http\Controllers\api\FileController;
 use App\Http\Controllers\api\ModController;
 use App\Http\Controllers\api\NotificationController;
 use App\Http\Controllers\api\ChangelogController;
+
 use App\Http\Controllers\api\LauncherContentController;
 use App\Http\Controllers\api\ServerStatusController;
 use App\Http\Controllers\api\ServerHistoryController;
@@ -203,6 +204,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/dashboard/live', [LiveDashboardController::class, 'index'])->name('admin.dashboard.live');
     Route::get('/dashboard/feed', [LiveDashboardController::class, 'feed'])->name('admin.dashboard.feed');
+    Route::get('/audit', [AuditLogController::class, 'index'])->name('admin.audit');
 
     Route::get('/launcher-content', [AdminLauncherContentController::class, 'index'])->name('admin.launcher-content');
     Route::post('/launcher-content', [AdminLauncherContentController::class, 'store'])->name('admin.launcher-content.store');
@@ -236,6 +238,7 @@ Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::post('/seasons/sync', [SeasonController::class, 'sync']);
     Route::get('/scheduled-events', [ScheduledEventController::class, 'index']);
     Route::post('/scheduled-events/claim', [ScheduledEventController::class, 'claim']);
+    Route::get('/launcher-content', [LauncherContentController::class, 'getLauncherContent']);
 });
 Route::get('/data', [FileController::class, 'getFiles'])->middleware('throttle:120,1');
 Route::get('/api/centralcorp/community-mods', [CommunityModController::class, 'getCommunityMods']);

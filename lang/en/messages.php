@@ -32,6 +32,7 @@ return [
         'ui' => 'UI',
         'background' => 'Background',
         'community_mods' => 'Community Mods',
+
         'launcher_content' => 'Launcher Content',
     ],
     'navbar' => [
@@ -578,6 +579,7 @@ return [
         'author_placeholder' => "Creator's username",
         'version' => 'Version',
     ],
+
     'launcher_content' => [
         'title' => 'Launcher Content',
         'add' => 'Add content',
@@ -710,6 +712,7 @@ return [
         'achievement_updated' => 'Achievement updated successfully.',
         'achievement_toggled' => 'Achievement status updated.',
         'achievement_deleted' => 'Achievement deleted.',
+
         // Launcher Content
         'launcher_content_created' => 'Content created successfully.',
         'launcher_content_updated' => 'Content updated.',
