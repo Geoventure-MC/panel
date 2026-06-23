@@ -64,6 +64,17 @@
                         <label class="form-check-label" for="optional_recommended">{{ __('messages.mods.recommended') }}</label>
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label">{{ __('messages.mods.instance') }}</label>
+                        <select name="optional_instance" id="optional_instance" class="form-select">
+                            <option value="">{{ __('messages.mods.instance_all') }}</option>
+                            @foreach ($instances as $inst)
+                                <option value="{{ $inst['slug'] }}">{{ $inst['name'] }} ({{ $inst['slug'] }})</option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">{{ __('messages.mods.instance_hint') }}</small>
+                    </div>
+
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-success">{{ __('messages.mods.modify') }}</button>
                         <button type="button" id="deleteBtn" class="btn btn-outline-danger" onclick="deleteMod()">{{ __('messages.common.delete') }}</button>
@@ -78,12 +89,20 @@
                     @if (!in_array($mod['file'], $optionalMods->pluck('file')->toArray()))
                         <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
                             <div class="me-auto">{{ $mod['name'] }}</div>
-                            <form method="POST" action="{{ route('admin.mods.addOptional') }}" enctype="multipart/form-data" class="ms-auto">
+                            <form method="POST" action="{{ route('admin.mods.addOptional') }}" enctype="multipart/form-data" class="ms-auto d-flex align-items-center gap-2">
                                 @csrf
                                 <input type="hidden" name="file" value="{{ $mod['file'] }}">
                                 <input type="hidden" name="name" value="{{ $mod['name'] }}">
                                 <input type="hidden" name="description" value="{{ $mod['description'] }}">
                                 <input type="hidden" name="icon" value="{{ $mod['icon'] }}">
+                                @if($instances->isNotEmpty())
+                                    <select name="instance" class="form-select form-select-sm" style="width:auto;" title="{{ __('messages.mods.instance') }}">
+                                        <option value="">{{ __('messages.mods.instance_all') }}</option>
+                                        @foreach ($instances as $inst)
+                                            <option value="{{ $inst['slug'] }}">{{ $inst['slug'] }}</option>
+                                        @endforeach
+                                    </select>
+                                @endif
                                 <button type="submit" class="btn btn-outline-primary btn-sm">{{ __('messages.mods.add_optional') }}</button>
                             </form>
                         </li>
@@ -103,6 +122,7 @@
     const descriptionInput = document.getElementById('optional_description');
     const currentImage = document.getElementById('current_image');
     const recommendedCheckbox = document.getElementById('optional_recommended');
+    const instanceSelect = document.getElementById('optional_instance');
 
     function handleSelectChange() {
         const selectedModId = optionalModsSelect.value;
@@ -118,6 +138,7 @@
                     currentImage.src = '/storage/' + data.icon;
                     currentImage.classList.remove('d-none');
                     recommendedCheckbox.checked = data.recommended;
+                    if (instanceSelect) instanceSelect.value = data.instance || '';
 
                     modDetails.classList.remove('d-none');
                 })
@@ -130,6 +151,7 @@
             currentImage.src = '';
             currentImage.classList.add('d-none');
             recommendedCheckbox.checked = false;
+            if (instanceSelect) instanceSelect.value = '';
             modDetails.classList.add('d-none');
         }
     }

@@ -42,6 +42,7 @@ class AdminServerController extends Controller
         $serversArray = $servers->map(function($server) {
             return [
                 'id' => $server->server_id,
+                'instance_slug' => $server->instance_slug,
                 'name' => $server->server_name,
                 'address' => $server->server_ip,
                 'port' => $server->server_port,
@@ -49,6 +50,11 @@ class AdminServerController extends Controller
                 'icon' => $server->icon,
                 'icon_local' => $server->icon_local,
                 'icon_url' => $server->icon_url,
+                'minecraft_version' => $server->minecraft_version,
+                'loader_type' => $server->loader_type,
+                'loader_build_version' => $server->loader_build_version,
+                'loader_activation' => $server->loader_activation,
+                'data_folder' => $server->data_folder,
             ];
         })->toArray();
 
@@ -153,11 +159,17 @@ class AdminServerController extends Controller
     public function addServer(Request $request)
     {
         $validated = $request->validate([
-            'server_name' => 'required|string|max:255',
-            'server_ip'   => 'required|string|max:255',
-            'server_port' => 'required|string|max:255',
-            'type'        => 'nullable|string|max:255',
-            'icon'        => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'server_name'    => 'required|string|max:255',
+            'server_ip'      => 'required|string|max:255',
+            'server_port'    => 'required|string|max:255',
+            'type'           => 'nullable|string|max:255',
+            'icon'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'instance_slug'  => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
+            'minecraft_version'    => 'nullable|string|max:32',
+            'loader_type'          => 'nullable|string|max:32',
+            'loader_build_version' => 'nullable|string|max:64',
+            'loader_activation'    => 'nullable|boolean',
+            'data_folder'          => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
         ]);
 
         // Génère un server_id unique (au-dessus des id Azuriom pour éviter les collisions)
@@ -174,13 +186,19 @@ class AdminServerController extends Controller
         $isFirst = !OptionsServer::exists();
 
         $server = OptionsServer::create([
-            'server_id'   => $nextId,
-            'server_name' => $validated['server_name'],
-            'server_ip'   => $validated['server_ip'],
-            'server_port' => $validated['server_port'],
-            'type'        => $validated['type'] ?? 'minecraft',
-            'icon_local'  => $iconPath,
-            'is_default'  => $isFirst, // premier serveur ajouté = défaut
+            'server_id'            => $nextId,
+            'instance_slug'        => $validated['instance_slug'] ?? null,
+            'server_name'          => $validated['server_name'],
+            'server_ip'            => $validated['server_ip'],
+            'server_port'          => $validated['server_port'],
+            'type'                 => $validated['type'] ?? 'minecraft',
+            'icon_local'           => $iconPath,
+            'minecraft_version'    => $validated['minecraft_version'] ?? null,
+            'loader_type'          => $validated['loader_type'] ?? null,
+            'loader_build_version' => $validated['loader_build_version'] ?? null,
+            'loader_activation'    => $request->has('loader_activation') ? (bool) $request->input('loader_activation') : null,
+            'data_folder'          => $validated['data_folder'] ?? null,
+            'is_default'           => $isFirst, // premier serveur ajouté = défaut
         ]);
 
         AuditLog::record('server.add', $server, [
@@ -198,10 +216,16 @@ class AdminServerController extends Controller
     public function editServer(Request $request, $serverId)
     {
         $validated = $request->validate([
-            'server_name' => 'required|string|max:255',
-            'server_ip'   => 'required|string|max:255',
-            'server_port' => 'required|string|max:255',
-            'type'        => 'nullable|string|max:255',
+            'server_name'    => 'required|string|max:255',
+            'server_ip'      => 'required|string|max:255',
+            'server_port'    => 'required|string|max:255',
+            'type'           => 'nullable|string|max:255',
+            'instance_slug'  => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
+            'minecraft_version'    => 'nullable|string|max:32',
+            'loader_type'          => 'nullable|string|max:32',
+            'loader_build_version' => 'nullable|string|max:64',
+            'loader_activation'    => 'nullable|boolean',
+            'data_folder'          => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
         ]);
 
         $server = OptionsServer::where('server_id', $serverId)->first();
@@ -210,10 +234,16 @@ class AdminServerController extends Controller
         }
 
         $server->update([
-            'server_name' => $validated['server_name'],
-            'server_ip'   => $validated['server_ip'],
-            'server_port' => $validated['server_port'],
-            'type'        => $validated['type'] ?? $server->type ?? 'minecraft',
+            'server_name'          => $validated['server_name'],
+            'server_ip'            => $validated['server_ip'],
+            'server_port'          => $validated['server_port'],
+            'type'                 => $validated['type'] ?? $server->type ?? 'minecraft',
+            'instance_slug'        => $validated['instance_slug'] ?? null,
+            'minecraft_version'    => $validated['minecraft_version'] ?? null,
+            'loader_type'          => $validated['loader_type'] ?? null,
+            'loader_build_version' => $validated['loader_build_version'] ?? null,
+            'loader_activation'    => $request->has('loader_activation') ? (bool) $request->input('loader_activation') : null,
+            'data_folder'          => $validated['data_folder'] ?? null,
         ]);
 
         AuditLog::record('server.edit', $server, [

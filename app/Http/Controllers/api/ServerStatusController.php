@@ -17,7 +17,8 @@ class ServerStatusController extends Controller
             $ping = $this->pingServer($server->server_ip, (int) $server->server_port);
 
             $statuses[] = [
-                'id'          => $server->server_id,
+                'id'          => $server->instance_slug ?: $server->server_id,
+                'server_id'   => $server->server_id,
                 'name'        => $server->server_name,
                 'ip'          => $server->server_ip,
                 'port'        => (int) $server->server_port,

@@ -10,7 +10,17 @@ class ModController extends Controller
 {
     public function getMods(): JsonResponse
     {
-        $mods = OptionsMods::all();
+        // Multi-instance : ?instance=<slug> renvoie les mods de cette instance
+        // PLUS les mods partagés (instance NULL). Sans paramètre → tous les mods
+        // (comportement global historique, rétrocompatible).
+        $slug = request()->query('instance');
+        if ($slug) {
+            $mods = OptionsMods::where('instance', $slug)
+                ->orWhereNull('instance')
+                ->get();
+        } else {
+            $mods = OptionsMods::all();
+        }
 
         $modsData = [];
         $optionalMods = [];

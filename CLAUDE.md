@@ -32,6 +32,35 @@ Le launcher lit le panel via ces routes (définies dans `panel/routes/web.php`) 
 
 Le launcher construit l'URL via `settings_url` (= `pkg.settings` ou `localStorage.geoventure_server_url`) + le chemin. Réponses JSON `JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES`.
 
+## 🧩 Multi-instance (launcher « Nexus » — full multi-tenant)
+
+Le launcher **Nexus** propose plusieurs serveurs/instances (Geoventure, Elandor,
+Pokeland) via un sélecteur. Chaque instance a son **propre modpack, sa version
+Minecraft, son loader et ses mods**. Le launcher route via le paramètre
+**`?instance=<slug>`** sur tous les appels `/utils/api`, `/utils/mods`, `/data`
+(et `id` slug dans `/utils/servers-status`). **Sans paramètre → comportement
+global historique** (100 % rétrocompatible).
+
+Côté panel :
+- Table `options_server` enrichie : `instance_slug` (= l'id envoyé par le launcher,
+  ex. `geoventure`), `minecraft_version`, `loader_type`, `loader_build_version`,
+  `loader_activation`, `data_folder` (sous-dossier modpack). Tous nullable → si
+  vide, fallback sur la config globale (`OptionsLoader`, dossier `data/` racine).
+- `OptionsServer::resolveInstance($slug)` : matche `instance_slug`, sinon
+  `server_id`, sinon le nom slugifié.
+- `ApiController` : surcharge `game_version` + `loader.*` par instance, expose
+  `instance` dans la réponse. `servers[].id` = `instance_slug ?: server_id`.
+- `FileController` : sert `storage/app/public/data/<data_folder|slug>/` quand
+  `?instance` est fourni (URLs `storage/data/<slug>/...`), anti path-traversal.
+  Fallback `data/` racine si le sous-dossier n'existe pas.
+- `ModController` : renvoie les mods `instance = <slug>` **+** les mods partagés
+  (`instance IS NULL`).
+- `mods.instance` (nullable) : un mod peut cibler une instance ou être partagé.
+- Admin → Serveur : champs slug + loader + dossier par instance. Admin → Mods :
+  sélecteur d'instance par mod.
+- ⚠️ Après merge : `php artisan migrate`. Uploader chaque modpack dans
+  `storage/app/public/data/<slug>/` (ex. `data/geoventure/`, `data/elandor/`…).
+
 ## ✅ Feature LIVRÉE : Annonces / Notifications
 
 Page admin **📢 Annonces** qui alimente le bandeau de notifications du launcher.

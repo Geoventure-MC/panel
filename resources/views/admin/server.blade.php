@@ -73,6 +73,36 @@
                                 <label class="form-label">{{ __('messages.server.icon') }}</label>
                                 <input type="file" name="icon" class="form-control" accept="image/*">
                             </div>
+
+                            {{-- Section multi-instance --}}
+                            <div class="col-12">
+                                <hr class="my-2">
+                                <h6 class="text-primary mb-1"><i class="bi bi-box-seam me-1"></i>{{ __('messages.server.instance_section') }}</h6>
+                                <p class="text-muted small mb-2">{{ __('messages.server.instance_hint') }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">{{ __('messages.server.instance_slug') }}</label>
+                                <input type="text" name="instance_slug" class="form-control" placeholder="geoventure">
+                                <small class="text-muted">{{ __('messages.server.instance_slug_hint') }}</small>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">{{ __('messages.server.data_folder') }}</label>
+                                <input type="text" name="data_folder" class="form-control" placeholder="{{ __('messages.server.data_folder_ph') }}">
+                                <small class="text-muted">{{ __('messages.server.data_folder_hint') }}</small>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">{{ __('messages.server.mc_version') }}</label>
+                                <input type="text" name="minecraft_version" class="form-control" placeholder="1.20.1">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">{{ __('messages.server.loader_type') }}</label>
+                                <input type="text" name="loader_type" class="form-control" placeholder="forge">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">{{ __('messages.server.loader_build') }}</label>
+                                <input type="text" name="loader_build_version" class="form-control" placeholder="1.20.1-47.4.20">
+                            </div>
+
                             <div class="col-12">
                                 <button type="submit" class="btn btn-success">
                                     <i class="bi bi-check-lg"></i> {{ __('messages.server.add_save') }}
@@ -195,7 +225,7 @@
                                                             <label class="form-label mb-1">{{ __('messages.server.name') }}</label>
                                                             <input type="text" name="server_name" class="form-control form-control-sm" value="{{ $server['name'] }}" required>
                                                         </div>
-                                                        <div class="col-md-3">
+                                                        <div class="col-md-4">
                                                             <label class="form-label mb-1">{{ __('messages.server.address') }}</label>
                                                             <input type="text" name="server_ip" class="form-control form-control-sm" value="{{ $server['address'] }}" required>
                                                         </div>
@@ -207,8 +237,34 @@
                                                             <label class="form-label mb-1">{{ __('messages.server.type') }}</label>
                                                             <input type="text" name="type" class="form-control form-control-sm" value="{{ $server['type'] }}">
                                                         </div>
-                                                        <div class="col-md-1">
-                                                            <button type="submit" class="btn btn-sm btn-success w-100"><i class="bi bi-check-lg"></i></button>
+
+                                                        {{-- Champs multi-instance --}}
+                                                        <div class="col-md-3">
+                                                            <label class="form-label mb-1">{{ __('messages.server.instance_slug') }}</label>
+                                                            <input type="text" name="instance_slug" class="form-control form-control-sm" value="{{ $server['instance_slug'] }}" placeholder="geoventure">
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <label class="form-label mb-1">{{ __('messages.server.data_folder') }}</label>
+                                                            <input type="text" name="data_folder" class="form-control form-control-sm" value="{{ $server['data_folder'] }}" placeholder="{{ $server['instance_slug'] }}">
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <label class="form-label mb-1">{{ __('messages.server.mc_version') }}</label>
+                                                            <input type="text" name="minecraft_version" class="form-control form-control-sm" value="{{ $server['minecraft_version'] }}" placeholder="1.20.1">
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <label class="form-label mb-1">{{ __('messages.server.loader_type') }}</label>
+                                                            <input type="text" name="loader_type" class="form-control form-control-sm" value="{{ $server['loader_type'] }}" placeholder="forge">
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <label class="form-label mb-1">{{ __('messages.server.loader_build') }}</label>
+                                                            <input type="text" name="loader_build_version" class="form-control form-control-sm" value="{{ $server['loader_build_version'] }}" placeholder="1.20.1-47.4.20">
+                                                        </div>
+                                                        <div class="col-md-12 d-flex align-items-center gap-3 mt-1">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="loader_activation" value="1" id="loader-act-{{ $server['id'] }}" {{ $server['loader_activation'] ? 'checked' : '' }}>
+                                                                <label class="form-check-label small" for="loader-act-{{ $server['id'] }}">{{ __('messages.server.loader_enable') }}</label>
+                                                            </div>
+                                                            <button type="submit" class="btn btn-sm btn-success ms-auto"><i class="bi bi-check-lg me-1"></i>{{ __('messages.common.save') }}</button>
                                                         </div>
                                                     </div>
                                                 </form>

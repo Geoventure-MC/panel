@@ -31,8 +31,27 @@ class ApiController extends Controller
         $ui = OptionsUI::first();
         $rpc = OptionsRPC::first();
         $loader = OptionsLoader::first();
-        $server = OptionsServer::where('is_default', true)->first();
+
+        // Multi-instance : si le launcher passe ?instance=<slug>, on charge
+        // l'instance correspondante et on surcharge loader/version/serveur.
+        // Sans paramètre → comportement global historique (rétrocompatible).
+        $instance = OptionsServer::resolveInstance(request()->query('instance'));
+        $server = $instance ?: OptionsServer::where('is_default', true)->first();
         $allServers = OptionsServer::orderByDesc('is_default')->orderBy('server_name')->get();
+
+        // Valeurs loader effectives : override par instance sinon config globale.
+        $gameVersion = ($instance && $instance->minecraft_version)
+            ? $instance->minecraft_version
+            : (($loader && $loader->minecraft_version) ? $loader->minecraft_version : "1.20.1");
+        $loaderType = ($instance && $instance->loader_type)
+            ? $instance->loader_type
+            : (($loader && $loader->loader_type) ? $loader->loader_type : "forge");
+        $loaderBuild = ($instance && $instance->loader_build_version)
+            ? $instance->loader_build_version
+            : (($loader && $loader->loader_build_version) ? $loader->loader_build_version : "1.20.1-47.4.20");
+        $loaderEnable = ($instance && $instance->loader_activation !== null)
+            ? (bool) $instance->loader_activation
+            : ($loader ? (bool) $loader->loader_activation : true);
         $ignored = OptionsIgnore::pluck('folder_name')->toArray();
         $whitelist = OptionsWhitelist::pluck('users')->toArray();
         $whitelistRoles = OptionsWhitelistRole::pluck('role')->toArray();
@@ -54,7 +73,8 @@ class ApiController extends Controller
             "maintenance_message" => ($security && $security->maintenance_message)
                 ? $security->maintenance_message
                 : "Maintenance in progress, please try again later.",
-            "game_version" => ($loader && $loader->minecraft_version) ? $loader->minecraft_version : "1.20.1",
+            "game_version" => $gameVersion,
+            "instance" => $instance ? ($instance->instance_slug ?: (string) $instance->server_id) : null,
             "client_id" => "",
             "verify" => $general ? (bool)$general->file_verification : true,
             "modde" => $general ? (bool)$general->mods_enabled : true,
@@ -69,7 +89,8 @@ class ApiController extends Controller
             // les 3 serveurs du launcher (Geoventure, Elandor, Pokeland...).
             "servers" => $allServers->map(function ($s) use ($azuriomSites, $primaryAzuriom, $general) {
                 return [
-                    "id"         => $s->server_id,
+                    "id"         => $s->instance_slug ?: $s->server_id,
+                    "server_id"  => $s->server_id,
                     "name"       => $s->server_name,
                     "ip"         => $s->server_ip,
                     "port"       => (int) $s->server_port,
@@ -84,9 +105,9 @@ class ApiController extends Controller
                 ];
             })->values()->toArray(),
             "loader" => [
-                "type" => ($loader && $loader->loader_type) ? $loader->loader_type : "forge",
-                "build" => ($loader && $loader->loader_build_version) ? $loader->loader_build_version : "1.20.1-47.4.20",
-                "enable" => $loader ? (bool)$loader->loader_activation : true
+                "type" => $loaderType,
+                "build" => $loaderBuild,
+                "enable" => $loaderEnable
             ],
             "ram_min" => $general ? ($general->min_ram / 1024) : 2,
             "ram_max" => $general ? ($general->max_ram / 1024) : 4,
