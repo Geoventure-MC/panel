@@ -73,6 +73,42 @@
         @endif
     </div>
 
+    {{-- Serveurs en ligne --}}
+    @if(!empty($serverStatuses))
+    <div class="row mb-4">
+        @foreach($serverStatuses as $server)
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 border-{{ $server['online'] ? 'success' : 'danger' }}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="card-title mb-1">{{ $server['name'] }}</h6>
+                            <span class="badge bg-{{ $server['online'] ? 'success' : 'danger' }}">
+                                {{ $server['online'] ? __('messages.dashboard.server_online') : __('messages.dashboard.server_offline') }}
+                            </span>
+                        </div>
+                        <i class="bi bi-{{ $server['online'] ? 'wifi' : 'wifi-off' }} fs-3 text-{{ $server['online'] ? 'success' : 'danger' }} opacity-75"></i>
+                    </div>
+                    @if($server['online'])
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="bi bi-people-fill me-1"></i>{{ $server['players'] ?? 0 }} / {{ $server['max_players'] ?? '?' }}
+                            @if($server['latency'])
+                                <span class="ms-2"><i class="bi bi-speedometer2 me-1"></i>{{ $server['latency'] }}ms</span>
+                            @endif
+                        </small>
+                    </div>
+                    @endif
+                    <div class="mt-1">
+                        <small class="text-muted">{{ $server['ip'] }}:{{ $server['port'] }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    @endif
+
     {{-- Notes de version --}}
     <div class="row">
         <div class="col-12">

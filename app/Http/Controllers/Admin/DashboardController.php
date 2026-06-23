@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\api\ServerStatusController;
 use App\Models\OptionsSecurity;
+use App\Models\OptionsNotification;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 
@@ -16,7 +18,38 @@ class DashboardController extends Controller
         $security = OptionsSecurity::first();
         $maintenanceActive = $security ? (bool) $security->maintenance : false;
 
-        return view('admin.index', compact('userCount', 'releases', 'maintenanceActive'));
+        $serverStatuses = $this->getServerStatuses();
+        $activeNotifications = $this->getActiveNotifications();
+
+        return view('admin.index', compact(
+            'userCount', 'releases', 'maintenanceActive',
+            'serverStatuses', 'activeNotifications'
+        ));
+    }
+
+    private function getServerStatuses()
+    {
+        try {
+            $controller = new ServerStatusController();
+            $response = $controller->getServersStatus();
+            return json_decode($response->getContent(), true) ?: [];
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    private function getActiveNotifications()
+    {
+        try {
+            return OptionsNotification::where('active', true)
+                ->where(function ($q) {
+                    $q->whereNull('expires_at')
+                      ->orWhere('expires_at', '>', now());
+                })
+                ->count();
+        } catch (\Exception $e) {
+            return 0;
+        }
     }
 
     private function getReleases()

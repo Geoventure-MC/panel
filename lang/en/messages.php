@@ -55,6 +55,8 @@ return [
         'maintenance_off' => 'Maintenance disabled',
         'maintenance_hint' => 'Click to toggle quickly',
         'maintenance_toggle' => 'Enable/Disable maintenance',
+        'server_online' => 'Online',
+        'server_offline' => 'Offline',
     ],
     'common' => [
         'save' => 'Save',

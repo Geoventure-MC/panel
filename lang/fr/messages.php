@@ -55,6 +55,8 @@ return [
         'maintenance_off' => 'Maintenance désactivée',
         'maintenance_hint' => 'Cliquez pour basculer rapidement',
         'maintenance_toggle' => 'Activer/Désactiver la maintenance',
+        'server_online' => 'En ligne',
+        'server_offline' => 'Hors ligne',
     ],
     'common' => [
         'save' => 'Enregistrer',
