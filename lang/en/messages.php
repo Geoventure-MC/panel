@@ -23,6 +23,7 @@ return [
         'interface' => 'Interface',
         'ui' => 'UI',
         'background' => 'Background',
+        'launcher_content' => 'Launcher Content',
     ],
     'navbar' => [
         'discord' => 'Discord',
@@ -351,6 +352,26 @@ return [
         'action' => 'Action',
         'target' => 'Target',
     ],
+    'launcher_content' => [
+        'title' => 'Launcher Content',
+        'add' => 'Add content',
+        'section' => 'Section',
+        'section_news_banner' => 'News Banner',
+        'section_shortcut' => 'Shortcut',
+        'section_discover' => 'Discover',
+        'item_title' => 'Title',
+        'description' => 'Description',
+        'icon' => 'Icon',
+        'image_url' => 'Image URL',
+        'url' => 'Link',
+        'sort_order' => 'Sort order',
+        'active' => 'Active',
+        'actions' => 'Actions',
+        'no_items' => 'No content for this section.',
+        'tab_news' => 'News',
+        'tab_shortcuts' => 'Shortcuts',
+        'tab_discover' => 'Discover',
+    ],
     'flash' => [
         // Users
         'user_added' => 'User added successfully',
@@ -410,6 +431,11 @@ return [
         'notification_created' => 'Announcement created successfully.',
         'notification_toggled' => 'Announcement status updated.',
         'notification_deleted' => 'Announcement deleted.',
+        // Launcher Content
+        'launcher_content_created' => 'Content created successfully.',
+        'launcher_content_updated' => 'Content updated.',
+        'launcher_content_toggled' => 'Status toggled.',
+        'launcher_content_deleted' => 'Content deleted.',
         // Azuriom sites
         'azuriom_added' => 'Azuriom site ":name" added successfully.',
         'azuriom_edited' => 'Azuriom site ":name" updated successfully.',
