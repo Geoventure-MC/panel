@@ -7,6 +7,7 @@ use App\Models\OptionsGeneral;
 use App\Models\AuditLog;
 use App\Request\AzuriomApi;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class AdminServerController extends Controller
 {
@@ -17,28 +18,21 @@ class AdminServerController extends Controller
         try {
             $this->azuriomApi = new AzuriomApi();
         } catch (\RuntimeException $e) {
-            // On ne fait rien ici, on gérera l'erreur dans les méthodes
         }
     }
 
-    /**
-     * Affiche la page serveur depuis la base de données (rapide)
-     */
     public function show()
     {
         $options = OptionsGeneral::first();
         $error = null;
 
-        // Charger les serveurs depuis la BDD uniquement (pas d'appel API)
         $servers = OptionsServer::all();
 
-        // Construire le tableau des serveurs par défaut
         $defaultServers = [];
         foreach ($servers as $server) {
             $defaultServers[$server->server_id] = $server->is_default;
         }
 
-        // Transformer en format compatible avec la vue
         $serversArray = $servers->map(function($server) {
             return [
                 'id' => $server->server_id,
@@ -56,6 +50,7 @@ class AdminServerController extends Controller
                 'loader_activation' => $server->loader_activation,
                 'data_folder' => $server->data_folder,
                 'theme_color' => $server->theme_color,
+
             ];
         })->toArray();
 
@@ -67,9 +62,6 @@ class AdminServerController extends Controller
         ]);
     }
 
-    /**
-     * Synchronise les serveurs depuis l'API Azuriom (appelé manuellement)
-     */
     public function sync()
     {
         $options = OptionsGeneral::first();
@@ -94,12 +86,11 @@ class AdminServerController extends Controller
             $hasDefaultServer = OptionsServer::where('is_default', true)->exists();
 
             foreach ($servers as $server) {
-                // Nettoyer le chemin de l'icône (enlever /storage/ au début si présent)
                 $iconPath = $server['icon'] ?? null;
                 if ($iconPath) {
                     $iconPath = ltrim($iconPath, '/');
                     if (str_starts_with($iconPath, 'storage/')) {
-                        $iconPath = substr($iconPath, 8); // Enlever "storage/"
+                        $iconPath = substr($iconPath, 8);
                     }
                 }
 
@@ -141,6 +132,7 @@ class AdminServerController extends Controller
         OptionsServer::where('is_default', true)->update(['is_default' => false]);
 
         // Mettre à jour le serveur sélectionné comme serveur par défaut
+        OptionsServer::where('is_default', true)->update(['is_default' => false]);
         $server = OptionsServer::where('server_id', $request->server_id)->first();
         if ($server) {
             $server->is_default = true;
@@ -153,10 +145,6 @@ class AdminServerController extends Controller
         return redirect()->route('admin.server')->with('error', __('messages.flash.server_not_found'));
     }
 
-    /**
-     * Ajoute manuellement un serveur (sans passer par la synchro Azuriom).
-     * Permet d'avoir plusieurs serveurs dans un seul panel pour le launcher.
-     */
     public function addServer(Request $request)
     {
         $validated = $request->validate([
@@ -166,15 +154,19 @@ class AdminServerController extends Controller
             'type'           => 'nullable|string|max:255',
             'icon'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'instance_slug'  => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
+            'server_port'    => 'required|integer|min:1|max:65535',
+            'type'           => 'nullable|string|max:255',
+            'icon'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'instance_slug'  => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/|unique:options_server,instance_slug',
             'minecraft_version'    => 'nullable|string|max:32',
             'loader_type'          => 'nullable|string|max:32',
             'loader_build_version' => 'nullable|string|max:64',
             'loader_activation'    => 'nullable|boolean',
             'data_folder'          => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
             'theme_color'          => 'nullable|string|regex:/^#[0-9a-fA-F]{6}$/',
+
         ]);
 
-        // Génère un server_id unique (au-dessus des id Azuriom pour éviter les collisions)
         $nextId = (int) (OptionsServer::max('server_id') ?? 0) + 1;
         if ($nextId < 1000) {
             $nextId = 1000;
@@ -202,6 +194,7 @@ class AdminServerController extends Controller
             'data_folder'          => $validated['data_folder'] ?? null,
             'theme_color'          => $validated['theme_color'] ?? null,
             'is_default'           => $isFirst, // premier serveur ajouté = défaut
+            'is_default'           => $isFirst,
         ]);
 
         AuditLog::record('server.add', $server, [
@@ -213,9 +206,6 @@ class AdminServerController extends Controller
         return redirect()->route('admin.server')->with('success', __('messages.flash.server_added', ['name' => $server->server_name]));
     }
 
-    /**
-     * Modifie un serveur existant.
-     */
     public function editServer(Request $request, $serverId)
     {
         $validated = $request->validate([
@@ -224,12 +214,16 @@ class AdminServerController extends Controller
             'server_port'    => 'required|string|max:255',
             'type'           => 'nullable|string|max:255',
             'instance_slug'  => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
+            'server_port'    => 'required|integer|min:1|max:65535',
+            'type'           => 'nullable|string|max:255',
+            'instance_slug'  => ['nullable', 'string', 'max:64', 'regex:/^[a-z0-9_-]+$/', Rule::unique('options_server', 'instance_slug')->ignore($serverId, 'server_id')],
             'minecraft_version'    => 'nullable|string|max:32',
             'loader_type'          => 'nullable|string|max:32',
             'loader_build_version' => 'nullable|string|max:64',
             'loader_activation'    => 'nullable|boolean',
             'data_folder'          => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
             'theme_color'          => 'nullable|string|regex:/^#[0-9a-fA-F]{6}$/',
+
         ]);
 
         $server = OptionsServer::where('server_id', $serverId)->first();
@@ -249,6 +243,7 @@ class AdminServerController extends Controller
             'loader_activation'    => $request->has('loader_activation') ? (bool) $request->input('loader_activation') : null,
             'data_folder'          => $validated['data_folder'] ?? null,
             'theme_color'          => $validated['theme_color'] ?? null,
+
         ]);
 
         AuditLog::record('server.edit', $server, [
@@ -260,9 +255,6 @@ class AdminServerController extends Controller
         return redirect()->route('admin.server')->with('success', __('messages.flash.server_edited', ['name' => $server->server_name]));
     }
 
-    /**
-     * Supprime un serveur.
-     */
     public function deleteServer($serverId)
     {
         $server = OptionsServer::where('server_id', $serverId)->first();
@@ -280,7 +272,6 @@ class AdminServerController extends Controller
         AuditLog::record('server.delete', $server, ['name' => $name]);
         $server->delete();
 
-        // Si on a supprimé le serveur par défaut, en désigner un autre automatiquement
         if ($wasDefault) {
             $fallback = OptionsServer::first();
             if ($fallback) {
@@ -292,9 +283,6 @@ class AdminServerController extends Controller
         return redirect()->route('admin.server')->with('success', __('messages.flash.server_deleted', ['name' => $name]));
     }
 
-    /**
-     * Met à jour l'icône d'un serveur spécifique
-     */
     public function updateIcon(Request $request, $serverId)
     {
         $request->validate([
@@ -307,22 +295,19 @@ class AdminServerController extends Controller
             return redirect()->route('admin.server')->with('error', __('messages.flash.server_not_found'));
         }
 
-        // Supprimer l'ancienne icône locale si elle existe
         if ($server->icon_local) {
             \Storage::disk('public')->delete($server->icon_local);
         }
 
-        // Enregistrer la nouvelle icône
         $path = $request->file('icon')->store('server_icons', 'public');
         $server->icon_local = $path;
         $server->save();
 
+        AuditLog::record('server.icon.update', $server, ['name' => $server->server_name, 'path' => $path]);
+
         return redirect()->route('admin.server')->with('success', __('messages.flash.server_icon_updated', ['name' => $server->server_name]));
     }
 
-    /**
-     * Supprime l'icône locale d'un serveur
-     */
     public function deleteIcon($serverId)
     {
         $server = OptionsServer::where('server_id', $serverId)->first();
@@ -335,6 +320,8 @@ class AdminServerController extends Controller
             \Storage::disk('public')->delete($server->icon_local);
             $server->icon_local = null;
             $server->save();
+
+            AuditLog::record('server.icon.delete', $server, ['name' => $server->server_name]);
         }
 
         return redirect()->route('admin.server')->with('success', __('messages.flash.server_icon_deleted', ['name' => $server->server_name]));
