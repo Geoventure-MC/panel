@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Models\TelemetryEvent;
+
 use Illuminate\Http\Request;
 
 class TelemetryController extends Controller
@@ -34,5 +35,8 @@ class TelemetryController extends Controller
         ]);
 
         return response()->json(['ok' => true], 200, [], JSON_UNESCAPED_SLASHES);
+    public function store(Request $request)
+    {
+        return response()->json(['status' => 'ok'], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 }

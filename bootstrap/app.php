@@ -27,6 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'utils/achievements/unlock',
             'utils/seasons/sync',
             'utils/scheduled-events/claim',
+        $middleware->validateCsrfTokens(except: [
+            'utils/telemetry',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
