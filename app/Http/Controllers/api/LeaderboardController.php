@@ -36,6 +36,12 @@ class LeaderboardController extends Controller
         $limit = (int) ($cfg['limit'] ?? 50);
         $ttl = (int) config('geoventure.cache_ttl', 60);
 
+        // Connexion externe non configurée (database vide) → on n'essaie même
+        // pas de se connecter : on renvoie [] directement.
+        if (empty(config("database.connections.{$connection}.database"))) {
+            return [];
+        }
+
         try {
             return Cache::remember('geo_leaderboards', $ttl, function () use ($connection, $query, $limit) {
                 $rows = DB::connection($connection)->select($query);

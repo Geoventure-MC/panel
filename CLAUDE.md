@@ -2,7 +2,7 @@
 
 > Fichier de mémoire pour Claude Code. À placer à la racine du repo `panel`
 > (et idéalement une copie dans `installer` et `launcher`).
-> Dernière mise à jour : 2026-06-18.
+> Dernière mise à jour : 2026-06-27.
 
 ## 🎯 Vue d'ensemble
 
@@ -24,8 +24,8 @@ Le launcher lit le panel via ces routes (définies dans `panel/routes/web.php`) 
 - `GET /utils/notifications` → `api/NotificationController@getNotifications` : annonces in-app
 - `GET /utils/servers-status` → `api/ServerStatusController@getServersStatus` : statut en ligne des serveurs (SLP, cache 30s)
 - `GET /utils/community-mods` → `api/CommunityModController@getCommunityMods` : mods communauté approuvés
-- `GET /utils/leaderboards` → `api/LeaderboardController@getLeaderboards` : classement joueurs (DB Azuriom externe)
-- `GET /utils/factions` → `api/FactionController@getFactions` : liste des factions (DB GeoFactions externe)
+- `GET /utils/leaderboards` → `api/LeaderboardController@getLeaderboards` : classement joueurs (lit la **DB Azuriom externe**, connexion `azuriom`, cache 60s) — **implémenté** ✅
+- `GET /utils/factions` → `api/FactionController@getFactions` : liste des factions (lit la **DB GeoFactions externe**, connexion `game`, cache 60s) — **implémenté** ✅
 - `POST /utils/telemetry` → `api/TelemetryController@store` : télémétrie launcher (opt-in, IP hashée, CSRF exempté)
 - `GET /data` → `api/FileController@getFiles` : liste des fichiers du modpack (hash/size/url)
 - `GET /api-schema.json` → version du schéma API (statique `{"schemaVersion":"1.0.0"}`)
@@ -119,7 +119,7 @@ _(backlog vidé — voir « livrées » ci-dessous)_
 - **Annonces / Notifications** — table `options_notifications`, admin CRUD, `GET /utils/notifications`
 - **Télémétrie & Statistiques** — `POST /utils/telemetry`, page admin stats avec Chart.js
 - **Statut serveurs** — `GET /utils/servers-status`, ping SLP Minecraft, cache 30s
-- **Leaderboards & Factions** — `GET /utils/leaderboards` + `GET /utils/factions` (DB externes)
+- **Leaderboards & Factions** — `GET /utils/leaderboards` + `GET /utils/factions`, lecture réelle des **DB externes** (`config/geoventure.php` : connexion + requête + limite ; connexions `azuriom`/`game` dans `config/database.php`, identifiants `GEO_AZ_DB_*` / `GEO_GAME_DB_*`). Fail-safe : DB non configurée (`database` vide) ou erreur → `[]` (200), cache 60s, jamais de 500
 - **Mods communauté** — `GET /utils/community-mods`, admin CRUD, compatible ancien endpoint `api/centralcorp/community-mods`
 - **Discord webhooks** — notifications admin critiques via webhook Discord
 - **Rate limiting** — 120 req/min sur `/utils/*`, 30 req/min sur telemetry
