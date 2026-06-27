@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -13,14 +14,30 @@ use Illuminate\Support\Facades\Log;
  * Reads from a configurable external connection (default 'game' → the
  * GeoFactions plugin's MySQL) using a configurable query (config/geoventure.php).
  * Always fails safe: returns [] (200) when unconfigured or on error.
+ *
+ * Like /utils/leaderboards, this supports cheap polling: ETag + Cache-Control
+ * let the launcher get a 304 Not Modified when nothing changed. Plain polling
+ * (no SSE/WebSocket) is intentional for shared-hosting robustness.
  */
 class FactionController extends Controller
 {
-    public function getFactions()
+    public function getFactions(Request $request)
     {
         $factions = $this->fetch();
 
-        return response()->json($factions, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $body = json_encode($factions, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $etag = '"' . md5($body) . '"';
+        $headers = [
+            'Content-Type'  => 'application/json',
+            'ETag'          => $etag,
+            'Cache-Control' => 'public, max-age=30',
+        ];
+
+        if (trim($request->header('If-None-Match', '')) === $etag) {
+            return response('', 304, $headers);
+        }
+
+        return response($body, 200, $headers);
     }
 
     private function fetch(): array
