@@ -70,6 +70,11 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.achievements*') ? 'active' : '' }}" href="{{ route('admin.achievements') }}">
+                        <i class="bi bi-trophy align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.achievements') }}</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.audit.*') ? 'active' : '' }}" href="{{ route('admin.audit.index') }}">
                         <i class="bi bi-clock-history align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.audit') }}</span>
                     </a>

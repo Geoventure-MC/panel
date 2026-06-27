@@ -15,6 +15,7 @@ use App\Http\Controllers\AdminConfigController;
 use App\Http\Controllers\AdminNotificationController;
 use App\Http\Controllers\AdminCommunityModController;
 use App\Http\Controllers\AdminLauncherContentController;
+use App\Http\Controllers\AdminAchievementController;
 use App\Http\Controllers\users\AdminUserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -32,6 +33,7 @@ use App\Http\Controllers\api\TelemetryController;
 use App\Http\Controllers\api\LeaderboardController;
 use App\Http\Controllers\api\FactionController;
 use App\Http\Controllers\api\CommunityModController;
+use App\Http\Controllers\api\AchievementController;
 use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Admin\StatsController;
 
@@ -151,6 +153,12 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::patch('/community-mods/{mod}/toggle', [AdminCommunityModController::class, 'toggle'])->name('admin.community-mods.toggle');
     Route::delete('/community-mods/{mod}', [AdminCommunityModController::class, 'destroy'])->name('admin.community-mods.destroy');
 
+    Route::get('/achievements', [AdminAchievementController::class, 'index'])->name('admin.achievements');
+    Route::post('/achievements', [AdminAchievementController::class, 'store'])->name('admin.achievements.store');
+    Route::put('/achievements/{achievement}', [AdminAchievementController::class, 'update'])->name('admin.achievements.update');
+    Route::patch('/achievements/{achievement}/toggle', [AdminAchievementController::class, 'toggle'])->name('admin.achievements.toggle');
+    Route::delete('/achievements/{achievement}', [AdminAchievementController::class, 'destroy'])->name('admin.achievements.destroy');
+
     Route::get('/audit', [AdminAuditController::class, 'index'])->name('admin.audit.index');
 
     Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
@@ -178,6 +186,7 @@ Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::get('/factions', [FactionController::class, 'getFactions']);
     Route::get('/community-mods', [CommunityModController::class, 'getCommunityMods']);
     Route::get('/launcher-content', [LauncherContentController::class, 'getLauncherContent']);
+    Route::get('/achievements', [AchievementController::class, 'getAchievements']);
 });
 Route::get('/data', [FileController::class, 'getFiles'])->middleware('throttle:120,1');
 Route::get('/api/centralcorp/community-mods', [CommunityModController::class, 'getCommunityMods']);
