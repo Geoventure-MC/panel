@@ -13,6 +13,7 @@ php artisan migrate
 Tables créées / mises à jour côté panel :
 - `achievements` (catalogue des succès)
 - `achievement_unlocks` (déverrouillages par joueur)
+- `seasons` (leaderboards saisonniers : saison en cours + hall of fame)
 
 Les **5 succès serveur** (`faction_member`, `geocoins_1000`, `geocoins_10000`,
 `age_iron`, `age_industrial`) sont **auto-seedés** par la migration
@@ -22,6 +23,7 @@ Configurer le jeton d'ingestion dans `.env` (mêmes valeur que côté plugin) :
 
 ```env
 ACHIEVEMENTS_INGEST_TOKEN=<jeton-secret-partagé>
+SEASONS_INGEST_TOKEN=<jeton-saisons-partagé>
 ```
 
 ```bash
@@ -29,7 +31,22 @@ php artisan config:cache   # si la config est cachée en prod
 ```
 
 > Sans jeton configuré, `POST /utils/achievements/unlock` renvoie **403** : les
-> succès serveur ne se débloquent pas.
+> succès serveur ne se débloquent pas. Idem pour `SEASONS_INGEST_TOKEN` et
+> `POST /utils/seasons/sync` (fail-closed). Le plugin GeoFactions doit utiliser
+> **le même** `SEASONS_INGEST_TOKEN`.
+
+### Saisons / leaderboards saisonniers
+
+Le plugin GeoFactions signale le cycle de vie des saisons au panel ; le launcher
+affiche la saison en cours + un hall of fame des saisons passées.
+
+- `POST /utils/seasons/sync` (ingestion, CSRF exempté, jeton requis) :
+  `{ token, action, season:{external_id,name,starts_at,ends_at}, winner?:{name,faction,score,reward} }`.
+  `action='start'` ouvre/active la saison, `action='end'` la clôt et enregistre
+  le vainqueur. Jamais de 500.
+- `GET /utils/seasons` (public) → `{ current: {...}|null, past: [...] }`, dates en
+  **epoch millisecondes**.
+- Admin → Saisons : page en lecture seule (nom, statut, dates, vainqueur).
 
 ## 2. Plugin (GeoFactions)
 

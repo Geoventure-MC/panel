@@ -66,4 +66,20 @@ return [
         'ingest_token' => env('ACHIEVEMENTS_INGEST_TOKEN', ''),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Seasons ingestion
+    |--------------------------------------------------------------------------
+    |
+    | Jeton partagé attendu sur POST /utils/seasons/sync (signalé par le plugin
+    | GeoFactions au début/fin de chaque saison). Lu via config() pour rester
+    | compatible avec `php artisan config:cache`. Vide → tous les syncs sont
+    | rejetés (403, fail-closed).
+    |
+    */
+
+    'seasons' => [
+        'ingest_token' => env('SEASONS_INGEST_TOKEN', ''),
+    ],
+
 ];

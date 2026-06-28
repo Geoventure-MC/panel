@@ -16,6 +16,7 @@ use App\Http\Controllers\AdminNotificationController;
 use App\Http\Controllers\AdminCommunityModController;
 use App\Http\Controllers\AdminLauncherContentController;
 use App\Http\Controllers\AdminAchievementController;
+use App\Http\Controllers\AdminSeasonController;
 use App\Http\Controllers\users\AdminUserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -35,6 +36,7 @@ use App\Http\Controllers\api\FactionController;
 use App\Http\Controllers\api\CommunityModController;
 use App\Http\Controllers\api\AchievementController;
 use App\Http\Controllers\api\AchievementUnlockController;
+use App\Http\Controllers\api\SeasonController;
 use App\Http\Controllers\Admin\LiveDashboardController;
 use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Admin\StatsController;
@@ -161,6 +163,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::patch('/achievements/{achievement}/toggle', [AdminAchievementController::class, 'toggle'])->name('admin.achievements.toggle');
     Route::delete('/achievements/{achievement}', [AdminAchievementController::class, 'destroy'])->name('admin.achievements.destroy');
 
+    Route::get('/seasons', [AdminSeasonController::class, 'index'])->name('admin.seasons');
+
     Route::get('/audit', [AdminAuditController::class, 'index'])->name('admin.audit.index');
 
     Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
@@ -194,6 +198,8 @@ Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::get('/achievements', [AchievementController::class, 'getAchievements']);
     Route::get('/achievements/progress', [AchievementUnlockController::class, 'progress']);
     Route::post('/achievements/unlock', [AchievementUnlockController::class, 'store']);
+    Route::get('/seasons', [SeasonController::class, 'index']);
+    Route::post('/seasons/sync', [SeasonController::class, 'sync']);
 });
 Route::get('/data', [FileController::class, 'getFiles'])->middleware('throttle:120,1');
 Route::get('/api/centralcorp/community-mods', [CommunityModController::class, 'getCommunityMods']);
