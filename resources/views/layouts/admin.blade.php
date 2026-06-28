@@ -40,6 +40,11 @@
                 <li class="sidebar-header">
                         {{ __('messages.sidebar.panel') }}
                     </li>
+                    <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.dashboard.live') ? 'active' : '' }}" href="{{ route('admin.dashboard.live') }}">
+                        <i class="bi bi-speedometer2 align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.live_dashboard') }}</span>
+                    </a>
+                </li>
                     @if(auth()->user()->isSuperAdmin())
                     <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.users') ? 'active' : '' }}" href="{{ route('admin.users') }}">
