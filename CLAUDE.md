@@ -2,7 +2,7 @@
 
 > Fichier de mémoire pour Claude Code. À placer à la racine du repo `panel`
 > (et idéalement une copie dans `installer` et `launcher`).
-> Dernière mise à jour : 2026-06-27.
+> Dernière mise à jour : 2026-06-28.
 
 ## 🎯 Vue d'ensemble
 
@@ -24,8 +24,9 @@ Le launcher lit le panel via ces routes (définies dans `panel/routes/web.php`) 
 - `GET /utils/notifications` → `api/NotificationController@getNotifications` : annonces in-app
 - `GET /utils/servers-status` → `api/ServerStatusController@getServersStatus` : statut en ligne des serveurs (SLP, cache 30s)
 - `GET /utils/community-mods` → `api/CommunityModController@getCommunityMods` : mods communauté approuvés
-- `GET /utils/leaderboards` → `api/LeaderboardController@getLeaderboards` : classement joueurs (lit la **DB Azuriom externe**, connexion `azuriom`, cache 60s) — **implémenté** ✅
-- `GET /utils/factions` → `api/FactionController@getFactions` : liste des factions (lit la **DB GeoFactions externe**, connexion `game`, cache 60s) — **implémenté** ✅
+- `GET /utils/leaderboards` → `api/LeaderboardController@getLeaderboards` : classement joueurs (lit la **DB Azuriom externe**, connexion `azuriom`, cache 60s) — **implémenté** ✅. Envoie `ETag` + `Cache-Control: max-age=30`, renvoie `304` sur `If-None-Match` (polling-friendly, pas de SSE).
+- `GET /utils/factions` → `api/FactionController@getFactions` : liste des factions (lit la **DB GeoFactions externe**, connexion `game`, cache 60s) — **implémenté** ✅. Idem `ETag` + `Cache-Control: max-age=30` + `304` sur `If-None-Match`.
+- `GET /utils/achievements` → `api/AchievementController@getAchievements` : catalogue des succès (`code`, `name`, `description`, `icon`, `points`, `category`, `condition_type`, `condition_value`). `condition_type ∈ first_launch|launch_count|playtime_hours|instances_tried|manual`.
 - `POST /utils/telemetry` → `api/TelemetryController@store` : télémétrie launcher (opt-in, IP hashée, CSRF exempté)
 - `GET /data` → `api/FileController@getFiles` : liste des fichiers du modpack (hash/size/url)
 - `GET /api-schema.json` → version du schéma API (statique `{"schemaVersion":"1.0.0"}`)
@@ -125,6 +126,7 @@ _(backlog vidé — voir « livrées » ci-dessous)_
 - **Rate limiting** — 120 req/min sur `/utils/*`, 30 req/min sur telemetry
 - **Upload limits** — PHP limits relevées (256M/512M) via `.user.ini` et `.htaccess`
 - **Schema API** — `GET /api-schema.json` pour validation de compatibilité launcher
+- **Succès / Achievements** — `GET /utils/achievements` (`api/AchievementController@getAchievements`), catalogue serveur (`code`, `name`, `description`, `icon`, `points`, `category`, `condition_type ∈ first_launch|launch_count|playtime_hours|instances_tried|manual`, `condition_value`) fusionné côté launcher avec des compteurs locaux. Leaderboards/Factions servent désormais `ETag` + `Cache-Control: max-age=30` (`304` sur `If-None-Match`) pour le polling 30s du launcher
 
 ## ✅ Feature LIVRÉE : Dashboard stats (télémétrie launcher)
 
