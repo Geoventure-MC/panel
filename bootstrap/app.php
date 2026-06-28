@@ -24,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Endpoint télémétrie appelé par le launcher (pas de session/CSRF).
         $middleware->validateCsrfTokens(except: [
             'utils/telemetry',
+            'utils/achievements/unlock',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

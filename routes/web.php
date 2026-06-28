@@ -34,6 +34,8 @@ use App\Http\Controllers\api\LeaderboardController;
 use App\Http\Controllers\api\FactionController;
 use App\Http\Controllers\api\CommunityModController;
 use App\Http\Controllers\api\AchievementController;
+use App\Http\Controllers\api\AchievementUnlockController;
+use App\Http\Controllers\Admin\LiveDashboardController;
 use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Admin\StatsController;
 
@@ -163,6 +165,9 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
 
+    Route::get('/dashboard/live', [LiveDashboardController::class, 'index'])->name('admin.dashboard.live');
+    Route::get('/dashboard/feed', [LiveDashboardController::class, 'feed'])->name('admin.dashboard.feed');
+
     Route::get('/launcher-content', [AdminLauncherContentController::class, 'index'])->name('admin.launcher-content');
     Route::post('/launcher-content', [AdminLauncherContentController::class, 'store'])->name('admin.launcher-content.store');
     Route::put('/launcher-content/{item}', [AdminLauncherContentController::class, 'update'])->name('admin.launcher-content.update');
@@ -187,6 +192,8 @@ Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::get('/community-mods', [CommunityModController::class, 'getCommunityMods']);
     Route::get('/launcher-content', [LauncherContentController::class, 'getLauncherContent']);
     Route::get('/achievements', [AchievementController::class, 'getAchievements']);
+    Route::get('/achievements/progress', [AchievementUnlockController::class, 'progress']);
+    Route::post('/achievements/unlock', [AchievementUnlockController::class, 'store']);
 });
 Route::get('/data', [FileController::class, 'getFiles'])->middleware('throttle:120,1');
 Route::get('/api/centralcorp/community-mods', [CommunityModController::class, 'getCommunityMods']);

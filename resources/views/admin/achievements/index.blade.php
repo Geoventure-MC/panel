@@ -86,6 +86,7 @@
                             <option value="playtime_hours">{{ __('messages.achievements.cond_playtime_hours') }}</option>
                             <option value="instances_tried">{{ __('messages.achievements.cond_instances_tried') }}</option>
                         </select>
+                        <div class="form-text">{{ __('messages.achievements.cond_manual_hint') }}</div>
                     </div>
 
                     <div class="mb-3" id="condition-value-wrapper" style="display:none">
