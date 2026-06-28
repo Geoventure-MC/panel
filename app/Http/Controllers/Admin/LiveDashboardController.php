@@ -18,7 +18,7 @@ class LiveDashboardController extends Controller
 
     public function index()
     {
-        $serverStatuses = $this->getServerStatuses();
+        $serverStatuses = $this->getServerStatuses(false);
         $totalPlayers   = $this->sumPlayers($serverStatuses);
         $recentUnlocks  = $this->getRecentUnlocks();
 
@@ -32,7 +32,9 @@ class LiveDashboardController extends Controller
      */
     public function feed(Request $request)
     {
-        $serverStatuses = $this->getServerStatuses();
+        // Lecture cache-only : le polling 20s ne doit jamais bloquer sur un
+        // ping réseau synchrone (fsockopen/stream ~2-4s par serveur hors ligne).
+        $serverStatuses = $this->getServerStatuses(true);
 
         return response()->json([
             'servers'      => $serverStatuses,
@@ -46,11 +48,17 @@ class LiveDashboardController extends Controller
         ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 
-    private function getServerStatuses(): array
+    /**
+     * @param bool $cachedOnly true (feed/polling) → lecture cache uniquement,
+     *                         pas de ping bloquant ; false (index) → ping normal.
+     */
+    private function getServerStatuses(bool $cachedOnly = false): array
     {
         try {
             $controller = new ServerStatusController();
-            $response = $controller->getServersStatus();
+            $response = $cachedOnly
+                ? $controller->getServersStatusCached()
+                : $controller->getServersStatus();
             return json_decode($response->getContent(), true) ?: [];
         } catch (\Throwable $e) {
             return [];

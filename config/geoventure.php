@@ -49,4 +49,21 @@ return [
         ),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Achievements ingestion
+    |--------------------------------------------------------------------------
+    |
+    | Jeton partagé attendu sur POST /utils/achievements/unlock (signalé par le
+    | plugin GeoFactions). Lu via config() pour rester compatible avec
+    | `php artisan config:cache` (env() hors fichiers de config renvoie null une
+    | fois la config mise en cache). Vide → tous les déverrouillages sont rejetés
+    | (fail-closed).
+    |
+    */
+
+    'achievements' => [
+        'ingest_token' => env('ACHIEVEMENTS_INGEST_TOKEN', ''),
+    ],
+
 ];

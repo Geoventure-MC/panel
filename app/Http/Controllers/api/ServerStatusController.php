@@ -10,11 +10,37 @@ class ServerStatusController extends Controller
 {
     public function getServersStatus()
     {
+        return $this->buildStatuses(false);
+    }
+
+    /**
+     * Variante non bloquante : ne lit QUE le cache de ping existant. Si aucun
+     * statut n'est en cache pour un serveur, renvoie un statut « inconnu »
+     * (offline, joueurs null) SANS déclencher de ping réseau synchrone.
+     *
+     * Utilisé par le tableau de bord admin qui poll toutes les 20s : on évite
+     * de mobiliser des workers PHP-FPM sur des fsockopen/stream timeouts (~2-4s)
+     * quand un serveur de jeu est hors ligne. Le cache est alimenté par les
+     * appels normaux à /utils/servers-status (launcher).
+     */
+    public function getServersStatusCached()
+    {
+        return $this->buildStatuses(true);
+    }
+
+    /**
+     * @param bool $cachedOnly Si true, n'effectue aucun ping réseau : lit
+     *                         uniquement le cache (statut inconnu sinon).
+     */
+    private function buildStatuses(bool $cachedOnly)
+    {
         $servers = OptionsServer::all();
         $statuses = [];
 
         foreach ($servers as $server) {
-            $ping = $this->pingServer($server->server_ip, (int) $server->server_port);
+            $ping = $cachedOnly
+                ? $this->cachedPing($server->server_ip, (int) $server->server_port)
+                : $this->pingServer($server->server_ip, (int) $server->server_port);
 
             $statuses[] = [
                 'id'          => $server->instance_slug ?: $server->server_id,
@@ -32,6 +58,23 @@ class ServerStatusController extends Controller
         }
 
         return response()->json($statuses, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * Lit uniquement le cache de ping (sans aucun appel réseau). Retourne un
+     * statut « inconnu » (offline, valeurs null) si rien n'est en cache.
+     *
+     * @return array{online: bool, players: ?int, max_players: ?int, version: ?string, latency: ?int}
+     */
+    private function cachedPing(string $ip, int $port): array
+    {
+        return Cache::get("server_status_{$ip}_{$port}", [
+            'online'      => false,
+            'players'     => null,
+            'max_players' => null,
+            'version'     => null,
+            'latency'     => null,
+        ]);
     }
 
     /**

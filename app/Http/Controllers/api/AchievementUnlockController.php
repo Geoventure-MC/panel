@@ -14,8 +14,8 @@ use Illuminate\Support\Facades\Log;
  * POST /utils/achievements/unlock (authentifié par un jeton partagé). Le
  * launcher relit l'état du joueur connecté via GET /utils/achievements/progress.
  *
- * Le jeton d'ingestion est lu depuis env('ACHIEVEMENTS_INGEST_TOKEN').
- * Toujours fail-safe : jamais de 500.
+ * Le jeton d'ingestion est lu depuis config('geoventure.achievements.ingest_token')
+ * (compatible config:cache). Toujours fail-safe : jamais de 500.
  */
 class AchievementUnlockController extends Controller
 {
@@ -27,7 +27,7 @@ class AchievementUnlockController extends Controller
     public function store(Request $request)
     {
         try {
-            $expected = (string) env('ACHIEVEMENTS_INGEST_TOKEN', '');
+            $expected = (string) config('geoventure.achievements.ingest_token', '');
             $provided = (string) $request->input('token', '');
 
             // Pas de jeton configuré ou jeton invalide → refus.
@@ -39,6 +39,11 @@ class AchievementUnlockController extends Controller
             $code   = trim((string) $request->input('code', ''));
 
             if ($player === '' || $code === '') {
+                return response()->json(['error' => 'invalid'], 422, [], JSON_UNESCAPED_SLASHES);
+            }
+
+            // Colonnes VARCHAR(255) : refuser au lieu de jeter une QueryException.
+            if (mb_strlen($player) > 255 || mb_strlen($code) > 255) {
                 return response()->json(['error' => 'invalid'], 422, [], JSON_UNESCAPED_SLASHES);
             }
 
