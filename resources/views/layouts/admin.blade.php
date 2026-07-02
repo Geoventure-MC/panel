@@ -85,6 +85,11 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.scheduled-events') ? 'active' : '' }}" href="{{ route('admin.scheduled-events') }}">
+                        <i class="bi bi-calendar-week align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.scheduled_events') }}</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.audit.*') ? 'active' : '' }}" href="{{ route('admin.audit.index') }}">
                         <i class="bi bi-clock-history align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.audit') }}</span>
                     </a>

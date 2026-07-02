@@ -82,4 +82,20 @@ return [
         'ingest_token' => env('SEASONS_INGEST_TOKEN', ''),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Scheduled events ingestion
+    |--------------------------------------------------------------------------
+    |
+    | Jeton partagé attendu sur POST /utils/scheduled-events/claim (le plugin
+    | GeoFactions réclame les événements arrivés à échéance et les déclenche).
+    | Lu via config() pour rester compatible avec `php artisan config:cache`.
+    | Vide → tous les claims sont rejetés (403, fail-closed).
+    |
+    */
+
+    'events' => [
+        'ingest_token' => env('EVENTS_INGEST_TOKEN', ''),
+    ],
+
 ];

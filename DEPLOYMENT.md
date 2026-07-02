@@ -24,6 +24,7 @@ Configurer le jeton d'ingestion dans `.env` (mêmes valeur que côté plugin) :
 ```env
 ACHIEVEMENTS_INGEST_TOKEN=<jeton-secret-partagé>
 SEASONS_INGEST_TOKEN=<jeton-saisons-partagé>
+EVENTS_INGEST_TOKEN=<jeton-planificateur-partagé>
 ```
 
 ```bash
@@ -91,3 +92,20 @@ correspondant (fusionné avec le catalogue `/utils/achievements`).
   faction, atteindre 1 000 GeoCoins…), puis re-curl le progress endpoint → le
   `code` doit apparaître.
 - **Dashboard live** (Admin → Statistiques) : vérifier la remontée d'activité.
+
+### Planificateur d'événements (Admin → Planificateur)
+
+- `php artisan migrate` crée la table `scheduled_events`.
+- Définir `EVENTS_INGEST_TOKEN` dans `.env` (même valeur dans le `scheduler.yml`
+  du plugin GeoFactions). Sans jeton, `POST /utils/scheduled-events/claim`
+  renvoie **403** (fail-closed) et rien ne se déclenche en jeu.
+- Le launcher lit `GET /utils/scheduled-events` (public) pour afficher les
+  prochains événements ; le plugin réclame les événements dus via
+  `POST /utils/scheduled-events/claim` (réclamation atomique, chaque événement
+  n'est déclenché qu'une fois ; les récurrents sont re-planifiés).
+
+### Page de statut publique
+
+- `GET /status` — sans authentification, lecture cache uniquement (aucun ping
+  bloquant), rafraîchissement client via `/utils/servers-status` toutes les 30 s.
+  Partageable telle quelle (Discord, réseaux…).

@@ -17,6 +17,8 @@ use App\Http\Controllers\AdminCommunityModController;
 use App\Http\Controllers\AdminLauncherContentController;
 use App\Http\Controllers\AdminAchievementController;
 use App\Http\Controllers\AdminSeasonController;
+use App\Http\Controllers\AdminScheduledEventController;
+use App\Http\Controllers\StatusPageController;
 use App\Http\Controllers\users\AdminUserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -37,6 +39,7 @@ use App\Http\Controllers\api\CommunityModController;
 use App\Http\Controllers\api\AchievementController;
 use App\Http\Controllers\api\AchievementUnlockController;
 use App\Http\Controllers\api\SeasonController;
+use App\Http\Controllers\api\ScheduledEventController;
 use App\Http\Controllers\Admin\LiveDashboardController;
 use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Admin\StatsController;
@@ -165,6 +168,11 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/seasons', [AdminSeasonController::class, 'index'])->name('admin.seasons');
 
+    Route::get('/scheduled-events', [AdminScheduledEventController::class, 'index'])->name('admin.scheduled-events');
+    Route::post('/scheduled-events', [AdminScheduledEventController::class, 'store'])->name('admin.scheduled-events.store');
+    Route::patch('/scheduled-events/{event}/cancel', [AdminScheduledEventController::class, 'cancel'])->name('admin.scheduled-events.cancel');
+    Route::delete('/scheduled-events/{event}', [AdminScheduledEventController::class, 'destroy'])->name('admin.scheduled-events.destroy');
+
     Route::get('/audit', [AdminAuditController::class, 'index'])->name('admin.audit.index');
 
     Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
@@ -200,9 +208,14 @@ Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::post('/achievements/unlock', [AchievementUnlockController::class, 'store']);
     Route::get('/seasons', [SeasonController::class, 'index']);
     Route::post('/seasons/sync', [SeasonController::class, 'sync']);
+    Route::get('/scheduled-events', [ScheduledEventController::class, 'index']);
+    Route::post('/scheduled-events/claim', [ScheduledEventController::class, 'claim']);
 });
 Route::get('/data', [FileController::class, 'getFiles'])->middleware('throttle:120,1');
 Route::get('/api/centralcorp/community-mods', [CommunityModController::class, 'getCommunityMods']);
 Route::get('/api-schema.json', fn() => response()->json(['schemaVersion' => '1.0.0'], 200, [], JSON_UNESCAPED_SLASHES));
+
+// Page de statut publique (partageable), lecture cache uniquement.
+Route::get('/status', [StatusPageController::class, 'index'])->name('status')->middleware('throttle:60,1');
 
 Route::get('lang/{locale}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('lang.switch');

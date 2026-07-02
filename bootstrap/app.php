@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'utils/telemetry',
             'utils/achievements/unlock',
             'utils/seasons/sync',
+            'utils/scheduled-events/claim',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
