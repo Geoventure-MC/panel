@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Season;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -118,11 +120,12 @@ class SeasonController extends Controller
 
             $payload = [
                 'current' => $current ? [
-                    'id'       => $current->external_id,
-                    'name'     => $current->name,
-                    'startsAt' => $this->epochMs($current->starts_at),
-                    'endsAt'   => $this->epochMs($current->ends_at),
-                    'status'   => $current->status,
+                    'id'        => $current->external_id,
+                    'name'      => $current->name,
+                    'startsAt'  => $this->epochMs($current->starts_at),
+                    'endsAt'    => $this->epochMs($current->ends_at),
+                    'status'    => $current->status,
+                    'standings' => $this->standings($current->external_id),
                 ] : null,
                 'past' => $past->map(fn ($s) => [
                     'id'      => $s->external_id,
@@ -142,6 +145,50 @@ class SeasonController extends Controller
         }
 
         return response()->json($payload, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * Classement de la saison en cours (top factions par points), lu dans la
+     * DB GeoFactions externe (config geoventure.season_standings, connexion
+     * 'game'). L'id de saison ('AAAA-MM' = external_id) est passé en binding.
+     * Fail-safe : DB non configurée (database vide) ou erreur → []. Cache 60s.
+     */
+    private function standings(string $seasonId): array
+    {
+        $cfg = config('geoventure.season_standings', []);
+        $query = $cfg['query'] ?? null;
+        if (empty($query) || $seasonId === '') {
+            return [];
+        }
+
+        $connection = $cfg['connection'] ?? 'game';
+        $limit = (int) ($cfg['limit'] ?? 10);
+        $ttl = (int) config('geoventure.cache_ttl', 60);
+
+        // Connexion externe non configurée (database vide) → on n'essaie même
+        // pas de se connecter : on renvoie [] directement.
+        if (empty(config("database.connections.{$connection}.database"))) {
+            return [];
+        }
+
+        try {
+            return Cache::remember("geo_season_standings_{$seasonId}", $ttl, function () use ($connection, $query, $limit, $seasonId) {
+                $rows = DB::connection($connection)->select($query, [$seasonId]);
+
+                $out = [];
+                foreach (array_slice($rows, 0, $limit) as $row) {
+                    $row = (array) $row;
+                    $out[] = [
+                        'name'   => $row['name'] ?? '?',
+                        'points' => isset($row['points']) ? (int) $row['points'] : 0,
+                    ];
+                }
+                return $out;
+            });
+        } catch (\Throwable $e) {
+            Log::warning('SeasonController@standings: ' . $e->getMessage());
+            return [];
+        }
     }
 
     /** Convertit une date en epoch millisecondes, ou null. */

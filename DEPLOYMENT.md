@@ -47,6 +47,8 @@ affiche la saison en cours + un hall of fame des saisons passées.
   le vainqueur. Jamais de 500.
 - `GET /utils/seasons` (public) → `{ current: {...}|null, past: [...] }`, dates en
   **epoch millisecondes**.
+- `current.standings` (top 10 factions `{name, points}`) est lu dans la DB de jeu
+  externe via `GEO_GAME_DB_*` (table `gf_season_points`) — `[]` si non configurée.
 - Admin → Saisons : page en lecture seule (nom, statut, dates, vainqueur).
 
 ## 2. Plugin (GeoFactions)

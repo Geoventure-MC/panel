@@ -27,6 +27,7 @@ Le launcher lit le panel via ces routes (définies dans `panel/routes/web.php`) 
 - `GET /utils/leaderboards` → `api/LeaderboardController@getLeaderboards` : classement joueurs (lit la **DB Azuriom externe**, connexion `azuriom`, cache 60s) — **implémenté** ✅. Envoie `ETag` + `Cache-Control: max-age=30`, renvoie `304` sur `If-None-Match` (polling-friendly, pas de SSE).
 - `GET /utils/factions` → `api/FactionController@getFactions` : liste des factions (lit la **DB GeoFactions externe**, connexion `game`, cache 60s) — **implémenté** ✅. Idem `ETag` + `Cache-Control: max-age=30` + `304` sur `If-None-Match`.
 - `GET /utils/achievements` → `api/AchievementController@getAchievements` : catalogue des succès (`code`, `name`, `description`, `icon`, `points`, `category`, `condition_type`, `condition_value`). `condition_type ∈ first_launch|launch_count|playtime_hours|instances_tried|manual`.
+- `GET /utils/seasons` → `api/SeasonController@index` : saison en cours + hall of fame (`{ current, past }`). `current` inclut `standings` : top 10 factions `[{name, points}]` lu dans la **DB GeoFactions externe** (`gf_season_points` × `gf_factions`, connexion `game`, config `geoventure.season_standings`, binding sur `external_id`, cache 60s, fail-safe `[]`).
 - `POST /utils/telemetry` → `api/TelemetryController@store` : télémétrie launcher (opt-in, IP hashée, CSRF exempté)
 - `GET /data` → `api/FileController@getFiles` : liste des fichiers du modpack (hash/size/url)
 - `GET /api-schema.json` → version du schéma API (statique `{"schemaVersion":"1.0.0"}`)

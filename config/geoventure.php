@@ -51,6 +51,33 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Season standings (classement de la saison en cours)
+    |--------------------------------------------------------------------------
+    |
+    | GET /utils/seasons enrichit la saison en cours avec un top des factions
+    | (points de saison), lus dans la DB GeoFactions externe (connexion 'game') :
+    | table gf_season_points (season_id 'AAAA-MM', faction_id, points) jointe à
+    | gf_factions pour le nom. L'id de saison est passé en BINDING (?), jamais
+    | concaténé. Fail-safe : DB non configurée ou erreur → standings [] (200).
+    |
+    */
+
+    'season_standings' => [
+        // Which DB connection to query (default: the GeoFactions DB).
+        'connection' => env('GEO_SEASON_STANDINGS_CONNECTION', 'game'),
+        'limit' => (int) env('GEO_SEASON_STANDINGS_LIMIT', 10),
+        // Must return: name, points (ordered DESC). The current season id
+        // ('AAAA-MM' = external_id) is bound to the single ? placeholder.
+        'query' => env(
+            'GEO_SEASON_STANDINGS_QUERY',
+            'SELECT f.name, p.points FROM gf_season_points p '
+            . 'JOIN gf_factions f ON f.id = p.faction_id '
+            . 'WHERE p.season_id = ? ORDER BY p.points DESC LIMIT 10'
+        ),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Achievements ingestion
     |--------------------------------------------------------------------------
     |
