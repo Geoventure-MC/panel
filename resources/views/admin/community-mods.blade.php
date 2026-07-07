@@ -67,6 +67,24 @@
                             placeholder="https://example.com/icons/mon-mod.png">
                     </div>
 
+                    <div class="row">
+                        <div class="col-4 mb-3">
+                            <label class="form-label fw-semibold">{{ __('messages.community_mods.category') }}</label>
+                            <input type="text" name="category" id="mod-category" class="form-control" maxlength="100"
+                                placeholder="{{ __('messages.community_mods.category_placeholder') }}">
+                        </div>
+                        <div class="col-4 mb-3">
+                            <label class="form-label fw-semibold">{{ __('messages.community_mods.author') }}</label>
+                            <input type="text" name="author" id="mod-author" class="form-control" maxlength="100"
+                                placeholder="{{ __('messages.community_mods.author_placeholder') }}">
+                        </div>
+                        <div class="col-4 mb-3">
+                            <label class="form-label fw-semibold">{{ __('messages.community_mods.version') }}</label>
+                            <input type="text" name="version" id="mod-version" class="form-control" maxlength="50"
+                                placeholder="1.0.0">
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn btn-primary w-100">
                         <i class="bi bi-send me-1"></i> <span id="form-btn-text">{{ __('messages.common.add') }}</span>
                     </button>
@@ -121,7 +139,7 @@
                                     </td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-outline-primary" title="{{ __('messages.common.edit') }}"
-                                            onclick="editMod({{ $mod->id }}, {{ json_encode($mod->name) }}, {{ json_encode($mod->description) }}, {{ json_encode($mod->filename) }}, {{ json_encode($mod->url) }}, {{ json_encode($mod->icon) }})">
+                                            onclick="editMod({{ $mod->id }}, {{ json_encode($mod->name) }}, {{ json_encode($mod->description) }}, {{ json_encode($mod->filename) }}, {{ json_encode($mod->url) }}, {{ json_encode($mod->icon) }}, {{ json_encode($mod->category) }}, {{ json_encode($mod->author) }}, {{ json_encode($mod->version) }})">
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                         <form action="{{ route('admin.community-mods.toggle', $mod) }}" method="POST" class="d-inline">
@@ -153,7 +171,7 @@
 
 @section('scripts')
 <script>
-function editMod(id, name, description, filename, url, icon) {
+function editMod(id, name, description, filename, url, icon, category, author, version) {
     document.getElementById('mod-form').action = '{{ url("admin/community-mods") }}/' + id;
     document.getElementById('form-method').value = 'PUT';
     document.getElementById('mod-name').value = name;
@@ -161,6 +179,9 @@ function editMod(id, name, description, filename, url, icon) {
     document.getElementById('mod-filename').value = filename;
     document.getElementById('mod-url').value = url;
     document.getElementById('mod-icon').value = icon || '';
+    document.getElementById('mod-category').value = category || '';
+    document.getElementById('mod-author').value = author || '';
+    document.getElementById('mod-version').value = version || '';
     document.getElementById('form-title').textContent = '{{ __('messages.community_mods.edit') }}';
     document.getElementById('form-btn-text').textContent = '{{ __('messages.common.update') }}';
     document.getElementById('cancel-edit').classList.remove('d-none');
@@ -174,6 +195,9 @@ function resetForm() {
     document.getElementById('mod-filename').value = '';
     document.getElementById('mod-url').value = '';
     document.getElementById('mod-icon').value = '';
+    document.getElementById('mod-category').value = '';
+    document.getElementById('mod-author').value = '';
+    document.getElementById('mod-version').value = '';
     document.getElementById('form-title').textContent = '{{ __('messages.community_mods.add') }}';
     document.getElementById('form-btn-text').textContent = '{{ __('messages.common.add') }}';
     document.getElementById('cancel-edit').classList.add('d-none');

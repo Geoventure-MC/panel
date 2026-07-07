@@ -17,6 +17,9 @@ class CommunityModController extends Controller
                 'name'        => $m->name,
                 'description' => $m->description,
                 'icon'        => $m->icon,
+                'category'    => $m->category,
+                'author'      => $m->author,
+                'version'     => $m->version,
                 'filename'    => $m->filename,
                 'url'         => $m->url,
             ]);

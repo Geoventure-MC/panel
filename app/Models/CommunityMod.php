@@ -10,7 +10,7 @@ class CommunityMod extends Model
     use HasFactory;
 
     protected $table = 'community_mods';
-    protected $fillable = ['name', 'description', 'filename', 'url', 'icon', 'active'];
+    protected $fillable = ['name', 'description', 'filename', 'url', 'icon', 'category', 'author', 'version', 'active'];
     protected $casts = [
         'active' => 'boolean',
     ];

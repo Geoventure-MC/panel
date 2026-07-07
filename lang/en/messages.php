@@ -548,6 +548,11 @@ return [
         'filename' => 'Filename',
         'url' => 'Download URL',
         'icon' => 'Icon URL',
+        'category' => 'Category',
+        'category_placeholder' => 'Tech, Decoration...',
+        'author' => 'Author',
+        'author_placeholder' => "Creator's username",
+        'version' => 'Version',
     ],
     'launcher_content' => [
         'title' => 'Launcher Content',

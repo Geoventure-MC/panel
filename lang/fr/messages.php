@@ -548,6 +548,11 @@ return [
         'filename' => 'Nom de fichier',
         'url' => 'URL de téléchargement',
         'icon' => 'URL icône',
+        'category' => 'Catégorie',
+        'category_placeholder' => 'Technique, Décoration...',
+        'author' => 'Auteur',
+        'author_placeholder' => 'Pseudo du créateur',
+        'version' => 'Version',
     ],
     'launcher_content' => [
         'title' => 'Contenu du Launcher',

@@ -47,6 +47,21 @@ return [
             . 'f.bank AS bank, f.research_points AS power '
             . 'FROM gf_factions f ORDER BY f.bank DESC LIMIT 50'
         ),
+        // Roster par faction (faction + uuid) : alimente members_list, utilisé
+        // par le launcher pour le badge « votre faction ». gf_members ne stocke
+        // que des UUID → les pseudos sont résolus via la DB Azuriom
+        // (names_query, matching game_id sans tirets, insensible à la casse).
+        // Mettre members_query à null (env vide) pour désactiver.
+        'members_query' => env(
+            'GEO_FACTIONS_MEMBERS_QUERY',
+            'SELECT f.name AS faction, m.player_id AS uuid '
+            . 'FROM gf_members m JOIN gf_factions f ON f.id = m.faction_id'
+        ),
+        'names_connection' => env('GEO_FACTIONS_NAMES_CONNECTION', 'azuriom'),
+        'names_query' => env(
+            'GEO_FACTIONS_NAMES_QUERY',
+            'SELECT name, game_id FROM users WHERE game_id IS NOT NULL LIMIT 5000'
+        ),
     ],
 
     /*

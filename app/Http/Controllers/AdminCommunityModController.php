@@ -22,6 +22,9 @@ class AdminCommunityModController extends Controller
             'filename'    => 'required|string|max:255',
             'url'         => 'required|url|max:500',
             'icon'        => 'nullable|url|max:500',
+            'category'    => 'nullable|string|max:100',
+            'author'      => 'nullable|string|max:100',
+            'version'     => 'nullable|string|max:50',
         ]);
 
         $mod = CommunityMod::create([
@@ -30,6 +33,9 @@ class AdminCommunityModController extends Controller
             'filename'    => $request->filename,
             'url'         => $request->url,
             'icon'        => $request->icon,
+            'category'    => $request->category,
+            'author'      => $request->author,
+            'version'     => $request->version,
             'active'      => true,
         ]);
 
@@ -46,6 +52,9 @@ class AdminCommunityModController extends Controller
             'filename'    => 'required|string|max:255',
             'url'         => 'required|url|max:500',
             'icon'        => 'nullable|url|max:500',
+            'category'    => 'nullable|string|max:100',
+            'author'      => 'nullable|string|max:100',
+            'version'     => 'nullable|string|max:50',
         ]);
 
         $mod->update([
@@ -54,6 +63,9 @@ class AdminCommunityModController extends Controller
             'filename'    => $request->filename,
             'url'         => $request->url,
             'icon'        => $request->icon,
+            'category'    => $request->category,
+            'author'      => $request->author,
+            'version'     => $request->version,
         ]);
 
         AuditLog::record('community_mod.update', $mod);

@@ -59,14 +59,17 @@ class FactionController extends Controller
         }
 
         try {
-            return Cache::remember('geo_factions', $ttl, function () use ($connection, $query, $limit) {
+            return Cache::remember('geo_factions', $ttl, function () use ($cfg, $connection, $query, $limit) {
                 $rows = DB::connection($connection)->select($query);
+
+                $rosters = $this->fetchRosters($cfg, $connection);
 
                 $out = [];
                 foreach (array_slice($rows, 0, $limit) as $row) {
                     $row = (array) $row;
-                    $out[] = [
-                        'name'    => $row['name'] ?? '?',
+                    $name = $row['name'] ?? '?';
+                    $entry = [
+                        'name'    => $name,
                         'tag'     => $row['tag'] ?? null,
                         'color'   => isset($row['color']) ? (int) $row['color'] : null,
                         'members' => isset($row['members']) ? (int) $row['members'] : null,
@@ -74,11 +77,63 @@ class FactionController extends Controller
                         'power'   => isset($row['power']) ? (int) $row['power'] : null,
                         'bank'    => isset($row['bank']) ? (int) $row['bank'] : null,
                     ];
+                    if (isset($rosters[$name])) {
+                        $entry['members_list'] = $rosters[$name];
+                    }
+                    $out[] = $entry;
                 }
                 return $out;
             });
         } catch (\Throwable $e) {
             Log::warning('FactionController: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Pseudos par faction (members_list) : gf_members ne stocke que des UUID,
+     * les pseudos sont résolus via la DB Azuriom (users.game_id). Le matching
+     * UUID se fait sans tirets et en minuscules pour tolérer les deux formats.
+     * Entièrement optionnel : toute erreur / config absente → pas de champ.
+     */
+    private function fetchRosters(array $cfg, string $connection): array
+    {
+        $membersQuery = $cfg['members_query'] ?? null;
+        $namesQuery = $cfg['names_query'] ?? null;
+        $namesConnection = $cfg['names_connection'] ?? 'azuriom';
+
+        if (empty($membersQuery) || empty($namesQuery)
+            || empty(config("database.connections.{$namesConnection}.database"))) {
+            return [];
+        }
+
+        try {
+            $names = [];
+            foreach (DB::connection($namesConnection)->select($namesQuery) as $row) {
+                $row = (array) $row;
+                if (!empty($row['game_id']) && !empty($row['name'])) {
+                    $key = strtolower(str_replace('-', '', (string) $row['game_id']));
+                    $names[$key] = (string) $row['name'];
+                }
+            }
+            if (!$names) {
+                return [];
+            }
+
+            $rosters = [];
+            foreach (DB::connection($connection)->select($membersQuery) as $row) {
+                $row = (array) $row;
+                if (empty($row['faction']) || empty($row['uuid'])) {
+                    continue;
+                }
+                $key = strtolower(str_replace('-', '', (string) $row['uuid']));
+                if (isset($names[$key])) {
+                    $rosters[(string) $row['faction']][] = $names[$key];
+                }
+            }
+            return $rosters;
+        } catch (\Throwable $e) {
+            Log::warning('FactionController rosters: ' . $e->getMessage());
             return [];
         }
     }
