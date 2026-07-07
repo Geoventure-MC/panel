@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Models\OptionsServer;
+use App\Models\ServerPlayerSample;
 use Illuminate\Support\Facades\Cache;
 
 class ServerStatusController extends Controller
@@ -38,9 +39,10 @@ class ServerStatusController extends Controller
         $statuses = [];
 
         foreach ($servers as $server) {
+            $serverKey = $server->instance_slug ?: $server->server_id;
             $ping = $cachedOnly
                 ? $this->cachedPing($server->server_ip, (int) $server->server_port)
-                : $this->pingServer($server->server_ip, (int) $server->server_port);
+                : $this->pingServer($server->server_ip, (int) $server->server_port, (string) $serverKey);
 
             $statuses[] = [
                 'id'          => $server->instance_slug ?: $server->server_id,
@@ -82,11 +84,14 @@ class ServerStatusController extends Controller
      * (handshake + status request) pour récupérer online/joueurs/version/latence.
      * Résultat mis en cache 30s pour éviter de pinger à chaque appel du launcher.
      *
+     * Quand `$serverKey` est fourni, chaque ping frais (cache miss) alimente
+     * l'historique d'affluence (`server_player_samples`) — voir recordSample().
+     *
      * @return array{online: bool, players: ?int, max_players: ?int, version: ?string, latency: ?int}
      */
-    private function pingServer(string $ip, int $port): array
+    private function pingServer(string $ip, int $port, ?string $serverKey = null): array
     {
-        return Cache::remember("server_status_{$ip}_{$port}", 30, function () use ($ip, $port) {
+        return Cache::remember("server_status_{$ip}_{$port}", 30, function () use ($ip, $port, $serverKey) {
             $empty = [
                 'online'      => false,
                 'players'     => null,
@@ -142,9 +147,17 @@ class ServerStatusController extends Controller
                     return array_merge($empty, ['online' => true, 'latency' => $latency]);
                 }
 
+                $players = isset($data['players']['online']) ? (int) $data['players']['online'] : null;
+
+                // Affluence : ce ping est frais (cache miss), on en profite
+                // pour échantillonner le nombre de joueurs (jamais bloquant).
+                if ($serverKey !== null && $serverKey !== '' && $players !== null) {
+                    $this->recordSample($serverKey, $players);
+                }
+
                 return [
                     'online'      => true,
-                    'players'     => isset($data['players']['online']) ? (int) $data['players']['online'] : null,
+                    'players'     => $players,
                     'max_players' => isset($data['players']['max']) ? (int) $data['players']['max'] : null,
                     'version'     => $data['version']['name'] ?? null,
                     'latency'     => $latency,
@@ -157,6 +170,37 @@ class ServerStatusController extends Controller
                 return array_merge($empty, ['online' => true]);
             }
         });
+    }
+
+    /**
+     * Enregistre un échantillon d'affluence pour un serveur, au plus une fois
+     * toutes les 5 minutes (verrou cache), et purge les échantillons de plus
+     * de 7 jours environ 1 fois sur 50. Entièrement fail-safe : ne doit JAMAIS
+     * faire échouer le ping (table absente avant migration, DB down…).
+     */
+    private function recordSample(string $serverKey, int $players): void
+    {
+        try {
+            // Cache::add ne retourne true que si la clé n'existait pas encore :
+            // il sert de verrou « au plus un échantillon par 5 min » sans requête SQL.
+            if (!Cache::add('player_sample_gate_' . md5($serverKey), 1, 300)) {
+                return;
+            }
+
+            ServerPlayerSample::create([
+                'server_key' => mb_substr($serverKey, 0, 255),
+                'players'    => $players,
+                'sampled_at' => now(),
+            ]);
+
+            // Purge occasionnelle des échantillons > 7 jours (pas de cron requis).
+            if (random_int(1, 50) === 1) {
+                ServerPlayerSample::where('sampled_at', '<', now()->subDays(7))->delete();
+            }
+        } catch (\Throwable $e) {
+            // Volontairement silencieux : l'affluence est un bonus, pas une
+            // fonctionnalité critique du statut serveur.
+        }
     }
 
     /**

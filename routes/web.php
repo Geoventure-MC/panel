@@ -34,6 +34,7 @@ use App\Http\Controllers\api\NotificationController;
 use App\Http\Controllers\api\ChangelogController;
 use App\Http\Controllers\api\LauncherContentController;
 use App\Http\Controllers\api\ServerStatusController;
+use App\Http\Controllers\api\ServerHistoryController;
 use App\Http\Controllers\api\TelemetryController;
 use App\Http\Controllers\api\LeaderboardController;
 use App\Http\Controllers\api\FactionController;
@@ -207,6 +208,7 @@ Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::get('/notifications', [NotificationController::class, 'getNotifications']);
     Route::get('/changelog', [ChangelogController::class, 'getChangelog']);
     Route::get('/servers-status', [ServerStatusController::class, 'getServersStatus']);
+    Route::get('/servers-history', [ServerHistoryController::class, 'getHistory']);
     Route::post('/telemetry', [TelemetryController::class, 'store'])->middleware('throttle:30,1');
     Route::get('/leaderboards', [LeaderboardController::class, 'getLeaderboards']);
     Route::get('/factions', [FactionController::class, 'getFactions']);
