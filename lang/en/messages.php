@@ -8,6 +8,7 @@ return [
         'file_manager' => 'File Manager',
         'update' => 'System Update',
         'notifications' => 'Announcements',
+        'changelog' => 'Changelog',
         'achievements' => 'Achievements',
         'seasons' => 'Seasons',
         'scheduled_events' => 'Scheduler',
@@ -404,6 +405,23 @@ return [
         'url' => 'Link',
         'expires_at' => 'Expiration',
     ],
+    'changelog' => [
+        'title' => 'Changelog',
+        'header' => 'Launcher Changelog',
+        'add' => 'New Entry',
+        'list' => 'Existing Entries',
+        'none' => 'No changelog entries yet.',
+        'version' => 'Version',
+        'entry_title' => 'Title',
+        'title_placeholder' => 'Spring update',
+        'body' => 'Content',
+        'body_placeholder' => "- New feature...
+- Bug fix...",
+        'body_hint' => 'Plain text, line breaks are preserved in the launcher.',
+        'image_url' => 'Image',
+        'published_at' => 'Publish date',
+        'published_at_hint' => 'empty = now',
+    ],
     'achievements' => [
         'title' => 'Achievements',
         'header' => 'Achievements Catalog',
@@ -644,6 +662,11 @@ return [
         'notification_created' => 'Announcement created successfully.',
         'notification_toggled' => 'Announcement status updated.',
         'notification_deleted' => 'Announcement deleted.',
+        // Changelog
+        'changelog_created' => 'Changelog entry created successfully.',
+        'changelog_updated' => 'Changelog entry updated.',
+        'changelog_toggled' => 'Changelog entry status updated.',
+        'changelog_deleted' => 'Changelog entry deleted.',
         // Achievements
         'achievement_created' => 'Achievement created successfully.',
         'scheduled_event_created' => 'Event scheduled successfully.',

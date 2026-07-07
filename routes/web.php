@@ -13,6 +13,7 @@ use App\Http\Controllers\AdminIgnoreController;
 use App\Http\Controllers\InstallController;
 use App\Http\Controllers\AdminConfigController;
 use App\Http\Controllers\AdminNotificationController;
+use App\Http\Controllers\AdminChangelogController;
 use App\Http\Controllers\AdminCommunityModController;
 use App\Http\Controllers\AdminLauncherContentController;
 use App\Http\Controllers\AdminAchievementController;
@@ -30,6 +31,7 @@ use App\Http\Controllers\api\ApiController;
 use App\Http\Controllers\api\FileController;
 use App\Http\Controllers\api\ModController;
 use App\Http\Controllers\api\NotificationController;
+use App\Http\Controllers\api\ChangelogController;
 use App\Http\Controllers\api\LauncherContentController;
 use App\Http\Controllers\api\ServerStatusController;
 use App\Http\Controllers\api\TelemetryController;
@@ -154,6 +156,12 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::patch('/notifications/{notification}/toggle', [AdminNotificationController::class, 'toggle'])->name('admin.notifications.toggle');
     Route::delete('/notifications/{notification}', [AdminNotificationController::class, 'destroy'])->name('admin.notifications.destroy');
 
+    Route::get('/changelog', [AdminChangelogController::class, 'index'])->name('admin.changelog');
+    Route::post('/changelog', [AdminChangelogController::class, 'store'])->name('admin.changelog.store');
+    Route::put('/changelog/{changelog}', [AdminChangelogController::class, 'update'])->name('admin.changelog.update');
+    Route::patch('/changelog/{changelog}/toggle', [AdminChangelogController::class, 'toggle'])->name('admin.changelog.toggle');
+    Route::delete('/changelog/{changelog}', [AdminChangelogController::class, 'destroy'])->name('admin.changelog.destroy');
+
     Route::get('/community-mods', [AdminCommunityModController::class, 'index'])->name('admin.community-mods');
     Route::post('/community-mods', [AdminCommunityModController::class, 'store'])->name('admin.community-mods.store');
     Route::put('/community-mods/{mod}', [AdminCommunityModController::class, 'update'])->name('admin.community-mods.update');
@@ -197,6 +205,7 @@ Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::get('/api', [ApiController::class, 'getOptions']);
     Route::get('/mods', [ModController::class, 'getMods']);
     Route::get('/notifications', [NotificationController::class, 'getNotifications']);
+    Route::get('/changelog', [ChangelogController::class, 'getChangelog']);
     Route::get('/servers-status', [ServerStatusController::class, 'getServersStatus']);
     Route::post('/telemetry', [TelemetryController::class, 'store'])->middleware('throttle:30,1');
     Route::get('/leaderboards', [LeaderboardController::class, 'getLeaderboards']);

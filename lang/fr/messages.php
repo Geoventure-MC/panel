@@ -8,6 +8,7 @@ return [
         'file_manager' => 'Gestionnaire de Fichiers',
         'update' => 'Mise à Jour',
         'notifications' => 'Annonces',
+        'changelog' => 'Changelog',
         'achievements' => 'Succès',
         'seasons' => 'Saisons',
         'scheduled_events' => 'Planificateur',
@@ -404,6 +405,23 @@ return [
         'url' => 'Lien',
         'expires_at' => 'Expiration',
     ],
+    'changelog' => [
+        'title' => 'Changelog',
+        'header' => 'Changelog du launcher',
+        'add' => 'Nouvelle entrée',
+        'list' => 'Entrées existantes',
+        'none' => 'Aucune entrée de changelog pour le moment.',
+        'version' => 'Version',
+        'entry_title' => 'Titre',
+        'title_placeholder' => 'Mise à jour de printemps',
+        'body' => 'Contenu',
+        'body_placeholder' => "- Nouvelle fonctionnalité...
+- Correction de bug...",
+        'body_hint' => 'Texte brut, les sauts de ligne sont conservés dans le launcher.',
+        'image_url' => 'Image',
+        'published_at' => 'Publication',
+        'published_at_hint' => 'vide = maintenant',
+    ],
     'achievements' => [
         'title' => 'Succès',
         'header' => 'Catalogue de succès',
@@ -644,6 +662,11 @@ return [
         'notification_created' => 'Annonce créée avec succès.',
         'notification_toggled' => "Statut de l'annonce modifié.",
         'notification_deleted' => 'Annonce supprimée.',
+        // Changelog
+        'changelog_created' => 'Entrée de changelog créée avec succès.',
+        'changelog_updated' => 'Entrée de changelog mise à jour.',
+        'changelog_toggled' => "Statut de l'entrée de changelog modifié.",
+        'changelog_deleted' => 'Entrée de changelog supprimée.',
         // Achievements
         'achievement_created' => 'Succès ajouté avec succès.',
         'scheduled_event_created' => 'Événement programmé avec succès.',

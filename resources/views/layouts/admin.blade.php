@@ -75,6 +75,11 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.changelog*') ? 'active' : '' }}" href="{{ route('admin.changelog') }}">
+                        <i class="bi bi-journal-text align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.changelog') }}</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.achievements*') ? 'active' : '' }}" href="{{ route('admin.achievements') }}">
                         <i class="bi bi-trophy align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.achievements') }}</span>
                     </a>
