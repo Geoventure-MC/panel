@@ -75,6 +75,9 @@ class ApiController extends Controller
                 : "Maintenance in progress, please try again later.",
             "game_version" => $gameVersion,
             "instance" => $instance ? ($instance->instance_slug ?: (string) $instance->server_id) : null,
+            // Thème par instance : couleur d'accent du launcher (hex #rrggbb).
+            // Null si non configurée → le launcher applique ses défauts.
+            "theme_color" => ($instance ? $instance->theme_color : ($server ? $server->theme_color : null)) ?: null,
             "client_id" => "",
             "verify" => $general ? (bool)$general->file_verification : true,
             "modde" => $general ? (bool)$general->mods_enabled : true,
@@ -96,6 +99,7 @@ class ApiController extends Controller
                     "port"       => (int) $s->server_port,
                     "type"       => $s->type ?? "minecraft",
                     "icon"       => $s->icon_url,
+                    "theme_color" => $s->theme_color ?: null,
                     "is_default" => (bool) $s->is_default,
                     // Toujours renvoyer une chaîne (jamais null) : le launcher
                     // plante sur azauth null (config.js getAzAuthUrl).

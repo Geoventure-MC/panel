@@ -24,6 +24,7 @@ class OptionsServer extends Model
         'loader_build_version',
         'loader_activation',
         'data_folder',
+        'theme_color',
         'is_default'
     ];
 

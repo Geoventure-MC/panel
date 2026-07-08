@@ -144,6 +144,8 @@ return [
         'loader_type' => 'Loader type',
         'loader_build' => 'Loader build',
         'loader_enable' => 'Loader enabled for this instance',
+        'theme_color' => 'Theme color',
+        'theme_color_hint' => 'Launcher accent color for this instance (hex #rrggbb, empty = default)',
     ],
     'security' => [
         'title' => 'Security Settings',

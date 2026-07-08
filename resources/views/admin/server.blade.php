@@ -102,6 +102,11 @@
                                 <label class="form-label">{{ __('messages.server.loader_build') }}</label>
                                 <input type="text" name="loader_build_version" class="form-control" placeholder="1.20.1-47.4.20">
                             </div>
+                            <div class="col-md-2">
+                                <label class="form-label">{{ __('messages.server.theme_color') }}</label>
+                                <input type="text" name="theme_color" class="form-control" placeholder="#4ade80" pattern="#[0-9a-fA-F]{6}">
+                                <small class="text-muted">{{ __('messages.server.theme_color_hint') }}</small>
+                            </div>
 
                             <div class="col-12">
                                 <button type="submit" class="btn btn-success">
@@ -258,6 +263,15 @@
                                                         <div class="col-md-2">
                                                             <label class="form-label mb-1">{{ __('messages.server.loader_build') }}</label>
                                                             <input type="text" name="loader_build_version" class="form-control form-control-sm" value="{{ $server['loader_build_version'] }}" placeholder="1.20.1-47.4.20">
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <label class="form-label mb-1">{{ __('messages.server.theme_color') }}</label>
+                                                            <div class="input-group input-group-sm">
+                                                                @if(!empty($server['theme_color']))
+                                                                    <span class="input-group-text p-1"><span style="display:inline-block;width:18px;height:18px;border-radius:4px;background: {{ $server['theme_color'] }};"></span></span>
+                                                                @endif
+                                                                <input type="text" name="theme_color" class="form-control form-control-sm" value="{{ $server['theme_color'] }}" placeholder="#4ade80" pattern="#[0-9a-fA-F]{6}">
+                                                            </div>
                                                         </div>
                                                         <div class="col-md-12 d-flex align-items-center gap-3 mt-1">
                                                             <div class="form-check">

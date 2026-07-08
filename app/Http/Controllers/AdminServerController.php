@@ -55,6 +55,7 @@ class AdminServerController extends Controller
                 'loader_build_version' => $server->loader_build_version,
                 'loader_activation' => $server->loader_activation,
                 'data_folder' => $server->data_folder,
+                'theme_color' => $server->theme_color,
             ];
         })->toArray();
 
@@ -170,6 +171,7 @@ class AdminServerController extends Controller
             'loader_build_version' => 'nullable|string|max:64',
             'loader_activation'    => 'nullable|boolean',
             'data_folder'          => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
+            'theme_color'          => 'nullable|string|regex:/^#[0-9a-fA-F]{6}$/',
         ]);
 
         // Génère un server_id unique (au-dessus des id Azuriom pour éviter les collisions)
@@ -198,6 +200,7 @@ class AdminServerController extends Controller
             'loader_build_version' => $validated['loader_build_version'] ?? null,
             'loader_activation'    => $request->has('loader_activation') ? (bool) $request->input('loader_activation') : null,
             'data_folder'          => $validated['data_folder'] ?? null,
+            'theme_color'          => $validated['theme_color'] ?? null,
             'is_default'           => $isFirst, // premier serveur ajouté = défaut
         ]);
 
@@ -226,6 +229,7 @@ class AdminServerController extends Controller
             'loader_build_version' => 'nullable|string|max:64',
             'loader_activation'    => 'nullable|boolean',
             'data_folder'          => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
+            'theme_color'          => 'nullable|string|regex:/^#[0-9a-fA-F]{6}$/',
         ]);
 
         $server = OptionsServer::where('server_id', $serverId)->first();
@@ -244,6 +248,7 @@ class AdminServerController extends Controller
             'loader_build_version' => $validated['loader_build_version'] ?? null,
             'loader_activation'    => $request->has('loader_activation') ? (bool) $request->input('loader_activation') : null,
             'data_folder'          => $validated['data_folder'] ?? null,
+            'theme_color'          => $validated['theme_color'] ?? null,
         ]);
 
         AuditLog::record('server.edit', $server, [

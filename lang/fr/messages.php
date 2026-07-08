@@ -144,6 +144,8 @@ return [
         'loader_type' => 'Type loader',
         'loader_build' => 'Build loader',
         'loader_enable' => 'Loader activé pour cette instance',
+        'theme_color' => "Couleur du thème",
+        'theme_color_hint' => "Couleur d'accent du launcher pour cette instance (hex #rrggbb, vide = défaut)",
     ],
     'security' => [
         'title' => 'Paramètres de sécurité',
