@@ -44,7 +44,7 @@ class ServerStatusController extends Controller
                 ? $this->cachedPing($server->server_ip, (int) $server->server_port)
                 : $this->pingServer($server->server_ip, (int) $server->server_port, (string) $serverKey);
 
-            $statuses[] = [
+            $status = [
                 'id'          => $server->instance_slug ?: $server->server_id,
                 'server_id'   => $server->server_id,
                 'name'        => $server->server_name,
@@ -57,6 +57,15 @@ class ServerStatusController extends Controller
                 'latency'     => $ping['latency'],
                 'is_default'  => (bool) $server->is_default,
             ];
+
+            // Échantillon de pseudos en ligne (players.sample du SLP) : champ
+            // volontairement OMIS quand le serveur n'en fournit pas (fail-safe,
+            // rétrocompatible avec les anciens launchers).
+            if (!empty($ping['players_sample']) && is_array($ping['players_sample'])) {
+                $status['players_sample'] = $ping['players_sample'];
+            }
+
+            $statuses[] = $status;
         }
 
         return response()->json($statuses, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
@@ -156,11 +165,12 @@ class ServerStatusController extends Controller
                 }
 
                 return [
-                    'online'      => true,
-                    'players'     => $players,
-                    'max_players' => isset($data['players']['max']) ? (int) $data['players']['max'] : null,
-                    'version'     => $data['version']['name'] ?? null,
-                    'latency'     => $latency,
+                    'online'         => true,
+                    'players'        => $players,
+                    'max_players'    => isset($data['players']['max']) ? (int) $data['players']['max'] : null,
+                    'version'        => $data['version']['name'] ?? null,
+                    'latency'        => $latency,
+                    'players_sample' => $this->extractPlayersSample($data),
                 ];
             } catch (\Throwable $e) {
                 if (is_resource($socket)) {
@@ -170,6 +180,42 @@ class ServerStatusController extends Controller
                 return array_merge($empty, ['online' => true]);
             }
         });
+    }
+
+    /**
+     * Extrait l'échantillon de pseudos en ligne du JSON SLP (`players.sample`,
+     * tableau d'objets { name, id }). Totalement tolérant : champ absent ou
+     * malformé → tableau vide (le champ sera alors omis de la réponse).
+     * Limité à 12 pseudos, dédoublonné, pseudos non-string ignorés.
+     *
+     * @return string[]
+     */
+    private function extractPlayersSample(array $data): array
+    {
+        $sample = $data['players']['sample'] ?? null;
+        if (!is_array($sample)) {
+            return [];
+        }
+
+        $names = [];
+        foreach ($sample as $entry) {
+            $name = is_array($entry) ? ($entry['name'] ?? null) : null;
+            if (!is_string($name)) {
+                continue;
+            }
+            // Nettoie les codes couleur legacy (§x) éventuels des faux pseudos
+            // de MOTD et ignore les entrées vides.
+            $name = trim(preg_replace('/\x{00A7}./u', '', $name) ?? '');
+            if ($name === '' || in_array($name, $names, true)) {
+                continue;
+            }
+            $names[] = mb_substr($name, 0, 32);
+            if (count($names) >= 12) {
+                break;
+            }
+        }
+
+        return $names;
     }
 
     /**
