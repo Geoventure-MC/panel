@@ -33,7 +33,9 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
-    ];
+            'totp_secret',
+        'totp_recovery_codes',
+];
 
     /**
      * Get the attributes that should be cast.

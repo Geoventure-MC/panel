@@ -13,6 +13,8 @@ use App\Http\Controllers\AdminIgnoreController;
 use App\Http\Controllers\InstallController;
 use App\Http\Controllers\AdminConfigController;
 use App\Http\Controllers\AdminNotificationController;
+use App\Http\Controllers\AdminTwoFactorController;
+use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\AdminChangelogController;
 use App\Http\Controllers\AdminCommunityModController;
 use App\Http\Controllers\AdminLauncherContentController;
@@ -49,6 +51,11 @@ use App\Http\Controllers\Admin\StatsController;
 
 
 Auth::routes(['register' => false]);
+
+// 2FA : deuxième étape du login (session '2fa_challenge_user_id' posée par LoginController).
+Route::get('/two-factor', [TwoFactorChallengeController::class, 'show'])->name('two-factor.challenge');
+Route::post('/two-factor', [TwoFactorChallengeController::class, 'verify'])
+    ->middleware('throttle:10,1')->name('two-factor.verify');
 
 // Routes d'installation
 Route::get('/install', [InstallController::class, 'showDatabase'])->name('install.database');
@@ -152,6 +159,11 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::post('/update', [UpdateController::class, 'update'])->name('admin.update.run');
     });
 
+    Route::get('/two-factor', [AdminTwoFactorController::class, 'index'])->name('admin.two-factor.index');
+    Route::post('/two-factor/begin', [AdminTwoFactorController::class, 'begin'])->name('admin.two-factor.begin');
+    Route::post('/two-factor/confirm', [AdminTwoFactorController::class, 'confirm'])->name('admin.two-factor.confirm');
+    Route::post('/two-factor/cancel', [AdminTwoFactorController::class, 'cancel'])->name('admin.two-factor.cancel');
+    Route::post('/two-factor/disable', [AdminTwoFactorController::class, 'disable'])->name('admin.two-factor.disable');
     Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('admin.notifications');
     Route::post('/notifications', [AdminNotificationController::class, 'store'])->name('admin.notifications.store');
     Route::patch('/notifications/{notification}/toggle', [AdminNotificationController::class, 'toggle'])->name('admin.notifications.toggle');

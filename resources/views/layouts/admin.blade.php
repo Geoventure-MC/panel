@@ -133,6 +133,11 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.two-factor*') ? 'active' : '' }}" href="{{ route('admin.two-factor.index') }}">
+                        <i class="bi bi-shield-lock align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.two_factor') }}</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.whitelist') ? 'active' : '' }}" href="{{ route('admin.whitelist') }}">
                         <i class="bi bi-list-check align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.whitelist') }}</span>
                     </a>
