@@ -101,6 +101,43 @@ class ServerStatusController extends Controller
     private function pingServer(string $ip, int $port, ?string $serverKey = null): array
     {
         return Cache::remember("server_status_{$ip}_{$port}", 30, function () use ($ip, $port, $serverKey) {
+            $result = $this->doPing($ip, $port, $serverKey);
+            $this->recordHistory($ip, $port, $result);
+
+            return $result;
+        });
+    }
+
+    /**
+     * Historique d'uptime (page /status) : une ligne par ping frais (~30 s),
+     * purge > 35 jours une fois par jour. Best-effort : n'échoue jamais.
+     */
+    private function recordHistory(string $ip, int $port, array $result): void
+    {
+        try {
+            \Illuminate\Support\Facades\DB::table('server_status_history')->insert([
+                'server_ip'   => $ip,
+                'server_port' => $port,
+                'online'      => (bool) ($result['online'] ?? false),
+                'latency'     => $result['latency'] ?? null,
+                'players'     => $result['players'] ?? null,
+                'created_at'  => now(),
+            ]);
+
+            Cache::remember('server_status_history_purge', 86400, function () {
+                \Illuminate\Support\Facades\DB::table('server_status_history')
+                    ->where('created_at', '<', now()->subDays(35))
+                    ->delete();
+
+                return true;
+            });
+        } catch (\Throwable $e) {
+            // table absente (migration pas encore lancée) / DB down : silencieux
+        }
+    }
+
+    private function doPing(string $ip, int $port, ?string $serverKey = null): array
+    {
             $empty = [
                 'online'      => false,
                 'players'     => null,
@@ -179,7 +216,6 @@ class ServerStatusController extends Controller
                 // Le socket s'est ouvert : le serveur écoute, mais le SLP a échoué.
                 return array_merge($empty, ['online' => true]);
             }
-        });
     }
 
     /**

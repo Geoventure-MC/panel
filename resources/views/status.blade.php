@@ -14,7 +14,8 @@
         .total { display:inline-flex; align-items:center; gap:8px; background:rgba(74,222,128,.12); border:1px solid rgba(74,222,128,.3);
                  color:var(--green); font-size:13px; font-weight:700; padding:6px 14px; border-radius:999px; margin-bottom:18px; }
         .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 18px; margin-bottom:12px;
-                display:flex; align-items:center; gap:14px; }
+                display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+        .card .uptime { flex-basis:100%; }
         .dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
         .on  { background:var(--green); box-shadow:0 0 10px var(--green); }
         .off { background:var(--red); }
@@ -22,6 +23,14 @@
         .meta { color:var(--muted); font-size:13px; text-align:right; }
         .updated { color:var(--muted); font-size:12px; text-align:center; margin-top:16px; }
         .empty { text-align:center; color:var(--muted); padding:32px 0; }
+        .uptime { margin-top: 10px; }
+        .uptime-bars { display: flex; gap: 2px; align-items: flex-end; }
+        .uptime-bars i { flex: 1; height: 18px; border-radius: 2px; background: #2c2f45; display:block; }
+        .uptime-bars i.u100 { background: #22c55e; }
+        .uptime-bars i.u90 { background: #84cc16; }
+        .uptime-bars i.u50 { background: #f59e0b; }
+        .uptime-bars i.u0 { background: #ef4444; }
+        .uptime-label { font-size: 11px; color: #9a9fb8; margin-top: 4px; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
@@ -43,6 +52,29 @@
                         {{ __('messages.status.offline') }}
                     @endif
                 </span>
+                @php
+                    $h = $history[($s['ip'] ?? '') . ':' . ($s['port'] ?? '')] ?? null;
+                @endphp
+                @if($h && count($h['days']))
+                    <div class="uptime">
+                        <div class="uptime-bars">
+                            @for($d = 29; $d >= 0; $d--)
+                                @php
+                                    $day = now()->subDays($d)->toDateString();
+                                    $up = $h['days'][$day] ?? null;
+                                    $cls = $up === null ? '' : ($up >= 99.5 ? 'u100' : ($up >= 90 ? 'u90' : ($up >= 50 ? 'u50' : 'u0')));
+                                @endphp
+                                <i class="{{ $cls }}" title="{{ $day }}{{ $up !== null ? ' — ' . $up . '%' : '' }}"></i>
+                            @endfor
+                        </div>
+                        <div class="uptime-label">
+                            <span>{{ __('messages.status.uptime_30d') }}</span>
+                            <span>
+                                @if($h['latency'] !== null){{ __('messages.status.avg_latency') }} : {{ $h['latency'] }} ms@endif
+                            </span>
+                        </div>
+                    </div>
+                @endif
             </div>
         @empty
             <div class="empty">{{ __('messages.status.no_data') }}</div>

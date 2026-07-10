@@ -525,6 +525,8 @@ return [
         'players_online' => 'players online',
         'offline' => 'Offline',
         'no_data' => 'No status data available.',
+        'uptime_30d' => 'Uptime — last 30 days',
+        'avg_latency' => 'Avg latency 24h',
         'updated_ago' => 'Updated :s s ago',
     ],
 
