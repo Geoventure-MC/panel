@@ -83,28 +83,30 @@ jobs:
 
           COMMITS=$(git log $RANGE --no-merges --pretty=format:"%s" | grep -v "\[skip ci\]" || true)
 
-          FEATS=$(echo "$COMMITS"  | grep -iE "^feat(\(|:|/| )|^feature" | sed -E "s/^[a-zA-Z]+(\([^)]*\))?:? ?//" | sed 's/^/- /' || true)
-          FIXES=$(echo "$COMMITS"  | grep -iE "^fix(\(|:|/| )"          | sed -E "s/^[a-zA-Z]+(\([^)]*\))?:? ?//" | sed 's/^/- /' || true)
-          OTHERS=$(echo "$COMMITS" | grep -viE "^feat(\(|:|/| )|^feature|^fix(\(|:|/| )" | sed -E "s/^[a-zA-Z]+(\([^)]*\))?:? ?//" | sed 's/^/- /' || true)
+          # Classement des commits en sections lisibles (messages en français).
+          COMMITS=$(echo "$COMMITS" | awk '!seen[$0]++' | grep -v '\[skip ci\]' | grep -vE '^(chore|Merge )' || true)
+          TECH=$(echo "$COMMITS"  | grep -E  '^(Correction build|Correction des? workflow|CI( |:)|Workflow|Refactor|Suppression|Nettoyage|Documentation|README|CLAUDE)' || true)
+          REST=$(echo "$COMMITS"  | grep -vE '^(Correction build|Correction des? workflow|CI( |:)|Workflow|Refactor|Suppression|Nettoyage|Documentation|README|CLAUDE)' || true)
+          FIXES=$(echo "$REST"    | grep -E  '^(Correction|Corrige|Fix|Hotfix|Bugfix|Répar)' || true)
+          PERFS=$(echo "$REST"    | grep -E  '^(Optimisation|Amélioration|Perf|Robustesse|Stabilité)' || true)
+          FEATS=$(echo "$REST"    | grep -vE '^(Correction|Corrige|Fix|Hotfix|Bugfix|Répar|Optimisation|Amélioration|Perf|Robustesse|Stabilité)' || true)
+          section() { if [ -n "$2" ]; then echo "### $1"; echo ""; echo "$2" | sed 's/^/- /'; echo ""; fi; }
 
           {
-            echo "## Geoventure Panel v${VERSION}"
+            echo "# 🖥 Geoventure Panel v${VERSION}"
             echo ""
-            echo "Panel d'administration Geoventure-MC, autonome (PHP + assets inclus)."
+            echo "> Le panel d'administration de **Geoventure-MC** — autonome (PHP + assets inclus)."
             echo ""
-            if [ -n "$FEATS" ]; then
-              echo "### Nouveautes"
-              echo "$FEATS"
-              echo ""
-            fi
-            if [ -n "$FIXES" ]; then
-              echo "### Corrections"
-              echo "$FIXES"
-              echo ""
-            fi
-            if [ -n "$OTHERS" ]; then
-              echo "### Autres changements"
-              echo "$OTHERS"
+            echo "📅 $(date '+%d/%m/%Y')"
+            echo ""
+            echo "---"
+            echo ""
+            section "✨ Nouveautés" "$FEATS"
+            section "⚡ Améliorations" "$PERFS"
+            section "🐛 Corrections" "$FIXES"
+            section "🔧 Technique" "$TECH"
+            if [ -z "$FEATS$PERFS$FIXES$TECH" ]; then
+              echo "_Mise à jour de maintenance._"
               echo ""
             fi
             echo "---"
