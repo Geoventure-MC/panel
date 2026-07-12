@@ -25,9 +25,15 @@ tu configures ici.
   depuis **un seul panel**. Ajout manuel ou synchro Azuriom, choix du serveur par défaut,
   upload d'icônes.
 - 🧩 **Mods & loader** — version Minecraft, Forge/Fabric, mods optionnels
-- 🛡️ **Sécurité** — mode maintenance (toggle rapide), whitelist par joueur ou par rôle
+- 🛡️ **Sécurité** — mode maintenance (toggle rapide), whitelist par joueur ou par rôle,
+  **double authentification (2FA/TOTP)** optionnelle pour les comptes admin (secret +
+  8 codes de récupération, journalisée dans l'audit)
 - 📢 **Annonces** — bandeau de notifications poussé dans le launcher
-- 🎨 **Interface** — couleur d'accent, splash, alertes, vidéo d'accueil
+- 🎨 **Interface** — couleur d'accent, splash, alertes, vidéo d'accueil, **couleur de
+  thème par instance** (surchargée par serveur, reprise par le launcher)
+- 📈 **Page de statut publique** (`/status`) — uptime 30 jours par serveur (barres
+  journalières), latence moyenne 24h, échantillon de joueurs en ligne, partageable
+  sans authentification
 - 🎮 **Discord RPC** — presence riche entièrement configurable
 - 📜 **Journal d'audit** — trace des actions admin
 - 📊 **Télémétrie & Statistiques** — réception des événements launcher (opt-in, IP
@@ -51,14 +57,15 @@ Le launcher interroge ces endpoints publics (préfixe `/utils`) :
 
 | Endpoint | Contenu |
 |----------|---------|
-| `GET /utils/api` | Toute la config : maintenance, loader, **liste des serveurs**, RPC, UI, whitelist… |
+| `GET /utils/api` | Toute la config : maintenance, loader, **liste des serveurs** (avec `theme_color` par instance), RPC, UI, whitelist… |
 | `GET /utils/mods` | Mods optionnels |
 | `GET /utils/notifications` | Annonces in-app actives |
-| `GET /utils/servers-status` | Statut en ligne / hors ligne de chaque serveur (ping SLP, cache 30s) |
+| `GET /utils/servers-status` | Statut en ligne / hors ligne de chaque serveur (ping SLP, cache 30s), avec un échantillon de pseudos en ligne (`players_sample`, max 12) |
 | `GET /utils/leaderboards` | Classements joueurs pour le hub profil du launcher |
 | `GET /utils/factions` | Données des factions pour le hub profil du launcher |
 | `POST /utils/telemetry` | Réception de la télémétrie launcher (opt-in, IP hashée, exempt CSRF) |
 | `GET /data` | Liste des fichiers du modpack (hash / taille / url) |
+| `GET /status` | Page publique (sans authentification) : uptime 30 jours + latence par serveur |
 
 > 💡 La clé `servers` de `/utils/api` contient **tous** les serveurs configurés,
 > ce qui permet à un seul panel d'alimenter les différents serveurs du launcher.
