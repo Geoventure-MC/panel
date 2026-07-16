@@ -2,6 +2,7 @@
 
 return [
     'sidebar' => [
+        'game_commands' => 'Game commands',
         'panel' => 'Panel',
         'users' => 'Users',
         'config' => 'Config',
@@ -597,7 +598,34 @@ return [
         'tab_shortcuts' => 'Shortcuts',
         'tab_discover' => 'Discover',
     ],
+
+    'game_commands' => [
+        'title' => 'Game commands',
+        'header' => '🎮 Web → game bridge',
+        'send' => 'Send a command to the server',
+        'history' => 'History (last 50)',
+        'type' => 'Type',
+        'target' => 'Target',
+        'target_hint' => 'Player name, country name, message or event type',
+        'amount' => 'Amount',
+        'amount_hint' => 'GeoCoins, keys, points… (ignored for broadcast/event)',
+        'submit' => 'Send',
+        'status' => 'Status',
+        'result' => 'Result',
+        'empty' => 'No command yet.',
+        'not_connected' => 'Game database not configured: set the credentials',
+        'types' => [
+            'give_coins' => 'Give GeoCoins (player)',
+            'give_key' => 'Give crate keys (player)',
+            'season_points' => 'Season points (country)',
+            'bank_deposit' => 'Bank deposit (country)',
+            'broadcast' => 'Chat announcement',
+            'trigger_event' => 'Trigger a world event',
+        ],
+    ],
+
     'flash' => [
+        'game_command_created' => 'Command sent — the plugin executes it within seconds.',
         // Users
         'user_added' => 'User added successfully',
         'user_updated' => 'User updated successfully',

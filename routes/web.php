@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\File;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SettingsExportController;
 use App\Http\Controllers\AdminAuditController;
+use App\Http\Controllers\AdminGameCommandController;
 use App\Http\Controllers\AdminBgController;
 use App\Http\Controllers\api\ApiController;
 use App\Http\Controllers\api\FileController;
@@ -195,6 +196,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::delete('/scheduled-events/{event}', [AdminScheduledEventController::class, 'destroy'])->name('admin.scheduled-events.destroy');
 
     Route::get('/audit', [AdminAuditController::class, 'index'])->name('admin.audit.index');
+    Route::get('/game-commands', [AdminGameCommandController::class, 'index'])->name('admin.game-commands');
+    Route::post('/game-commands', [AdminGameCommandController::class, 'store'])->name('admin.game-commands.store');
 
     Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
 

@@ -2,6 +2,7 @@
 
 return [
     'sidebar' => [
+        'game_commands' => "Commandes jeu",
         'panel' => 'Panel',
         'users' => 'Utilisateurs',
         'config' => 'Config',
@@ -597,7 +598,34 @@ return [
         'tab_shortcuts' => 'Raccourcis',
         'tab_discover' => 'À découvrir',
     ],
+
+    'game_commands' => [
+        'title' => "Commandes jeu",
+        'header' => "🎮 Pont web → jeu",
+        'send' => "Envoyer une commande au serveur",
+        'history' => "Historique (50 dernières)",
+        'type' => "Type",
+        'target' => "Cible",
+        'target_hint' => "Pseudo, nom de pays, message ou type d'événement",
+        'amount' => "Montant",
+        'amount_hint' => "GeoCoins, clés, points… (ignoré pour broadcast/événement)",
+        'submit' => "Envoyer",
+        'status' => "Statut",
+        'result' => "Résultat",
+        'empty' => "Aucune commande pour le moment.",
+        'not_connected' => "Base du jeu non configurée : renseignez les identifiants",
+        'types' => [
+            'give_coins' => "Donner des GeoCoins (joueur)",
+            'give_key' => "Donner des clés de caisse (joueur)",
+            'season_points' => "Points de saison (pays)",
+            'bank_deposit' => "Dépôt banque (pays)",
+            'broadcast' => "Annonce dans le chat",
+            'trigger_event' => "Déclencher un événement mondial",
+        ],
+    ],
+
     'flash' => [
+        'game_command_created' => "Commande envoyée au serveur — le plugin l'exécute sous quelques secondes.",
         // Users
         'user_added' => 'Utilisateur ajouté avec succès',
         'user_updated' => 'Utilisateur mis à jour avec succès',
