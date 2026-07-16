@@ -100,6 +100,11 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.game-commands*') ? 'active' : '' }}" href="{{ route('admin.game-commands') }}">
+                        <i class="bi bi-joystick align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.game_commands') }}</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.stats') ? 'active' : '' }}" href="{{ route('admin.stats') }}">
                         <i class="bi bi-bar-chart align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.stats') }}</span>
                     </a>

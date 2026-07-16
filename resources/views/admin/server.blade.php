@@ -139,6 +139,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>{{ __('messages.server.name') }}</th>
+                                        <th>{{ __('messages.server.instance') }}</th>
                                         <th>{{ __('messages.server.address') }}</th>
                                         <th>{{ __('messages.server.port') }}</th>
                                         <th>{{ __('messages.server.type') }}</th>
@@ -150,6 +151,13 @@
                                     @foreach($servers as $server)
                                         <tr>
                                             <td><strong>{{ $server['name'] }}</strong></td>
+                                            <td>
+                                                @if($server['instance_slug'])
+                                                    <code>{{ $server['instance_slug'] }}</code>
+                                                @else
+                                                    <span class="text-muted">—</span>
+                                                @endif
+                                            </td>
                                             <td><code>{{ $server['address'] }}</code></td>
                                             <td>{{ $server['port'] }}</td>
                                             <td><span class="badge bg-info">{{ $server['type'] }}</span></td>

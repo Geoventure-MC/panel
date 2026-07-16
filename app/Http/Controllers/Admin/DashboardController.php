@@ -7,6 +7,7 @@ use App\Http\Controllers\api\ServerStatusController;
 use App\Models\OptionsSecurity;
 use App\Models\OptionsNotification;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class DashboardController extends Controller
@@ -54,8 +55,15 @@ class DashboardController extends Controller
 
     private function getReleases()
     {
+        return Cache::remember('github_panel_releases', 3600, function () {
+            return $this->fetchReleases();
+        });
+    }
+
+    private function fetchReleases()
+    {
         try {
-            $response = Http::get('https://github.com/Geoventure-MC/panel/releases.atom');
+            $response = Http::timeout(5)->get('https://github.com/Geoventure-MC/panel/releases.atom');
 
             if (!$response->successful()) {
                 return [];

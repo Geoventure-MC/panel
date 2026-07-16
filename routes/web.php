@@ -28,12 +28,14 @@ use Illuminate\Support\Facades\File;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SettingsExportController;
 use App\Http\Controllers\AdminAuditController;
+use App\Http\Controllers\AdminGameCommandController;
 use App\Http\Controllers\AdminBgController;
 use App\Http\Controllers\api\ApiController;
 use App\Http\Controllers\api\FileController;
 use App\Http\Controllers\api\ModController;
 use App\Http\Controllers\api\NotificationController;
 use App\Http\Controllers\api\ChangelogController;
+
 use App\Http\Controllers\api\LauncherContentController;
 use App\Http\Controllers\api\ServerStatusController;
 use App\Http\Controllers\api\ServerHistoryController;
@@ -195,11 +197,14 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::delete('/scheduled-events/{event}', [AdminScheduledEventController::class, 'destroy'])->name('admin.scheduled-events.destroy');
 
     Route::get('/audit', [AdminAuditController::class, 'index'])->name('admin.audit.index');
+    Route::get('/game-commands', [AdminGameCommandController::class, 'index'])->name('admin.game-commands');
+    Route::post('/game-commands', [AdminGameCommandController::class, 'store'])->name('admin.game-commands.store');
 
     Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
 
     Route::get('/dashboard/live', [LiveDashboardController::class, 'index'])->name('admin.dashboard.live');
     Route::get('/dashboard/feed', [LiveDashboardController::class, 'feed'])->name('admin.dashboard.feed');
+    Route::get('/audit', [AuditLogController::class, 'index'])->name('admin.audit');
 
     Route::get('/launcher-content', [AdminLauncherContentController::class, 'index'])->name('admin.launcher-content');
     Route::post('/launcher-content', [AdminLauncherContentController::class, 'store'])->name('admin.launcher-content.store');
@@ -233,6 +238,11 @@ Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::post('/seasons/sync', [SeasonController::class, 'sync']);
     Route::get('/scheduled-events', [ScheduledEventController::class, 'index']);
     Route::post('/scheduled-events/claim', [ScheduledEventController::class, 'claim']);
+    Route::get('/launcher-content', [LauncherContentController::class, 'getLauncherContent']);
+    Route::get('/community-mods', [CommunityModController::class, 'getCommunityMods']);
+    Route::get('/leaderboards', [LeaderboardController::class, 'getLeaderboards']);
+    Route::get('/factions', [FactionController::class, 'getFactions']);
+    Route::post('/telemetry', [TelemetryController::class, 'store']);
 });
 Route::get('/data', [FileController::class, 'getFiles'])->middleware('throttle:120,1');
 Route::get('/api/centralcorp/community-mods', [CommunityModController::class, 'getCommunityMods']);

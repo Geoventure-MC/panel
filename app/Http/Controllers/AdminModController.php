@@ -15,6 +15,7 @@ class AdminModController extends Controller
 
         // glob() peut renvoyer false (dossier absent / erreur) → foreach(false)
         // déclencherait une TypeError. On retombe sur un tableau vide.
+
         $jarFiles = glob($modsDir . '/*.jar') ?: [];
         $modsData = [];
 
@@ -31,6 +32,7 @@ class AdminModController extends Controller
         $selectedModId = $request->input('selectedMod', null);
 
         // Instances disponibles pour cibler un mod sur un serveur précis.
+
         $instances = OptionsServer::whereNotNull('instance_slug')
             ->get(['instance_slug', 'server_name'])
             ->map(fn($s) => ['slug' => $s->instance_slug, 'name' => $s->server_name]);
@@ -48,6 +50,7 @@ class AdminModController extends Controller
             'optional_recommended' => 'nullable|boolean',
             'optional_image'       => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
             'optional_instance'    => 'nullable|string|max:64',
+            'optional_instance'    => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
         ]);
 
         $mod = OptionsMods::findOrFail($request->mod_id);
@@ -67,6 +70,7 @@ class AdminModController extends Controller
 
         return redirect()->back()->with('success', __('messages.flash.mod_updated'));
     }
+
     public function deleteOptionalMod($id)
     {
         try {
@@ -86,6 +90,7 @@ class AdminModController extends Controller
             'name'        => 'required|string|max:150',
             'description' => 'nullable|string|max:1000',
             'instance'    => 'nullable|string|max:64',
+            'instance'    => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
         ]);
 
         $mod = new OptionsMods();
@@ -98,6 +103,7 @@ class AdminModController extends Controller
 
         return redirect()->back()->with('success', __('messages.flash.mod_added'));
     }
+
     public function getOptionalModDetails($id)
     {
         $mod = OptionsMods::find($id);
@@ -106,6 +112,4 @@ class AdminModController extends Controller
         }
         return response()->json($mod);
     }
-
-
 }
