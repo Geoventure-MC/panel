@@ -5,7 +5,6 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use App\Models\CommunityMod;
 
-
 class CommunityModController extends Controller
 {
     public function getCommunityMods()
@@ -26,6 +25,5 @@ class CommunityModController extends Controller
             ]);
 
         return response()->json($mods, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        return response()->json([], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 }

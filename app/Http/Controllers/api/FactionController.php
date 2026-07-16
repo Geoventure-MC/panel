@@ -136,11 +136,5 @@ class FactionController extends Controller
             Log::warning('FactionController rosters: ' . $e->getMessage());
             return [];
         }
-
-class FactionController extends Controller
-{
-    public function getFactions()
-    {
-        return response()->json([], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 }

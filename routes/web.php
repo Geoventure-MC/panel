@@ -48,10 +48,6 @@ use App\Http\Controllers\api\AchievementUnlockController;
 use App\Http\Controllers\api\SeasonController;
 use App\Http\Controllers\api\ScheduledEventController;
 use App\Http\Controllers\Admin\LiveDashboardController;
-use App\Http\Controllers\api\CommunityModController;
-use App\Http\Controllers\api\LeaderboardController;
-use App\Http\Controllers\api\FactionController;
-use App\Http\Controllers\api\TelemetryController;
 use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Admin\StatsController;
 

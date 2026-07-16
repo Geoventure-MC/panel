@@ -88,11 +88,5 @@ class LeaderboardController extends Controller
             Log::warning('LeaderboardController: ' . $e->getMessage());
             return [];
         }
-
-class LeaderboardController extends Controller
-{
-    public function getLeaderboards()
-    {
-        return response()->json([], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 }
