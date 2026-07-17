@@ -204,7 +204,6 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/dashboard/live', [LiveDashboardController::class, 'index'])->name('admin.dashboard.live');
     Route::get('/dashboard/feed', [LiveDashboardController::class, 'feed'])->name('admin.dashboard.feed');
-    Route::get('/audit', [AuditLogController::class, 'index'])->name('admin.audit');
 
     Route::get('/launcher-content', [AdminLauncherContentController::class, 'index'])->name('admin.launcher-content');
     Route::post('/launcher-content', [AdminLauncherContentController::class, 'store'])->name('admin.launcher-content.store');
