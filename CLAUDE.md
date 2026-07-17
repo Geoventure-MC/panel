@@ -108,6 +108,17 @@ Correctifs livrés suite aux erreurs d'une session launcher live (502/404/double
 - Vérifier Admin → Loader (`1.20.1`, forge `1.20.1-47.4.20`, activé) et Admin → Général (`azuriom_url`).
 - Installer/activer le plugin Skin-API sur l'Azuriom pour les avatars.
 
+## ✅ Feature LIVRÉE : Pont web → jeu (Commandes jeu)
+
+Page **Admin → Commandes jeu** (`AdminGameCommandController`, vue
+`admin/game_commands.blade.php`, routes `admin.game-commands[.store]`,
+sidebar `bi-joystick`) : insère des commandes dans la table `gf_web_commands`
+de la base du jeu (connexion `game`, `GEO_GAME_DB_*`) que le plugin
+GeoFactions consomme toutes les 5 s. Types : `give_coins`, `give_key`,
+`season_points`, `bank_deposit`, `broadcast`, `trigger_event`. Historique 50
+dernières (pending/done/failed + résultat), audit log, fail-safe si base non
+configurée. Contrat complet : `GEOVENTURE-API.md` (repo Pluginmc).
+
 ## 📋 Features PANEL à faire
 
 _(backlog vidé — voir « livrées » ci-dessous)_
