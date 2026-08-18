@@ -1,0 +1,39 @@
+# Annonce la release au site Geoventure. Rien n'est publié immédiatement :
+# le site accumule les versions et les regroupe en un seul article par jour
+# (une version majeure x.0.0 est publiée tout de suite).
+name: Annoncer la release au site
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Envoyer la version au site
+        env:
+          SITE_URL: ${{ secrets.GEO_SITE_URL }}
+          API_KEY: ${{ secrets.GEO_SITE_API_KEY }}
+        run: |
+          if [ -z "$SITE_URL" ] || [ -z "$API_KEY" ]; then
+            echo "Secrets GEO_SITE_URL / GEO_SITE_API_KEY absents — étape ignorée."
+            exit 0
+          fi
+          jq -n \
+            --arg source "panel" \
+            --arg version "${{ github.event.release.tag_name }}" \
+            --arg title "${{ github.event.release.name }}" \
+            --arg body "${{ github.event.release.body }}" \
+            --arg url "${{ github.event.release.html_url }}" \
+            --arg released_at "${{ github.event.release.published_at }}" \
+            '{source:$source, version:$version, title:$title, body:$body, url:$url, released_at:$released_at}' \
+            > payload.json
+          code=$(curl -sS -o response.json -w '%{http_code}' \
+            -X POST "$SITE_URL/api/geo-countries/changelog" \
+            -H "Content-Type: application/json" \
+            -H "X-Geo-Api-Key: $API_KEY" \
+            --data @payload.json)
+          echo "Réponse ($code) :"; cat response.json; echo
+          # Ne jamais faire échouer une release à cause de l'annonce.
+          [ "$code" = "200" ] || echo "::warning::Le site n'a pas accepté l'annonce (HTTP $code)."
