@@ -12,6 +12,15 @@ name: Annoncer la release au site
 on:
   release:
     types: [published]
+  # Appelé directement par le workflow de release : l'événement « release »
+  # ci-dessus ne part pas quand la release est créée avec le GITHUB_TOKEN
+  # par défaut (GitHub bloque la cascade de workflows).
+  workflow_call:
+    inputs:
+      test:
+        description: "Envoyer une entrée de test (au lieu de la dernière release)"
+        type: boolean
+        default: false
   workflow_dispatch:
     inputs:
       test:
