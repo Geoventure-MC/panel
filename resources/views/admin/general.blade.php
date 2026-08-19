@@ -100,6 +100,17 @@
                     </div>
 
                     <div class="mt-3">
+                        <label for="map_url" class="form-label">{{ __('messages.general.map_url') }}</label>
+                        <input type="url"
+                               class="form-control"
+                               id="map_url"
+                               name="map_url"
+                               placeholder="https://map.geoventure.fr"
+                               value="{{ old('map_url', $options->map_url ?? '') }}">
+                        <div class="form-text">{{ __('messages.general.map_url_help') }}</div>
+                    </div>
+
+                    <div class="mt-3">
                         <label for="discord_webhook_url" class="form-label">{{ __('messages.general.discord_webhook') }}</label>
                         <input type="url"
                                class="form-control"

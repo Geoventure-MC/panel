@@ -23,6 +23,8 @@ class AdminController extends Controller
             'min_ram' => 'required|integer|min:512|max:65536',
             'max_ram' => 'required|integer|min:512|max:65536',
             'discord_webhook_url' => 'nullable|url|starts_with:https://discord.com/api/webhooks/,https://discordapp.com/api/webhooks/',
+            // Carte du monde : http(s) uniquement, le launcher l'ouvre dans le navigateur.
+            'map_url' => 'nullable|url|max:255|starts_with:http://,https://',
         ]);
 
         if ($validator->fails()) {

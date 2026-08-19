@@ -123,6 +123,9 @@ class ApiController extends Controller
             "splash_author" => $ui ? $ui->splash_author : "Riptiaz",
             "accent_color" => $ui ? $ui->accent_color : "#FFA500",
             "azauth" => $primaryAzuriom ? $primaryAzuriom->url : ($general && $general->azuriom_url ? $general->azuriom_url : ""),
+            // Carte du monde (Dynmap). Chaîne vide si non configurée : le
+            // launcher masque simplement son bouton, il ne devine aucune URL.
+            "map_url" => ($general && $general->map_url) ? $general->map_url : "",
             "azuriom_sites" => OptionsAzuriom::all()->map(fn($a) => [
                 'server_id'  => $a->server_id,
                 'url'        => $a->url,
