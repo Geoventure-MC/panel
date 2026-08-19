@@ -108,6 +108,8 @@ return [
         'max_ram' => 'Maximum RAM (MB)',
         'discord_webhook' => 'Discord webhook (critical actions)',
         'discord_webhook_help' => 'If set, critical admin actions (servers, security, users...) are posted to Discord.',
+        'map_url' => "World map (URL)",
+        'map_url_help' => "Public address of the Dynmap map, e.g. https://map.geoventure.fr. Leave empty to hide the Map button in the launcher.",
     ],
     'server' => [
         'title' => 'Server Settings',

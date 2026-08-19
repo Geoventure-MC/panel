@@ -20,6 +20,7 @@ class OptionsGeneral extends Model
         'role_display',
         'money_display',
         'azuriom_url',
+        'map_url',
         'azuriom_api_key',
         'discord_webhook_url',
         'min_ram',
