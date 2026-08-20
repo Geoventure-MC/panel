@@ -237,11 +237,6 @@ Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::post('/seasons/sync', [SeasonController::class, 'sync']);
     Route::get('/scheduled-events', [ScheduledEventController::class, 'index']);
     Route::post('/scheduled-events/claim', [ScheduledEventController::class, 'claim']);
-    Route::get('/launcher-content', [LauncherContentController::class, 'getLauncherContent']);
-    Route::get('/community-mods', [CommunityModController::class, 'getCommunityMods']);
-    Route::get('/leaderboards', [LeaderboardController::class, 'getLeaderboards']);
-    Route::get('/factions', [FactionController::class, 'getFactions']);
-    Route::post('/telemetry', [TelemetryController::class, 'store']);
 });
 Route::get('/data', [FileController::class, 'getFiles'])->middleware('throttle:120,1');
 Route::get('/api/centralcorp/community-mods', [CommunityModController::class, 'getCommunityMods']);
