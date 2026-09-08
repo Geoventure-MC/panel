@@ -124,6 +124,27 @@
                             <i class="bi bi-box-arrow-in-right me-2"></i>{{ __('messages.auth.login_btn') }}
                         </button>
                     </form>
+
+                    @php
+                        // La page de connexion doit s'afficher même sur une
+                        // base pas encore migrée (première installation) :
+                        // sans ce garde-fou, la colonne manquante ferait une
+                        // 500 avant même de pouvoir se connecter.
+                        $ssoOn = rescue(fn () => (bool) \App\Models\OptionsGeneral::first()?->sso_enabled, false, false);
+                    @endphp
+                    @if ($ssoOn)
+                        {{-- Connexion déléguée au site : le mot de passe local
+                             reste au-dessus, comme porte de secours si le site
+                             est indisponible. --}}
+                        <div class="d-flex align-items-center my-3">
+                            <hr class="flex-grow-1">
+                            <span class="px-2 text-secondary small">{{ __('messages.auth.or') }}</span>
+                            <hr class="flex-grow-1">
+                        </div>
+                        <a href="{{ route('sso.redirect') }}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-globe2 me-2"></i>{{ __('messages.sso.login_with_site') }}
+                        </a>
+                    @endif
                 </div>
             </div>
 

@@ -23,6 +23,9 @@ class User extends Authenticatable
         'is_admin',
         'role',
         'email_verified_at',
+        'sso_id',
+        'sso_uuid',
+        'sso_linked_at',
     ];
 
     /**
@@ -48,6 +51,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'sso_linked_at' => 'datetime',
         ];
     }
 

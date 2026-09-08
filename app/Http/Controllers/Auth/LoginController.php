@@ -20,7 +20,9 @@ class LoginController extends Controller
     |
     */
 
-    use AuthenticatesUsers;
+    use AuthenticatesUsers {
+        logout as protected traitLogout;
+    }
 
     /**
      * Where to redirect users after login.
@@ -38,6 +40,24 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
         $this->middleware('auth')->only('logout');
+    }
+
+    /**
+     * Déconnexion : on coupe aussi la session côté site.
+     *
+     * Sans ça, se déconnecter du panel laissait le ticket SSO valide sur
+     * geoventure.fr — le clic suivant sur « se connecter avec le site »
+     * reconnectait sans rien demander, ce qui n'est pas ce qu'on attend
+     * d'une déconnexion sur un poste partagé.
+     */
+    public function logout(Request $request)
+    {
+        $ticket = $request->session()->get('sso_ticket');
+        if (is_string($ticket) && $ticket !== '') {
+            app(\App\Services\SsoClient::class)->logout($ticket);
+        }
+
+        return $this->traitLogout($request);
     }
 
     /**

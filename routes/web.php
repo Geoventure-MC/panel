@@ -59,6 +59,12 @@ Route::get('/two-factor', [TwoFactorChallengeController::class, 'show'])->name('
 Route::post('/two-factor', [TwoFactorChallengeController::class, 'verify'])
     ->middleware('throttle:10,1')->name('two-factor.verify');
 
+// Connexion unique : le panel délègue son authentification au site.
+Route::get('/auth/sso/redirect', [\App\Http\Controllers\Auth\SsoLoginController::class, 'redirect'])
+    ->middleware('throttle:20,1')->name('sso.redirect');
+Route::get('/auth/sso/callback', [\App\Http\Controllers\Auth\SsoLoginController::class, 'callback'])
+    ->middleware('throttle:20,1')->name('sso.callback');
+
 // Routes d'installation
 Route::get('/install', [InstallController::class, 'showDatabase'])->name('install.database');
 Route::post('/install', [InstallController::class, 'install'])->name('install.store');
@@ -86,6 +92,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
     // Config .env / Azuriom : réservé aux super-admins.
     Route::middleware('superadmin')->group(function () {
+        Route::get('/sso', [\App\Http\Controllers\AdminSsoController::class, 'show'])->name('admin.sso');
+        Route::post('/sso', [\App\Http\Controllers\AdminSsoController::class, 'update'])->name('admin.sso.update');
         Route::get('/config', [AdminConfigController::class, 'show'])->name('admin.config');
         Route::post('/config', [AdminConfigController::class, 'update'])->name('admin.config.update');
         Route::post('/config/azuriom', [AdminConfigController::class, 'addAzuriom'])->name('admin.config.azuriom.add');
@@ -201,6 +209,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::post('/game-commands', [AdminGameCommandController::class, 'store'])->name('admin.game-commands.store');
 
     Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
+    Route::get('/stats/export.csv', [StatsController::class, 'export'])->name('admin.stats.export');
 
     Route::get('/dashboard/live', [LiveDashboardController::class, 'index'])->name('admin.dashboard.live');
     Route::get('/dashboard/feed', [LiveDashboardController::class, 'feed'])->name('admin.dashboard.feed');
