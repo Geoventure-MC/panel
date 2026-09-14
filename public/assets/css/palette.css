@@ -1,0 +1,17 @@
+/*
+ * Palette Geoventure — variables CSS.
+ *
+ * Généré par tools/gen_palette.py depuis design/palette.json.
+ * NE PAS ÉDITER : toute modification faite ici sera écrasée, et le
+ * contrôle de fraîcheur (--check) fera échouer la CI.
+ */
+:root {
+    /* Serveurs */
+    --geo-geoventure: #4ade80;  /* Geoventure */
+    --geo-elandor:    #a78bfa;  /* Elandor Chronicles */
+    --geo-pokeland:   #fb923c;  /* Pokeland */
+
+    /* États */
+    --geo-gold:        #f59e0b;  /* économie / récompense — identique au jeu */
+    --geo-danger-soft: #f87171;  /* avertissement */
+}

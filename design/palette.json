@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "authority": "geoventure-mc/geoMods — design/palette.json",
+  "$comment": [
+    "Copie vendorée de la palette Geoventure pour le panel.",
+    "",
+    "Volontairement réduite : le panel s'appuie sur un thème d'administration",
+    "existant (Bootstrap / SB Admin), dont les gris et le bleu #4e73df ne sont",
+    "PAS des couleurs Geoventure. Seules les teintes de marque sont reprises",
+    "ici — les absorber toutes reviendrait à repeindre le thème, ce qui n'a",
+    "pas été demandé.",
+    "",
+    "Le groupe « server » est partagé : ses valeurs doivent rester identiques",
+    "au jeu, au site et au launcher.",
+    "",
+    "Régénérer : python3 tools/gen_palette.py"
+  ],
+  "groups": [
+    {
+      "id": "server",
+      "name": "Serveurs",
+      "doc": "Partagé avec le jeu, le site et le launcher. Ne pas réaffecter.",
+      "tokens": [
+        {
+          "id": "geoventure",
+          "argb": "#FF4ADE80",
+          "doc": "Geoventure"
+        },
+        {
+          "id": "elandor",
+          "argb": "#FFA78BFA",
+          "doc": "Elandor Chronicles"
+        },
+        {
+          "id": "pokeland",
+          "argb": "#FFFB923C",
+          "doc": "Pokeland"
+        }
+      ]
+    },
+    {
+      "id": "state",
+      "name": "États",
+      "doc": "Teintes de marque utilisées par les vues du panel.",
+      "tokens": [
+        {
+          "id": "gold",
+          "argb": "#FFF59E0B",
+          "doc": "économie / récompense — identique au jeu"
+        },
+        {
+          "id": "danger_soft",
+          "argb": "#FFF87171",
+          "doc": "avertissement"
+        }
+      ]
+    }
+  ]
+}

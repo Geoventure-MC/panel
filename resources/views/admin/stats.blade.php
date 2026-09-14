@@ -7,9 +7,9 @@
 @section('content')
 {{-- Palette Geoventure : mêmes couleurs que le launcher, le site et le mod. --}}
 <style>
-    .geo-stat { border-left: 3px solid var(--geo-accent, #4ade80); }
-    .geo-trend-up { color: #4ade80; }
-    .geo-trend-down { color: #f87171; }
+    .geo-stat { border-left: 3px solid var(--geo-accent, var(--geo-geoventure)); }
+    .geo-trend-up { color: var(--geo-geoventure); }
+    .geo-trend-down { color: var(--geo-danger-soft); }
     .geo-heat { display: grid; grid-template-columns: 2.5rem repeat(24, 1fr); gap: 2px; }
     .geo-heat-cell { aspect-ratio: 1; border-radius: 2px; background: rgba(74, 222, 128, .08); }
     .geo-heat-label { font-size: .7rem; opacity: .6; display: flex; align-items: center; }
