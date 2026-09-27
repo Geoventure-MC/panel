@@ -656,6 +656,7 @@ return [
             'bank_deposit' => "Dépôt banque (pays)",
             'broadcast' => "Annonce dans le chat",
             'trigger_event' => "Déclencher un événement mondial",
+            'architecture_rating' => "Note d'architecture de la semaine (pays, 0 à 10)",
         ],
     ],
 

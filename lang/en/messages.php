@@ -656,6 +656,7 @@ return [
             'bank_deposit' => 'Bank deposit (country)',
             'broadcast' => 'Chat announcement',
             'trigger_event' => 'Trigger a world event',
+            'architecture_rating' => "This week's architecture score (country, 0 to 10)",
         ],
     ],
 

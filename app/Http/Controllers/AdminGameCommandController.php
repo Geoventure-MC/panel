@@ -14,11 +14,17 @@ use Illuminate\Support\Facades\Log;
  *
  * Fail-safe : si la connexion `game` n'est pas configurée, la page reste
  * accessible et l'explique — jamais de 500.
+ *
+ * `architecture_rating` : note d'architecture (0-10) d'un pays pour la
+ * notation hebdomadaire EN COURS (plugin rating/CountryRatingManager) ;
+ * cible = nom du pays, montant = note. Une nouvelle note remplace la
+ * précédente de la même semaine.
  */
 class AdminGameCommandController extends Controller
 {
     private const TYPES = [
         'give_coins', 'give_key', 'season_points', 'bank_deposit', 'broadcast', 'trigger_event',
+        'architecture_rating',
     ];
 
     private function table(): string
@@ -59,6 +65,10 @@ class AdminGameCommandController extends Controller
             'target' => 'required|string|max:255',
             'amount' => 'nullable|integer|min:0|max:100000000',
         ]);
+        // La note d'architecture va de 0 à 10 : le plugin la refuserait, autant le dire ici.
+        if ($request->type === 'architecture_rating') {
+            $request->validate(['amount' => 'required|integer|min:0|max:10']);
+        }
 
         if (! $this->gameConfigured()) {
             return back()->with('error', __('messages.common.errors_occurred'));
