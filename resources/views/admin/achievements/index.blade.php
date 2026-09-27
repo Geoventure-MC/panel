@@ -78,6 +78,16 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ __('messages.achievements.rarity') }}</label>
+                        <select name="rarity" id="ach-rarity" class="form-select">
+                            @foreach(\App\Models\Achievement::RARITIES as $r)
+                                <option value="{{ $r }}">{{ __('messages.achievements.rarity_' . $r) }}</option>
+                            @endforeach
+                        </select>
+                        <div class="form-text">{{ __('messages.achievements.rarity_hint') }}</div>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label fw-semibold">{{ __('messages.achievements.condition_type') }}</label>
                         <select name="condition_type" id="ach-condition-type" class="form-select" required onchange="toggleConditionValue()">
                             <option value="manual">{{ __('messages.achievements.cond_manual') }}</option>
@@ -148,6 +158,9 @@
                                         @if($ach->category)
                                             <span class="badge bg-light text-dark ms-1">{{ $ach->category }}</span>
                                         @endif
+                                        @if(($ach->rarity ?? 'common') !== 'common')
+                                            <span class="badge ms-1" style="background: {{ ['uncommon' => '#4ade80', 'rare' => '#55d7ff', 'epic' => '#7c6ff0', 'legendary' => '#f59e0b'][$ach->rarity] ?? '#9a9fb8' }}; color: #12131f;">{{ __('messages.achievements.rarity_' . $ach->rarity) }}</span>
+                                        @endif
                                         <div class="text-muted small"><code>{{ $ach->code }}</code></div>
                                     </td>
                                     <td>
@@ -159,7 +172,7 @@
                                     <td>{{ $ach->points }}</td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-outline-primary" title="{{ __('messages.common.edit') }}"
-                                            onclick="editAchievement({{ $ach->id }}, {{ json_encode($ach->code) }}, {{ json_encode($ach->name) }}, {{ json_encode($ach->description) }}, {{ json_encode($ach->icon) }}, {{ json_encode($ach->points) }}, {{ json_encode($ach->category) }}, {{ json_encode($ach->condition_type) }}, {{ json_encode($ach->condition_value) }})">
+                                            onclick="editAchievement({{ $ach->id }}, {{ json_encode($ach->code) }}, {{ json_encode($ach->name) }}, {{ json_encode($ach->description) }}, {{ json_encode($ach->icon) }}, {{ json_encode($ach->points) }}, {{ json_encode($ach->category) }}, {{ json_encode($ach->condition_type) }}, {{ json_encode($ach->condition_value) }}, {{ json_encode($ach->rarity ?? 'common') }})">
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                         <form action="{{ route('admin.achievements.toggle', $ach) }}" method="POST" class="d-inline">
@@ -197,7 +210,7 @@ function toggleConditionValue() {
     document.getElementById('condition-value-wrapper').style.display = needsValue ? '' : 'none';
 }
 
-function editAchievement(id, code, name, description, icon, points, category, conditionType, conditionValue) {
+function editAchievement(id, code, name, description, icon, points, category, conditionType, conditionValue, rarity) {
     document.getElementById('achievement-form').action = '{{ url("admin/achievements") }}/' + id;
     document.getElementById('form-method').value = 'PUT';
     document.getElementById('ach-code').value = code;
@@ -206,6 +219,7 @@ function editAchievement(id, code, name, description, icon, points, category, co
     document.getElementById('ach-icon').value = icon || '';
     document.getElementById('ach-points').value = points;
     document.getElementById('ach-category').value = category || '';
+    document.getElementById('ach-rarity').value = rarity || 'common';
     document.getElementById('ach-condition-type').value = conditionType;
     document.getElementById('ach-condition-value').value = (conditionValue === null ? '' : conditionValue);
     toggleConditionValue();
@@ -224,6 +238,7 @@ function resetForm() {
     document.getElementById('ach-icon').value = '';
     document.getElementById('ach-points').value = '10';
     document.getElementById('ach-category').value = '';
+    document.getElementById('ach-rarity').value = 'common';
     document.getElementById('ach-condition-type').value = 'manual';
     document.getElementById('ach-condition-value').value = '';
     toggleConditionValue();

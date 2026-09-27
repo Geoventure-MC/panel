@@ -31,6 +31,7 @@ class AdminAchievementController extends Controller
             'description'     => 'nullable|string|max:1000',
             'icon'            => 'nullable|string|max:255',
             'points'          => 'required|integer|min:0|max:100000',
+            'rarity'          => ['nullable', Rule::in(Achievement::RARITIES)],
             'category'        => 'nullable|string|max:255',
             'condition_type'  => ['required', Rule::in(self::CONDITION_TYPES)],
             'condition_value' => 'nullable|integer|min:0',
@@ -42,6 +43,7 @@ class AdminAchievementController extends Controller
             'description'     => $request->description,
             'icon'            => $request->icon,
             'points'          => $request->points,
+            'rarity'          => $request->input('rarity') ?: 'common',
             'category'        => $request->category,
             'condition_type'  => $request->condition_type,
             'condition_value' => $request->condition_value,
@@ -61,6 +63,7 @@ class AdminAchievementController extends Controller
             'description'     => 'nullable|string|max:1000',
             'icon'            => 'nullable|string|max:255',
             'points'          => 'required|integer|min:0|max:100000',
+            'rarity'          => ['nullable', Rule::in(Achievement::RARITIES)],
             'category'        => 'nullable|string|max:255',
             'condition_type'  => ['required', Rule::in(self::CONDITION_TYPES)],
             'condition_value' => 'nullable|integer|min:0',
@@ -75,7 +78,7 @@ class AdminAchievementController extends Controller
             'category'        => $request->category,
             'condition_type'  => $request->condition_type,
             'condition_value' => $request->condition_value,
-        ]);
+        ] + ($request->filled('rarity') ? ['rarity' => $request->input('rarity')] : []));
 
         AuditLog::record('achievement.update', $achievement);
 

@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Log;
  * utilisateur côté panel, on n'expose que le catalogue des succès actifs.
  * Vocabulaire condition_type (contrat partagé avec le launcher) :
  * first_launch | launch_count | playtime_hours | instances_tried | manual.
+ * `rarity` (ajouté 2026-09-27, rétrocompatible : un client qui l'ignore ne
+ * perd rien) : common | uncommon | rare | epic | legendary, celle du plugin.
  * Toujours fail-safe : jamais de 500, renvoie [] en cas d'erreur.
  */
 class AchievementController extends Controller
@@ -30,6 +32,7 @@ class AchievementController extends Controller
                     'description'     => $a->description,
                     'icon'            => $a->icon,
                     'points'          => $a->points,
+                    'rarity'          => $a->rarity ?? 'common',
                     'category'        => $a->category,
                     'condition_type'  => $a->condition_type,
                     'condition_value' => $a->condition_value,

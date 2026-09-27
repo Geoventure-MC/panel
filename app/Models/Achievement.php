@@ -9,9 +9,12 @@ class Achievement extends Model
 {
     use HasFactory;
 
+    /** Vocabulaire de rareté partagé avec le mod (GeoRarity) et le plugin (AchievementService). */
+    public const RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+
     protected $table = 'achievements';
     protected $fillable = [
-        'code', 'name', 'description', 'icon', 'points',
+        'code', 'name', 'description', 'icon', 'points', 'rarity',
         'category', 'condition_type', 'condition_value', 'active',
     ];
     protected $casts = [
