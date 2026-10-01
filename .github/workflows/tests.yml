@@ -1,8 +1,14 @@
 name: CentralCorp CI
 
 on:
-  push:
+  # pull_request seulement : push + PR lançaient deux fois le même build
   pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   # tests:
