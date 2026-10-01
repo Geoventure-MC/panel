@@ -447,6 +447,8 @@ return [
         'icon' => 'Icône',
         'icon_hint' => "Nom d'icône Bootstrap (ex: bi-trophy) ou une URL d'image.",
         'points' => 'Points',
+        'max_level' => 'Niveaux (1 à 5)',
+        'secret' => 'Secret (masqué avant déblocage)',
         'rarity' => 'Rareté',
         'rarity_hint' => "Légendaire = annoncé à tout le serveur. Doit suivre la rareté du plugin (AchievementService).",
         'rarity_common' => 'Commun',

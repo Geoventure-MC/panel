@@ -35,6 +35,7 @@ class AdminAchievementController extends Controller
             'category'        => 'nullable|string|max:255',
             'condition_type'  => ['required', Rule::in(self::CONDITION_TYPES)],
             'condition_value' => 'nullable|integer|min:0',
+            'max_level'       => 'nullable|integer|min:1|max:5',
         ]);
 
         $achievement = Achievement::create([
@@ -48,6 +49,8 @@ class AdminAchievementController extends Controller
             'condition_type'  => $request->condition_type,
             'condition_value' => $request->condition_value,
             'active'          => true,
+            'secret'          => $request->boolean('secret'),
+            'max_level'       => (int) ($request->input('max_level') ?: 1),
         ]);
 
         AuditLog::record('achievement.create', $achievement);
@@ -67,6 +70,7 @@ class AdminAchievementController extends Controller
             'category'        => 'nullable|string|max:255',
             'condition_type'  => ['required', Rule::in(self::CONDITION_TYPES)],
             'condition_value' => 'nullable|integer|min:0',
+            'max_level'       => 'nullable|integer|min:1|max:5',
         ]);
 
         $achievement->update([
@@ -78,6 +82,8 @@ class AdminAchievementController extends Controller
             'category'        => $request->category,
             'condition_type'  => $request->condition_type,
             'condition_value' => $request->condition_value,
+            'secret'          => $request->boolean('secret'),
+            'max_level'       => (int) ($request->input('max_level') ?: 1),
         ] + ($request->filled('rarity') ? ['rarity' => $request->input('rarity')] : []));
 
         AuditLog::record('achievement.update', $achievement);

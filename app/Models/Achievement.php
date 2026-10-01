@@ -15,10 +15,12 @@ class Achievement extends Model
     protected $table = 'achievements';
     protected $fillable = [
         'code', 'name', 'description', 'icon', 'points', 'rarity',
-        'category', 'condition_type', 'condition_value', 'active',
+        'category', 'condition_type', 'condition_value', 'active', 'secret', 'max_level',
     ];
     protected $casts = [
         'active'          => 'boolean',
+        'secret'          => 'boolean',
+        'max_level'       => 'integer',
         'points'          => 'integer',
         'condition_value' => 'integer',
     ];

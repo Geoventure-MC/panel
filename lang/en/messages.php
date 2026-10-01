@@ -447,6 +447,8 @@ return [
         'icon' => 'Icon',
         'icon_hint' => 'Bootstrap icon name (e.g. bi-trophy) or an image URL.',
         'points' => 'Points',
+        'max_level' => 'Levels (1 to 5)',
+        'secret' => 'Secret (hidden until unlocked)',
         'rarity' => 'Rarity',
         'rarity_hint' => 'Legendary = announced to the whole server. Must follow the plugin rarity (AchievementService).',
         'rarity_common' => 'Common',

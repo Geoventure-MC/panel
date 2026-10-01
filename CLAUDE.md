@@ -187,3 +187,9 @@ Page admin **📊 Statistiques** alimentée par la télémétrie opt-in du launc
 
 - Installer & Launcher : `claude/friendly-tesla-7kNM4` (mais le user pousse souvent le launcher direct sur `master`).
 - Panel : nouveau repo — créer une branche dédiée (ex: `claude/...`) et ouvrir une **PR draft**.
+
+## Succès : secrets, niveaux, points (2026-10-01, lot 5)
+
+- Migration idempotente `2026_10_01_120000_add_secret_levels_to_achievements_table` : colonnes `secret` (bool) et `max_level` (1 à 5, niveaux I à V) ; `points` (points PAR niveau) et `category` existaient déjà. ⚠ `php artisan migrate`.
+- `GET /utils/achievements` ajoute `secret` et `max_level` (rétrocompatible : champs additionnels) ; un succès secret est servi masqué (`name` « ??? », description vide, icône null).
+- Admin → Succès : champs Niveaux et Secret. Le catalogue en jeu (65 succès, compteurs) vit dans le plugin (`achievement-catalog.yml`) ; le panel n'a pas à les connaître pour qu'ils fonctionnent en jeu.

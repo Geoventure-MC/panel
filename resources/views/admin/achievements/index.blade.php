@@ -77,6 +77,19 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label fw-semibold">{{ __('messages.achievements.max_level') }}</label>
+                            <input type="number" name="max_level" id="ach-max-level" class="form-control" min="1" max="5" value="1">
+                        </div>
+                        <div class="col-6 mb-3 d-flex align-items-end">
+                            <div class="form-check">
+                                <input type="checkbox" name="secret" id="ach-secret" value="1" class="form-check-input">
+                                <label class="form-check-label" for="ach-secret">{{ __('messages.achievements.secret') }}</label>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label fw-semibold">{{ __('messages.achievements.rarity') }}</label>
                         <select name="rarity" id="ach-rarity" class="form-select">
@@ -158,6 +171,12 @@
                                         @if($ach->category)
                                             <span class="badge bg-light text-dark ms-1">{{ $ach->category }}</span>
                                         @endif
+                                        @if($ach->secret ?? false)
+                                            <span class="badge bg-dark ms-1">{{ __('messages.achievements.secret') }}</span>
+                                        @endif
+                                        @if(($ach->max_level ?? 1) > 1)
+                                            <span class="badge bg-secondary ms-1">{{ __('messages.achievements.max_level') }} {{ $ach->max_level }}</span>
+                                        @endif
                                         @if(($ach->rarity ?? 'common') !== 'common')
                                             <span class="badge ms-1" style="background: {{ ['uncommon' => '#4ade80', 'rare' => '#55d7ff', 'epic' => '#7c6ff0', 'legendary' => '#f59e0b'][$ach->rarity] ?? '#9a9fb8' }}; color: #12131f;">{{ __('messages.achievements.rarity_' . $ach->rarity) }}</span>
                                         @endif
@@ -172,7 +191,7 @@
                                     <td>{{ $ach->points }}</td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-outline-primary" title="{{ __('messages.common.edit') }}"
-                                            onclick="editAchievement({{ $ach->id }}, {{ json_encode($ach->code) }}, {{ json_encode($ach->name) }}, {{ json_encode($ach->description) }}, {{ json_encode($ach->icon) }}, {{ json_encode($ach->points) }}, {{ json_encode($ach->category) }}, {{ json_encode($ach->condition_type) }}, {{ json_encode($ach->condition_value) }}, {{ json_encode($ach->rarity ?? 'common') }})">
+                                            onclick="editAchievement({{ $ach->id }}, {{ json_encode($ach->code) }}, {{ json_encode($ach->name) }}, {{ json_encode($ach->description) }}, {{ json_encode($ach->icon) }}, {{ json_encode($ach->points) }}, {{ json_encode($ach->category) }}, {{ json_encode($ach->condition_type) }}, {{ json_encode($ach->condition_value) }}, {{ json_encode($ach->rarity ?? 'common') }}, {{ json_encode((int) ($ach->max_level ?? 1)) }}, {{ json_encode((bool) ($ach->secret ?? false)) }})">
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                         <form action="{{ route('admin.achievements.toggle', $ach) }}" method="POST" class="d-inline">
@@ -210,7 +229,7 @@ function toggleConditionValue() {
     document.getElementById('condition-value-wrapper').style.display = needsValue ? '' : 'none';
 }
 
-function editAchievement(id, code, name, description, icon, points, category, conditionType, conditionValue, rarity) {
+function editAchievement(id, code, name, description, icon, points, category, conditionType, conditionValue, rarity, maxLevel, secret) {
     document.getElementById('achievement-form').action = '{{ url("admin/achievements") }}/' + id;
     document.getElementById('form-method').value = 'PUT';
     document.getElementById('ach-code').value = code;
@@ -220,6 +239,8 @@ function editAchievement(id, code, name, description, icon, points, category, co
     document.getElementById('ach-points').value = points;
     document.getElementById('ach-category').value = category || '';
     document.getElementById('ach-rarity').value = rarity || 'common';
+    document.getElementById('ach-max-level').value = maxLevel || 1;
+    document.getElementById('ach-secret').checked = !!secret;
     document.getElementById('ach-condition-type').value = conditionType;
     document.getElementById('ach-condition-value').value = (conditionValue === null ? '' : conditionValue);
     toggleConditionValue();
@@ -239,6 +260,8 @@ function resetForm() {
     document.getElementById('ach-points').value = '10';
     document.getElementById('ach-category').value = '';
     document.getElementById('ach-rarity').value = 'common';
+    document.getElementById('ach-max-level').value = 1;
+    document.getElementById('ach-secret').checked = false;
     document.getElementById('ach-condition-type').value = 'manual';
     document.getElementById('ach-condition-value').value = '';
     toggleConditionValue();
