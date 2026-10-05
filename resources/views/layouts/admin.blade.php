@@ -90,6 +90,11 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.wonder*') ? 'active' : '' }}" href="{{ route('admin.wonder') }}">
+                        <i class="bi bi-buildings align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.wonder') }}</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.scheduled-events') ? 'active' : '' }}" href="{{ route('admin.scheduled-events') }}">
                         <i class="bi bi-calendar-week align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.scheduled_events') }}</span>
                     </a>

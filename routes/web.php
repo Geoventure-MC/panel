@@ -20,6 +20,8 @@ use App\Http\Controllers\AdminCommunityModController;
 use App\Http\Controllers\AdminLauncherContentController;
 use App\Http\Controllers\AdminAchievementController;
 use App\Http\Controllers\AdminSeasonController;
+use App\Http\Controllers\AdminWonderController;
+use App\Http\Controllers\api\WonderController;
 use App\Http\Controllers\AdminScheduledEventController;
 use App\Http\Controllers\StatusPageController;
 use App\Http\Controllers\users\AdminUserController;
@@ -199,6 +201,18 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/seasons', [AdminSeasonController::class, 'index'])->name('admin.seasons');
 
+    Route::get('/wonder', [AdminWonderController::class, 'index'])->name('admin.wonder');
+    Route::post('/wonder', [AdminWonderController::class, 'store'])->name('admin.wonder.store');
+    Route::put('/wonder/{edition}', [AdminWonderController::class, 'update'])->name('admin.wonder.update');
+    Route::delete('/wonder/{edition}', [AdminWonderController::class, 'destroy'])->name('admin.wonder.destroy');
+    Route::post('/wonder/{edition}/sync', [AdminWonderController::class, 'sync'])->name('admin.wonder.sync');
+    Route::post('/wonder/{edition}/publish', [AdminWonderController::class, 'publish'])->name('admin.wonder.publish');
+    Route::post('/wonder/{edition}/teams', [AdminWonderController::class, 'storeTeam'])->name('admin.wonder.teams.store');
+    Route::put('/wonder/teams/{team}', [AdminWonderController::class, 'updateTeam'])->name('admin.wonder.teams.update');
+    Route::delete('/wonder/teams/{team}', [AdminWonderController::class, 'destroyTeam'])->name('admin.wonder.teams.destroy');
+    Route::post('/wonder/teams/{team}/scores', [AdminWonderController::class, 'score'])->name('admin.wonder.scores.store');
+    Route::delete('/wonder/scores/{score}', [AdminWonderController::class, 'destroyScore'])->name('admin.wonder.scores.destroy');
+
     Route::get('/scheduled-events', [AdminScheduledEventController::class, 'index'])->name('admin.scheduled-events');
     Route::post('/scheduled-events', [AdminScheduledEventController::class, 'store'])->name('admin.scheduled-events.store');
     Route::patch('/scheduled-events/{event}/cancel', [AdminScheduledEventController::class, 'cancel'])->name('admin.scheduled-events.cancel');
@@ -243,6 +257,7 @@ Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::get('/achievements/progress', [AchievementUnlockController::class, 'progress']);
     Route::post('/achievements/unlock', [AchievementUnlockController::class, 'store']);
     Route::get('/seasons', [SeasonController::class, 'index']);
+    Route::get('/wonder', [WonderController::class, 'index']);
     Route::post('/seasons/sync', [SeasonController::class, 'sync']);
     Route::get('/scheduled-events', [ScheduledEventController::class, 'index']);
     Route::post('/scheduled-events/claim', [ScheduledEventController::class, 'claim']);
