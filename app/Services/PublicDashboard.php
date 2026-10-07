@@ -25,6 +25,24 @@ use Illuminate\Support\Facades\Log;
  */
 class PublicDashboard
 {
+    /** Date lisible depuis un epoch (secondes ou millisecondes), ou '—'. */
+    public static function fmtDate($v): string
+    {
+        if (! is_numeric($v) || (float) $v <= 0) {
+            return '—';
+        }
+        $v = (float) $v;
+        $c = $v > 9999999999 ? \Carbon\Carbon::createFromTimestampMs((int) $v) : \Carbon\Carbon::createFromTimestamp((int) $v);
+
+        return $c->locale(app()->getLocale())->translatedFormat('j F Y, H:i');
+    }
+
+    /** #rrggbb strict (jamais une chaîne libre dans un attribut style). */
+    public static function hex($v): ?string
+    {
+        return is_string($v) && preg_match('/^#[0-9a-fA-F]{6}$/', $v) ? $v : null;
+    }
+
     public static function validName(string $name): bool
     {
         return (bool) preg_match('/^[A-Za-z0-9_]{1,32}$/', $name);

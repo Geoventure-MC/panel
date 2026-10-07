@@ -1,0 +1,88 @@
+/* Tableau de bord public des joueurs — palette Geoventure (design/palette.json du mod : bg/panel/card/accent/muted/état). */
+:root {
+    --d-backdrop: #0c0d1a;
+    --d-panel: #232442;
+    --d-panel-dark: #1b1c33;
+    --d-card: #2e2f4c;
+    --d-inner: #20223a;
+    --d-hover: #343754;
+    --d-accent: #6c5ce7;
+    --d-accent-soft: #7c6ff0;
+    --d-text: #ffffff;
+    --d-muted: #9a9fb8;
+    --d-sep: #3a3c5e;
+    --d-green: #4ade80;
+    --d-red: #e05a5a;
+    --d-cyan: #55d7ff;
+    --d-gold: #f59e0b;
+    --r-common: #9a9fb8;
+    --r-uncommon: #4ade80;
+    --r-rare: #55d7ff;
+    --r-epic: #a78bfa;
+    --r-legendary: #f59e0b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { color-scheme: dark; }
+body { font-family: Inter, 'Segoe UI', system-ui, sans-serif; background: radial-gradient(1200px 500px at 50% -10%, #1f2050, var(--d-backdrop)); color: var(--d-text); min-height: 100vh; line-height: 1.45; }
+a { color: var(--d-accent-soft); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px 48px; }
+header.top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 20px 0 8px; }
+header.top h1 { font-size: 22px; flex: 1 1 auto; }
+header.top h1 span { color: var(--d-green); }
+.lang a { color: var(--d-muted); font-size: 13px; padding: 4px 8px; border-radius: 6px; }
+.lang a.on { background: var(--d-card); color: var(--d-text); }
+.sub { color: var(--d-muted); font-size: 14px; margin-bottom: 14px; }
+.pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 18px; }
+.pill { display: inline-flex; align-items: center; gap: 8px; background: var(--d-panel); border: 1px solid var(--d-sep); border-radius: 999px; padding: 6px 14px; font-size: 13px; }
+.pill .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--d-muted); }
+.pill.on .dot { background: var(--d-green); box-shadow: 0 0 8px var(--d-green); }
+.pill.off .dot { background: var(--d-red); }
+.pill small { color: var(--d-muted); }
+.total { color: var(--d-green); font-weight: 700; font-size: 13px; align-self: center; }
+nav.tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--d-sep); margin-bottom: 18px; scrollbar-width: thin; }
+nav.tabs button { background: none; border: 0; color: var(--d-muted); font: inherit; font-weight: 600; padding: 10px 14px; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
+nav.tabs button:hover { color: var(--d-text); }
+nav.tabs button[aria-selected=true] { color: var(--d-text); border-bottom-color: var(--d-accent); }
+.js section.tab { display: none; }
+.js section.tab.active { display: block; }
+section.tab > h2 { font-size: 18px; margin: 0 0 12px; }
+.no-js-h { display: none; }
+html:not(.js) .no-js-h { display: block; margin: 24px 0 10px; font-size: 18px; }
+.card { background: var(--d-panel); border: 1px solid var(--d-sep); border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; }
+.card h3 { font-size: 15px; margin-bottom: 10px; }
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.tile { background: var(--d-card); border-radius: 12px; padding: 12px 14px; }
+.tile .k { color: var(--d-muted); font-size: 12px; }
+.tile .v { font-size: 18px; font-weight: 700; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; color: var(--d-muted); font-weight: 600; font-size: 12px; padding: 8px 10px; }
+td { padding: 9px 10px; border-top: 1px solid var(--d-sep); }
+tr:hover td { background: var(--d-hover); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.rank { color: var(--d-muted); font-weight: 700; width: 48px; }
+.rank.r1 { color: var(--d-gold); } .rank.r2 { color: #cfd3e6; } .rank.r3 { color: #d08a4f; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; background: var(--d-muted); }
+.empty { text-align: center; color: var(--d-muted); padding: 36px 12px; border: 1px dashed var(--d-sep); border-radius: 14px; background: var(--d-inner); }
+.empty strong { display: block; color: var(--d-text); margin-bottom: 4px; }
+.badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--d-card); color: var(--d-muted); }
+.badge.open, .badge.published { color: var(--d-green); } .badge.closed { color: var(--d-gold); } .badge.upcoming { color: var(--d-cyan); }
+.bar { height: 16px; background: var(--d-inner); border: 1px solid var(--d-sep); border-radius: 999px; overflow: hidden; margin: 8px 0; }
+.bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--d-accent), var(--d-green)); border-radius: 999px; }
+.gallery { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.team { background: var(--d-card); border-radius: 12px; padding: 12px; border-top: 4px solid var(--d-accent); }
+.team h4 { font-size: 15px; margin-bottom: 4px; }
+.team .m { color: var(--d-muted); font-size: 12px; margin-bottom: 8px; }
+.team img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-top: 6px; background: var(--d-inner); }
+.ach { display: flex; flex-direction: column; gap: 4px; background: var(--d-card); border-radius: 12px; padding: 12px 14px; border-left: 4px solid var(--r-common); }
+.ach h4 { font-size: 14px; } .ach p { color: var(--d-muted); font-size: 13px; }
+.ach .meta { font-size: 11px; color: var(--d-muted); display: flex; gap: 10px; flex-wrap: wrap; }
+.ach.secret { opacity: .7; }
+.rarity-common { border-left-color: var(--r-common); } .rarity-uncommon { border-left-color: var(--r-uncommon); }
+.rarity-rare { border-left-color: var(--r-rare); } .rarity-epic { border-left-color: var(--r-epic); } .rarity-legendary { border-left-color: var(--r-legendary); }
+.cat { margin: 18px 0 8px; color: var(--d-muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+footer { color: var(--d-muted); font-size: 12px; text-align: center; margin-top: 28px; }
+.profile-head { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.profile-head h2 { font-size: 26px; flex: 1 1 auto; }
+@media (max-width: 560px) { th.hide-sm, td.hide-sm { display: none; } header.top h1 { font-size: 19px; } }
