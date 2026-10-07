@@ -273,4 +273,11 @@ Route::get('/api-schema.json', fn() => response()->json(['schemaVersion' => '1.0
 // Page de statut publique (partageable), lecture cache uniquement.
 Route::get('/status', [StatusPageController::class, 'index'])->name('status')->middleware('throttle:60,1,status');
 
+// Tableau de bord public des joueurs (lecture seule, sans auth).
+Route::middleware('throttle:60,1,joueurs')->group(function () {
+    Route::get('/joueurs', [\App\Http\Controllers\PlayerDashboardController::class, 'index'])->name('players.index');
+    Route::get('/dashboard', fn () => redirect()->route('players.index', request()->query(), 301));
+    Route::get('/joueurs/{pseudo}', [\App\Http\Controllers\PlayerDashboardController::class, 'player'])->name('players.show');
+});
+
 Route::get('lang/{locale}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('lang.switch');
