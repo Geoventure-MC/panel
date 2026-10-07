@@ -15,7 +15,8 @@ class StatusPageController extends Controller
     public function index(ServerStatusController $statusController)
     {
         try {
-            $statuses = $statusController->getServersStatusCached();
+            // getServersStatusCached() renvoie une JsonResponse, pas un tableau.
+            $statuses = json_decode($statusController->getServersStatusCached()->getContent(), true) ?: [];
         } catch (\Throwable $e) {
             Log::warning('StatusPageController@index: ' . $e->getMessage());
             $statuses = [];
