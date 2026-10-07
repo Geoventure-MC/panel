@@ -36,7 +36,7 @@
 <body>
 <div class="wrap">
     <h1>🌍 {{ __('messages.status.title') }}</h1>
-    <p class="sub">{{ __('messages.status.subtitle') }}</p>
+    <p class="sub">{{ __('messages.status.subtitle') }} <a href="{{ route('players.index') }}" style="color:#4ade80">{{ __('messages.dashboard.title') }} &rarr;</a></p>
 
     <div class="total" id="total" hidden>👥 <span id="total-count">0</span> {{ __('messages.status.players_online') }}</div>
 

@@ -277,7 +277,7 @@ Route::get('/status', [StatusPageController::class, 'index'])->name('status')->m
 Route::middleware('throttle:60,1,joueurs')->group(function () {
     Route::get('/joueurs', [\App\Http\Controllers\PlayerDashboardController::class, 'index'])->name('players.index');
     Route::get('/dashboard', fn () => redirect()->route('players.index', request()->query(), 301));
-    Route::get('/joueurs/{pseudo}', [\App\Http\Controllers\PlayerDashboardController::class, 'player'])->name('players.show');
+    Route::get('/joueurs/{pseudo}', [\App\Http\Controllers\PlayerDashboardController::class, 'player'])->where('pseudo', '.+')->name('players.show');
 });
 
 Route::get('lang/{locale}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('lang.switch');
