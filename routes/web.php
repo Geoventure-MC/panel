@@ -60,13 +60,13 @@ Auth::routes(['register' => false]);
 // 2FA : deuxième étape du login (session '2fa_challenge_user_id' posée par LoginController).
 Route::get('/two-factor', [TwoFactorChallengeController::class, 'show'])->name('two-factor.challenge');
 Route::post('/two-factor', [TwoFactorChallengeController::class, 'verify'])
-    ->middleware('throttle:10,1')->name('two-factor.verify');
+    ->middleware('throttle:10,1,2fa')->name('two-factor.verify');
 
 // Connexion unique : le panel délègue son authentification au site.
 Route::get('/auth/sso/redirect', [\App\Http\Controllers\Auth\SsoLoginController::class, 'redirect'])
-    ->middleware('throttle:20,1')->name('sso.redirect');
+    ->middleware('throttle:20,1,ssoredirect')->name('sso.redirect');
 Route::get('/auth/sso/callback', [\App\Http\Controllers\Auth\SsoLoginController::class, 'callback'])
-    ->middleware('throttle:20,1')->name('sso.callback');
+    ->middleware('throttle:20,1,ssocallback')->name('sso.callback');
 
 // Routes d'installation
 Route::get('/install', [InstallController::class, 'showDatabase'])->name('install.database');
@@ -242,14 +242,16 @@ Route::get('/file-manager', function () {
     return view('admin.file-manager');
 })->name('admin.file-manager')->middleware('auth');
 
-Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
+// Préfixes distincts : sans eux, tous les `throttle:N,1` partagent le MÊME compteur (clé = IP),
+// donc 30 appels /utils/* suffisaient à faire répondre 429 à /utils/telemetry (limite 30).
+Route::prefix('utils')->middleware(['throttle:120,1,utils'])->group(function () {
     Route::get('/api', [ApiController::class, 'getOptions']);
     Route::get('/mods', [ModController::class, 'getMods']);
     Route::get('/notifications', [NotificationController::class, 'getNotifications']);
     Route::get('/changelog', [ChangelogController::class, 'getChangelog']);
     Route::get('/servers-status', [ServerStatusController::class, 'getServersStatus']);
     Route::get('/servers-history', [ServerHistoryController::class, 'getHistory']);
-    Route::post('/telemetry', [TelemetryController::class, 'store'])->middleware('throttle:30,1');
+    Route::post('/telemetry', [TelemetryController::class, 'store'])->middleware('throttle:30,1,telemetry');
     Route::get('/leaderboards', [LeaderboardController::class, 'getLeaderboards']);
     Route::get('/collecte', [CollectController::class, 'getCollecte']);
     Route::get('/factions', [FactionController::class, 'getFactions']);
@@ -264,11 +266,11 @@ Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::get('/scheduled-events', [ScheduledEventController::class, 'index']);
     Route::post('/scheduled-events/claim', [ScheduledEventController::class, 'claim']);
 });
-Route::get('/data', [FileController::class, 'getFiles'])->middleware('throttle:120,1');
+Route::get('/data', [FileController::class, 'getFiles'])->middleware('throttle:120,1,data');
 Route::get('/api/centralcorp/community-mods', [CommunityModController::class, 'getCommunityMods']);
 Route::get('/api-schema.json', fn() => response()->json(['schemaVersion' => '1.0.0'], 200, [], JSON_UNESCAPED_SLASHES));
 
 // Page de statut publique (partageable), lecture cache uniquement.
-Route::get('/status', [StatusPageController::class, 'index'])->name('status')->middleware('throttle:60,1');
+Route::get('/status', [StatusPageController::class, 'index'])->name('status')->middleware('throttle:60,1,status');
 
 Route::get('lang/{locale}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('lang.switch');
