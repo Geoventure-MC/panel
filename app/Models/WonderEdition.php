@@ -7,6 +7,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class WonderEdition extends Model
 {
+    /** /utils/wonder est mis en cache 30 s : toute modification admin l'invalide aussitôt. */
+    protected static function booted(): void
+    {
+        $forget = static fn () => \Illuminate\Support\Facades\Cache::forget('geo_wonder');
+        static::saved($forget);
+        static::deleted($forget);
+    }
+
     protected $table = 'wonder_editions';
     protected $fillable = [
         'name', 'theme', 'world', 'opens_at', 'closes_at', 'team_size', 'builders',

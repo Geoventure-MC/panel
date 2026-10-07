@@ -6,9 +6,11 @@
         "dev": "vite",
         "build": "vite build",
         "prod": "npm run production",
-        "production": "vite build"
+        "production": "vite build",
+        "test:e2e": "playwright test"
     },
     "devDependencies": {
+        "@playwright/test": "^1.56.1",
         "@popperjs/core": "^2.11.6",
         "axios": "^1.7.4",
         "bootstrap": "^5.2.3",
