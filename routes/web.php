@@ -43,6 +43,7 @@ use App\Http\Controllers\api\ServerStatusController;
 use App\Http\Controllers\api\ServerHistoryController;
 use App\Http\Controllers\api\TelemetryController;
 use App\Http\Controllers\api\LeaderboardController;
+use App\Http\Controllers\api\CollectController;
 use App\Http\Controllers\api\FactionController;
 use App\Http\Controllers\api\CommunityModController;
 use App\Http\Controllers\api\AchievementController;
@@ -250,6 +251,7 @@ Route::prefix('utils')->middleware(['throttle:120,1'])->group(function () {
     Route::get('/servers-history', [ServerHistoryController::class, 'getHistory']);
     Route::post('/telemetry', [TelemetryController::class, 'store'])->middleware('throttle:30,1');
     Route::get('/leaderboards', [LeaderboardController::class, 'getLeaderboards']);
+    Route::get('/collecte', [CollectController::class, 'getCollecte']);
     Route::get('/factions', [FactionController::class, 'getFactions']);
     Route::get('/community-mods', [CommunityModController::class, 'getCommunityMods']);
     Route::get('/launcher-content', [LauncherContentController::class, 'getLauncherContent']);

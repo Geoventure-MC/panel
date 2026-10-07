@@ -140,4 +140,21 @@ return [
         'ingest_token' => env('EVENTS_INGEST_TOKEN', ''),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Événement de collecte (GET /utils/collecte)
+    |--------------------------------------------------------------------------
+    |
+    | Miroir lecture seule écrit par le plugin GeoFactions dans la base du jeu
+    | (tables `{table_prefix}collect_meta` / `{table_prefix}collect_ranking`),
+    | lu via la connexion externe `game`. Base absente → réponse vide (200).
+    |
+    */
+
+    'collect' => [
+        'connection' => env('GEO_COLLECT_CONNECTION', 'game'),
+        'table_prefix' => env('GEO_COLLECT_PREFIX', 'gf_'),
+        'limit' => 50,
+    ],
+
 ];
