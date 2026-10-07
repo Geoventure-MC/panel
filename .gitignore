@@ -33,7 +33,8 @@
 /.vscode/
 /database/database.sqlite
 *.log
-/vendor//tests/e2e/screenshots/
+/vendor/
+/tests/e2e/screenshots/
 /tests/e2e/.tmp/
 /test-results/
 /playwright-report/
