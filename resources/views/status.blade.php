@@ -70,7 +70,9 @@
                         <div class="uptime-label">
                             <span>{{ __('messages.status.uptime_30d') }}</span>
                             <span>
-                                @if($h['latency'] !== null){{ __('messages.status.avg_latency') }} : {{ $h['latency'] }} ms@endif
+                                @if($h['latency'] !== null)
+                                    {{ __('messages.status.avg_latency') }} : {{ $h['latency'] }} ms
+                                @endif
                             </span>
                         </div>
                     </div>
