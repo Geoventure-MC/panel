@@ -220,6 +220,14 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::delete('/scheduled-events/{event}', [AdminScheduledEventController::class, 'destroy'])->name('admin.scheduled-events.destroy');
 
     Route::get('/audit', [AdminAuditController::class, 'index'])->name('admin.audit.index');
+
+    // API MCP (pilotage à distance par Claude) : clés, activation, journal des appels. Super-admin uniquement.
+    Route::middleware('superadmin')->group(function () {
+        Route::get('/mcp', [\App\Http\Controllers\AdminMcpController::class, 'index'])->name('admin.mcp');
+        Route::post('/mcp/settings', [\App\Http\Controllers\AdminMcpController::class, 'toggle'])->name('admin.mcp.settings');
+        Route::post('/mcp/keys', [\App\Http\Controllers\AdminMcpController::class, 'store'])->name('admin.mcp.keys.store');
+        Route::delete('/mcp/keys/{key}', [\App\Http\Controllers\AdminMcpController::class, 'revoke'])->name('admin.mcp.keys.revoke');
+    });
     Route::get('/game-commands', [AdminGameCommandController::class, 'index'])->name('admin.game-commands');
     Route::post('/game-commands', [AdminGameCommandController::class, 'store'])->name('admin.game-commands.store');
 

@@ -68,6 +68,11 @@
                         <i class="bi bi-sort-numeric-up-alt align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.update') }}</span>
                     </a>
                 </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.mcp*') ? 'active' : '' }}" href="{{ route('admin.mcp') }}">
+                        <i class="bi bi-robot align-middle"></i> <span class="align-middle">{{ __('mcp.sidebar') }}</span>
+                    </a>
+                </li>
                 @endif
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}" href="{{ route('admin.notifications') }}">

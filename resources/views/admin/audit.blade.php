@@ -57,7 +57,7 @@
                         <tr>
                             <td class="text-muted small">{{ $log->id }}</td>
                             <td class="text-muted small text-nowrap">{{ $log->created_at->format('d/m/Y H:i:s') }}</td>
-                            <td>{{ $log->user?->name ?? '—' }}</td>
+                            <td>{{ $log->user?->name ?? ($log->changes['actor'] ?? '—') }}</td>
                             <td><code>{{ $log->action }}</code></td>
                             <td class="text-muted small">{{ $log->target ?? '—' }}</td>
                             <td class="text-muted small">
