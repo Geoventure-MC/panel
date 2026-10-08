@@ -262,6 +262,10 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/events/export.csv', [$c, 'export'])->name('events.export');
         Route::get('/war', [$c, 'war'])->name('war');
         Route::get('/usage', [$c, 'usage'])->name('usage');
+        $x = \App\Http\Controllers\Admin\AnalyticsAdvancedController::class;
+        foreach (['health', 'peak', 'compare', 'territories', 'diplomacy', 'logistics', 'conflicts', 'retention', 'rankings', 'achievements'] as $page) {
+            Route::get('/' . $page, [$x, $page])->name($page);
+        }
         Route::get('/data', [$c, 'data'])->middleware('throttle:600,1,analytics')->name('data');
     });
 });

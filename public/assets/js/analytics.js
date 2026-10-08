@@ -9,7 +9,16 @@
     var URL_DATA = root.getAttribute('data-url');
     var LOCALE = root.getAttribute('data-locale') || 'fr';
     var charts = [];
+    var TZ = 'Europe/Paris';
     var nf = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 2 });
+    // Axes : K / M / Md (fr) ou K / M / B (en), comme côté PHP.
+    function compact(v) {
+        var a = Math.abs(v), fr = LOCALE === 'fr', t;
+        if (a >= 1e9) { t = v / 1e9; return nf.format(Math.round(t * 10) / 10) + '\u202F' + (fr ? 'Md' : 'B'); }
+        if (a >= 1e6) { t = v / 1e6; return nf.format(Math.round(t * 10) / 10) + '\u202F' + 'M'; }
+        if (a >= 1e4) { t = v / 1e3; return nf.format(Math.round(t * 10) / 10) + '\u202F' + 'K'; }
+        return nf.format(v);
+    }
     var TIER = { 1: '#60a5fa', 2: '#4ade80', 3: '#facc15', 4: '#fb923c', 5: '#f87171' };
 
     function period() { return root.getAttribute('data-period') || '7d'; }
@@ -21,6 +30,7 @@
         var d = new Date(ts * 1000);
         var o = bucket >= 86400 ? { day: '2-digit', month: 'short' }
             : (period() === '24h' ? { hour: '2-digit', minute: '2-digit' } : { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+        o.timeZone = TZ;
         return new Intl.DateTimeFormat(LOCALE, o).format(d);
     }
 
@@ -31,6 +41,7 @@
     }
 
     function build(canvas, spec, labels, datasets, bucket) {
+        if (spec.type === 'radar' || spec.type === 'doughnut') { return buildRound(canvas, spec, labels, datasets); }
         var hbar = spec.type === 'hbar';
         var type = hbar ? 'bar' : spec.type;
         var stacked = !!spec.stacked;
@@ -48,10 +59,12 @@
             }
             return o;
         });
-        var valueAxis = { stacked: stacked, beginAtZero: true, ticks: { color: text(), callback: function (v) { return nf.format(v) + unit; } }, grid: { color: grid() } };
+        var valueAxis = { stacked: stacked, beginAtZero: true, ticks: { color: text(), callback: function (v) { return compact(v) + unit; } }, grid: { color: grid() } };
+        var allInt = datasets.every(function (d) { return d.data.every(function (v) { return v === null || v === undefined || (Math.floor(v) === v && Math.abs(v) < 1000); }); });
+        if (allInt) { valueAxis.ticks.precision = 0; }
         if (typeof spec.min === 'number') { valueAxis.min = spec.min; }
         if (typeof spec.max === 'number') { valueAxis.max = spec.max; }
-        var catAxis = { stacked: stacked, ticks: { color: text(), maxRotation: 0, autoSkipPadding: 12 }, grid: { display: false } };
+        var catAxis = { stacked: stacked, ticks: { color: text(), maxRotation: 0, autoSkipPadding: 12, autoSkip: labels.length > 12 }, grid: { display: false } };
         var scales = hbar ? { x: valueAxis, y: catAxis } : { x: catAxis, y: valueAxis };
         if (spec.dual && !hbar) { scales.y1 = { position: 'right', beginAtZero: true, ticks: { color: text() }, grid: { display: false } }; }
         var chart = new Chart(canvas, {
@@ -70,6 +83,28 @@
         });
         charts.push(chart);
         var any = datasets.some(function (d) { return d.data.some(function (v) { return v !== null && v !== undefined; }); });
+        setEmpty(canvas, !labels.length || !any);
+    }
+
+    function buildRound(canvas, spec, labels, datasets) {
+        var radar = spec.type === 'radar';
+        var ds = datasets.map(function (d) {
+            var c = d.color || '#4ade80';
+            if (radar) { return { label: d.label, data: d.data, borderColor: c, backgroundColor: alpha(c, '33'), pointBackgroundColor: c, borderWidth: 2 }; }
+            return { label: d.label, data: d.data, backgroundColor: d.colors || [c], borderWidth: 1 };
+        });
+        var scales = radar ? { r: { beginAtZero: true, min: 0, max: spec.max || 100, ticks: { color: text(), backdropColor: 'transparent', stepSize: 25 }, grid: { color: grid() }, angleLines: { color: grid() }, pointLabels: { color: text(), font: { size: 11 } } } } : {};
+        var chart = new Chart(canvas, {
+            type: spec.type,
+            data: { labels: labels, datasets: ds },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: { duration: 250 }, scales: scales,
+                plugins: { legend: { display: radar ? ds.length > 1 : true, position: 'bottom', labels: { color: text(), boxWidth: 12 } },
+                    tooltip: { callbacks: { label: function (c) { var v = radar ? c.parsed.r : c.parsed; var lab = radar ? (c.dataset.label || '') : c.label; return lab + ' : ' + nf.format(v) + (spec.unit || ''); } } } }
+            }
+        });
+        charts.push(chart);
+        var any = datasets.some(function (d) { return d.data.some(function (v) { return v !== null && v !== undefined && v !== 0; }); });
         setEmpty(canvas, !labels.length || !any);
     }
 
@@ -169,7 +204,7 @@
             var c = TIER[m.tier] || '#a78bfa';
             var g = el('g', {});
             var ln = el('line', { class: 'tr', 'data-id': m.id, x1: px(m.from.x), y1: pz(m.from.z), x2: px(m.target.x), y2: pz(m.target.z), stroke: c });
-            ln.appendChild(el('title', {}, (m.ref || '?') + ' → ' + (m.target_faction || '?') + ' · T' + m.tier + ' · ' + (m.warhead || '')));
+            ln.appendChild(el('title', {}, (m.refName || '?') + ' → ' + (m.targetName || '?') + ' · ' + (L.tier || 'Palier') + ' ' + m.tier + ' · ' + (m.warheadName || '')));
             g.appendChild(ln);
             g.appendChild(el('circle', { cx: px(m.from.x), cy: pz(m.from.z), r: 3.5, fill: c }));
             var tx = px(m.target.x), tz = pz(m.target.z);
@@ -186,8 +221,6 @@
             .catch(function () { missiles = []; drawMap(); });
     }
 
-    function fmtPoint(p) { return p ? (p.world ? p.world + ' ' : '') + Math.round(p.x) + ' / ' + Math.round(p.z) : '—'; }
-
     function showMissile(id) {
         var box = document.getElementById('an-missile-detail');
         if (!box) { return; }
@@ -196,26 +229,23 @@
             .then(function (j) {
                 var m = j.missile;
                 document.querySelectorAll('#an-map .tr').forEach(function (n) { n.classList.toggle('sel', n.getAttribute('data-id') === String(id)); });
-                document.getElementById('an-md-title').textContent = (L.launch || 'Tir') + ' #' + m.id + ' — T' + m.tier + ' ' + (m.warhead || '');
+                var when = new Intl.DateTimeFormat(LOCALE, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: TZ }).format(new Date(m.ts * 1000));
+                document.getElementById('an-md-title').textContent = (L.launch || 'Tir') + ' · ' + when + ' — ' + (L.tier || 'Palier') + ' ' + m.tier + (m.warheadName ? ' · ' + m.warheadName : '');
                 var dl = document.getElementById('an-md-facts');
                 dl.textContent = '';
-                var facts = [['ref', m.ref], ['tier', 'T' + m.tier], ['carrier', m.carrier], ['warhead', m.warhead], ['flight', m.flight], ['airburst', m.airburst ? '✓' : '—'],
-                    ['from', fmtPoint(m.from)], ['target', fmtPoint(m.target)], ['target_faction', m.target_faction], ['distance', m.distance === null ? '—' : nf.format(m.distance)],
-                    ['eta_s', m.eta_s === null ? '—' : nf.format(m.eta_s) + ' s'], ['ts', new Date(m.ts * 1000).toLocaleString(LOCALE)]];
-                facts.forEach(function (f) {
-                    var dt = document.createElement('dt'); dt.className = 'col-4 col-md-3'; dt.textContent = (L.f && L.f[f[0]]) || f[0];
-                    var dd = document.createElement('dd'); dd.className = 'col-8 col-md-9'; dd.textContent = f[1] === '' || f[1] === undefined ? '—' : f[1];
+                (j.facts || []).forEach(function (f) {
+                    var dt = document.createElement('dt'); dt.className = 'col-5 col-md-3'; dt.textContent = f[0];
+                    var dd = document.createElement('dd'); dd.className = 'col-7 col-md-9'; dd.textContent = f[1] === '' || f[1] === undefined ? '—' : f[1];
                     dl.appendChild(dt); dl.appendChild(dd);
                 });
                 var ul = document.getElementById('an-md-related');
                 ul.textContent = '';
                 (j.related || []).forEach(function (e) {
                     var li = document.createElement('li');
-                    li.textContent = new Date(e.ts * 1000).toLocaleTimeString(LOCALE) + ' · ' + e.type + ' · ' + JSON.stringify(e.data);
+                    li.textContent = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: TZ }).format(new Date(e.ts * 1000)) + ' · ' + e.label + (e.text ? ' · ' + e.text : '');
                     ul.appendChild(li);
                 });
                 if (!(j.related || []).length) { var li = document.createElement('li'); li.className = 'text-muted'; li.textContent = L.none || '—'; ul.appendChild(li); }
-                document.getElementById('an-md-raw').textContent = JSON.stringify(j.raw || {}, null, 2);
                 box.hidden = false;
                 box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
             })
@@ -252,7 +282,7 @@
         if (row) { showMissile(row.getAttribute('data-missile')); return; }
         var u = e.target.closest && e.target.closest('tr[data-usage-series]');
         if (u) {
-            try { var s = JSON.parse(u.getAttribute('data-usage-series')); showUsage(s, u.cells[0].textContent.trim() + (s.ref ? ' · ' + s.ref : '')); } catch (x) { /* ignore */ }
+            try { var s = JSON.parse(u.getAttribute('data-usage-series')); showUsage(s, u.cells[0].textContent.trim() + (u.cells[1] && u.cells[1].textContent.trim() !== '—' ? ' · ' + u.cells[1].textContent.trim() : '')); } catch (x) { /* ignore */ }
             return;
         }
         if (e.target.id === 'an-md-close') { document.getElementById('an-missile-detail').hidden = true; }

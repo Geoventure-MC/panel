@@ -14,15 +14,17 @@
                 <label class="form-label small mb-0">{{ __('analytics.type') }}</label>
                 <select name="type" class="form-select form-select-sm">
                     <option value="">{{ __('analytics.all_types') }}</option>
-                    @foreach ($types as $t)
-                        <option value="{{ $t }}" @selected($fType === $t)>{{ $G::typeLabel($t) }} ({{ $t }})</option>
+                    @foreach ($types as [$t, $tl])
+                        <option value="{{ $t }}" @selected($fType === $t)>{{ $tl }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="col-12 col-md-4">
                 <label class="form-label small mb-0">{{ __('analytics.country') }}</label>
-                <input name="country" list="an-country-list" value="{{ $fRef }}" class="form-control form-control-sm" placeholder="{{ __('analytics.all_countries') }}">
-                <datalist id="an-country-list">@foreach ($countries as $c)<option value="{{ $c }}">@endforeach</datalist>
+                <select name="country" class="form-select form-select-sm">
+                    <option value="">{{ __('analytics.all_countries') }}</option>
+                    @foreach ($countries as [$cv, $cl])<option value="{{ $cv }}" @selected($fRef === $cv)>{{ $cl }}</option>@endforeach
+                </select>
             </div>
             <div class="col-12 col-md-4 d-flex gap-2">
                 <button class="btn btn-sm btn-primary">{{ __('analytics.apply') }}</button>

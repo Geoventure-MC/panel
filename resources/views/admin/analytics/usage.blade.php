@@ -10,12 +10,13 @@
                 <div class="card shadow-sm border-0 h-100"><div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-sm an-table">
-                            <thead><tr><th>{{ __('analytics.metric') }}</th><th>{{ __('analytics.ref') }}</th><th>{{ __('analytics.detail') }}</th><th class="text-end">{{ __('analytics.value') }}</th></tr></thead>
+                            <thead><tr><th>{{ __('analytics.metric') }}</th><th>{{ __('analytics.detail') }}</th><th class="num">{{ __('analytics.value') }}</th></tr></thead>
                             <tbody>
                             @foreach ($g['rows'] as $row)
                                 <tr class="an-click" data-usage-series="{{ json_encode(['scope' => 'usage', 'metric' => $row['metric'], 'ref' => $row['ref']]) }}" title="{{ __('analytics.click_curve') }}">
-                                    <td>{{ $G::metricLabel($row['metric']) }}</td><td>{{ $row['ref'] !== '' ? $row['ref'] : '—' }}</td><td>{{ $row['extra'] ?: '—' }}</td>
-                                    <td class="text-end">{{ $G::num($row['value']) }}</td>
+                                    <td>{{ $row['name'] }}@if ($row['unit'] !== '') <small class="text-muted">({{ $row['unit'] }})</small>@endif</td>
+                                    <td>{{ $row['detail'] !== '' ? $row['detail'] : ($row['country'] !== '' ? $row['country'] : '—') }}</td>
+                                    <td class="num">{{ $G::num($row['value']) }}</td>
                                 </tr>
                             @endforeach
                             </tbody>

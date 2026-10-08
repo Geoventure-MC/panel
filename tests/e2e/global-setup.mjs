@@ -14,6 +14,7 @@ export const PORT_DOWN = String(Number(PORT) + 1);
 // Analytics : base du jeu SQLite jetable avec données factices / sans tables d'analyse.
 export const PORT_AN_DATA = String(Number(PORT) + 2);
 export const PORT_AN_EMPTY = String(Number(PORT) + 3);
+export const PORT_AN_NOCAT = String(Number(PORT) + 4);
 
 export function panelEnv(extra = {}) {
   return {
@@ -80,15 +81,15 @@ export default async function globalSetup() {
   start(PORT_DOWN, dead, 'down');
   // Geoventure Analytics : deux serveurs dont la connexion `game` est une base SQLite jetable.
   const fx = path.join(here, 'fixtures', 'make-game-db.php');
-  for (const [mode, port, label] of [['full', PORT_AN_DATA, 'andata'], ['empty', PORT_AN_EMPTY, 'anempty']]) {
+  for (const [mode, port, label] of [['full', PORT_AN_DATA, 'andata'], ['empty', PORT_AN_EMPTY, 'anempty'], ['nocat', PORT_AN_NOCAT, 'annocat']]) {
     const file = path.join(tmp, `game-${mode}.sqlite`);
     const r = spawnSync('php', [fx, file, mode], { encoding: 'utf8' });
     if (r.status !== 0) throw new Error(`fixture analytics ${mode}: ${r.stderr}`);
-    start(port, { CACHE_PREFIX: `${label}_`, GEO_GAME_DB_DRIVER: 'sqlite', GEO_GAME_DB_DATABASE: file }, label);
+    start(port, { APP_LOCALE: 'fr', CACHE_PREFIX: `${label}_`, GEO_GAME_DB_DRIVER: 'sqlite', GEO_GAME_DB_DATABASE: file }, label);
   }
   fs.writeFileSync(path.join(tmp, 'state.json'), JSON.stringify({ pids, markerCreated: !hadMarker }));
 
-  for (const port of [PORT, PORT_DOWN, PORT_AN_DATA, PORT_AN_EMPTY]) {
+  for (const port of [PORT, PORT_DOWN, PORT_AN_DATA, PORT_AN_EMPTY, PORT_AN_NOCAT]) {
     let ok = false;
     for (let i = 0; i < 100 && !ok; i++) {
       try { ok = (await fetch(`http://127.0.0.1:${port}/api-schema.json`)).ok; } catch {}

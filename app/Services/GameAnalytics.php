@@ -35,7 +35,22 @@ class GameAnalytics
 {
     public const PERIODS = ['24h' => 86400, '7d' => 604800, '30d' => 2592000, '90d' => 7776000, '1y' => 31536000];
 
-    public const SCOPES = ['server', 'faction', 'economy', 'oil', 'pollution', 'players', 'missiles', 'war', 'usage'];
+    public const SCOPES = ['server', 'faction', 'economy', 'oil', 'pollution', 'players', 'missiles', 'war', 'usage', 'achievements', 'ranking', 'logistics'];
+
+    /** Fuseau d'affichage de toutes les dates. */
+    public const TZ = 'Europe/Paris';
+
+    /** Unités de repli (le catalogue, kind `metric`, prime). */
+    public const UNITS = [
+        'mspt' => 'ms', 'ram_used_mb' => 'Mo', 'ram_max_mb' => 'Mo', 'ram' => 'Mo', 'gc_pause_ms' => 'ms', 'db_latency_ms' => 'ms', 'uptime_s' => '',
+        'avg_session_min' => 'min', 'playtime_hours_week' => 'h', 'playtime_hours' => 'h',
+        'retention_d1' => '%', 'retention_d7' => '%', 'd1' => '%', 'd7' => '%', 'retention_w1' => '%', 'retention_w2' => '%', 'retention_w3' => '%', 'retention_w4' => '%',
+        'reserve_pct' => '%', 'interception_rate_pct' => '%', 'assault_gauge_peak' => '%', 'unlocked_pct' => '%', 'inflation_pct' => '%', 'degraded_pct' => '%', 'mspt_p95' => 'ms', 'playtime_hours' => 'h', 'wealth' => 'GC',
+        'bank' => 'GC', 'money_supply' => 'GC', 'avg_balance' => 'GC', 'hdv_volume_24h' => 'GC', 'trade_tax_24h' => 'GC', 'reparations_paid' => 'GC',
+        'gdp' => 'GC', 'trade_balance' => 'GC', 'tax_revenue_24h' => 'GC', 'trade_volume_24h' => 'GC', 'bourse_value_sold_24h' => 'GC',
+        'reserve' => 'mB', 'extracted_total' => 'mB', 'extracted_24h' => 'mB',
+        'emissions' => 'pts', 'avg_level' => 'pts', 'max_level' => 'pts',
+    ];
 
     public const MAX_POINTS = 400;
 
@@ -90,6 +105,11 @@ class GameAnalytics
     // ── Connexion / état ────────────────────────────────────────────────
 
     /** Identité de la base lue : sépare les caches si la connexion change (le cache fichier ignore CACHE_PREFIX). */
+    public function namespaceKey(): string
+    {
+        return $this->ns();
+    }
+
     private function ns(): string
     {
         $c = config('database.connections.game', []);
@@ -110,12 +130,12 @@ class GameAnalytics
     /**
      * unconfigured | unreachable | no_tables | ok  (+ présence de chaque table).
      *
-     * @return array{state:string,metrics:bool,events:bool,rollup:bool}
+     * @return array{state:string,metrics:bool,events:bool,rollup:bool,catalog:bool}
      */
     public function status(): array
     {
-        return Cache::remember('geo_analytics_status_' . $this->ns(), self::TTL, function () {
-            $st = ['state' => 'unconfigured', 'metrics' => false, 'events' => false, 'rollup' => false];
+        return Cache::remember('geo_analytics_status2_' . $this->ns(), self::TTL, function () {
+            $st = ['state' => 'unconfigured', 'metrics' => false, 'events' => false, 'rollup' => false, 'catalog' => false];
             if (trim((string) config('database.connections.game.database', '')) === '') {
                 return $st;
             }
@@ -132,6 +152,7 @@ class GameAnalytics
                 $st['metrics'] = $schema->hasTable('gf_metrics');
                 $st['events'] = $schema->hasTable('gf_events');
                 $st['rollup'] = $schema->hasTable('gf_rollup');
+                $st['catalog'] = $schema->hasTable('gf_catalog');
             } catch (\Throwable $e) {
                 Log::info('GameAnalytics: lecture du schéma impossible : ' . $e->getMessage());
                 $st['state'] = 'unreachable';
@@ -469,29 +490,12 @@ class GameAnalytics
         return $out;
     }
 
-    /** « k=v · k=v » lisible (une seule ligne) pour les tableaux d'événements. */
-    public static function summarize(array $d, int $max = 140): string
-    {
-        $parts = [];
-        foreach ($d as $k => $v) {
-            if (is_array($v)) {
-                $inner = [];
-                foreach ($v as $kk => $vv) {
-                    if (is_scalar($vv) || $vv === null) {
-                        $inner[] = (is_string($kk) ? $kk . ':' : '') . (is_bool($vv) ? ($vv ? 'oui' : 'non') : (string) $vv);
-                    }
-                }
-                $v = implode(' ', $inner);
-            } elseif (is_bool($v)) {
-                $v = $v ? 'oui' : 'non';
-            }
-            $parts[] = $k . '=' . $v;
-        }
-
-        return mb_strimwidth(implode(' · ', $parts), 0, $max, '…');
-    }
-
     // ── Formatage (vues) ────────────────────────────────────────────────
+
+    public static function carbon(?int $ts): \Carbon\Carbon
+    {
+        return \Carbon\Carbon::createFromTimestamp((int) $ts, self::TZ)->locale(app()->getLocale());
+    }
 
     public static function fmtDate(?int $ts, bool $short = false): string
     {
@@ -499,9 +503,15 @@ class GameAnalytics
             return '—';
         }
 
-        return \Carbon\Carbon::createFromTimestamp($ts)->locale(app()->getLocale())->translatedFormat($short ? 'j M H:i' : 'j M Y H:i');
+        return self::carbon($ts)->translatedFormat($short ? 'j M H:i' : 'j M Y H:i');
     }
 
+    public static function fmtDay(?int $ts): string
+    {
+        return $ts ? self::carbon($ts)->translatedFormat('j M Y') : '—';
+    }
+
+    /** Nombre complet au format français (espace fine insécable) : 1 234 567,5 */
     public static function num($v, ?int $dec = null): string
     {
         if ($v === null || ! is_numeric($v)) {
@@ -514,19 +524,89 @@ class GameAnalytics
         return number_format($v, $dec, $fr ? ',' : '.', $fr ? "\u{202F}" : ',');
     }
 
-    public static function typeLabel(string $type): string
+    /** Nombre compact : 12,4 K · 3,2 M · 1,5 Md (fr) / K · M · B (en). Petits nombres : format complet. */
+    public static function compact($v, ?int $dec = null): string
     {
-        $k = 'analytics.e.' . $type;
-        $t = __($k);
+        if ($v === null || ! is_numeric($v)) {
+            return '—';
+        }
+        $v = (float) $v;
+        $a = abs($v);
+        $fr = app()->getLocale() === 'fr';
+        foreach ([[1e9, $fr ? 'Md' : 'B'], [1e6, 'M'], [1e4, 'K']] as [$t, $suffix]) {
+            if ($a >= $t) {
+                $x = $v / $t;
 
-        return $t === $k ? $type : $t;
+                return self::num($x, $dec ?? (abs($x) >= 100 ? 0 : 1)) . "\u{202F}" . $suffix;
+            }
+        }
+
+        return self::num($v, $dec);
     }
 
+    /** Valeur + unité de la métrique (« 5 200 Mo », « 42 % »). */
+    public static function fmtMetric(string $metric, $v, bool $compact = false): string
+    {
+        if ($v === null || ! is_numeric($v)) {
+            return '—';
+        }
+        $u = AnalyticsCatalog::get()->unit($metric);
+        $n = $compact ? self::compact($v) : self::num($v);
+
+        return $u === '' ? $n : $n . ($u === '%' ? "\u{202F}%" : "\u{202F}" . $u);
+    }
+
+    public static function typeLabel(string $type): string
+    {
+        return AnalyticsCatalog::get()->eventType($type);
+    }
+
+    /** Nom de la métrique (sans unité). */
     public static function metricLabel(string $metric): string
     {
-        $k = 'analytics.m.' . $metric;
-        $t = __($k);
+        return AnalyticsCatalog::get()->metric($metric);
+    }
 
-        return $t === $k ? $metric : $t;
+    /** « Nom (unité) » pour les en-têtes et légendes. */
+    public static function metricTitle(string $metric): string
+    {
+        $u = AnalyticsCatalog::get()->unit($metric);
+        $n = self::metricLabel($metric);
+
+        return ($u === '' || str_contains($n, '(' . $u . ')')) ? $n : $n . ' (' . $u . ')';
+    }
+
+    /** Nom d'un pays. */
+    public static function country(?string $ref): string
+    {
+        return AnalyticsCatalog::get()->faction($ref);
+    }
+
+    /** Nom du « sujet » d'un événement : pays, ou zone pour les événements pétroliers. */
+    public static function eventRef(string $type, string $ref): string
+    {
+        if ($ref === '') {
+            return '—';
+        }
+
+        return $type === 'oil_zone_depleted' ? AnalyticsCatalog::get()->label('oil_zone', $ref) : AnalyticsCatalog::get()->faction($ref);
+    }
+
+    /** Résumé lisible du JSON d'un événement. */
+    public static function summarize(string $type, array $d, int $max = 160): string
+    {
+        return AnalyticsCatalog::get()->summarize($type, $d, $max);
+    }
+
+    /** Couleur stable d'un pays (catalogue sinon empreinte du nom). */
+    public static function colorOf(string $ref): string
+    {
+        $x = AnalyticsCatalog::get()->extra('faction', $ref)['color'] ?? null;
+        if (is_string($x) && preg_match('/^#[0-9a-fA-F]{6}$/', $x)) {
+            return $x;
+        }
+        $pal = ['#4ade80', '#a78bfa', '#fb923c', '#60a5fa', '#f472b6', '#facc15', '#34d399', '#f87171', '#22d3ee', '#c084fc', '#a3e635', '#fb7185'];
+
+        return $pal[crc32(mb_strtolower($ref)) % count($pal)];
     }
 }

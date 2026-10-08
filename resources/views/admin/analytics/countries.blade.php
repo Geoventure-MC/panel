@@ -12,7 +12,7 @@
                     <thead><tr>
                         <th>{{ __('analytics.compare') }}</th><th>#</th><th>{{ __('analytics.country') }}</th>
                         @foreach (['power','members','members_online','claims','bank','research_points','age_index','emissions','wars_active'] as $m)
-                            <th class="text-end">{{ $G::metricLabel($m) }}</th>
+                            <th class="num">{{ $G::metricTitle($m) }}</th>
                         @endforeach
                     </tr></thead>
                     <tbody>
@@ -20,9 +20,9 @@
                         <tr>
                             <td><input class="form-check-input" type="checkbox" name="countries[]" value="{{ $row['name'] }}" @checked(in_array($row['name'], $sel, true))></td>
                             <td>{{ $i + 1 }}</td>
-                            <td><a href="{{ route('admin.analytics.country', ['country' => $row['name'], 'period' => $period]) }}">{{ $row['name'] }}</a></td>
+                            <td><span class="an-dot" style="--c: {{ $G::colorOf($row['name']) }}"></span><a href="{{ route('admin.analytics.country', ['country' => $row['name'], 'period' => $period]) }}">{{ $G::country($row['name']) }}</a></td>
                             @foreach (['power','members','members_online','claims','bank','research_points','age_index','emissions','wars_active'] as $m)
-                                <td class="text-end">{{ $G::num($row[$m]) }}</td>
+                                <td class="num">{{ $G::num($row[$m]) }}</td>
                             @endforeach
                         </tr>
                     @empty

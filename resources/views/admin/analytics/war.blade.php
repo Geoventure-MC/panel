@@ -18,7 +18,7 @@
             <h6 class="card-title mb-0">{{ __('analytics.trajectories') }}</h6>
             <select id="an-map-world" class="form-select form-select-sm w-auto">
                 <option value="">{{ __('analytics.all_worlds') }}</option>
-                @foreach ($worlds as $w)<option value="{{ $w }}">{{ $w }}</option>@endforeach
+                @foreach ($worlds as [$wv, $wl])<option value="{{ $wv }}">{{ $wl }}</option>@endforeach
             </select>
         </div>
         <svg id="an-map" viewBox="0 0 800 420" preserveAspectRatio="xMidYMid meet" role="img" aria-label="{{ __('analytics.trajectories') }}"></svg>
@@ -33,7 +33,6 @@
         <dl class="row small mb-2" id="an-md-facts"></dl>
         <h6 class="small">{{ __('analytics.related') }}</h6>
         <ul class="small" id="an-md-related"></ul>
-        <details><summary class="small">JSON</summary><pre class="an-mono mb-0" id="an-md-raw"></pre></details>
     </div>
 </div>
 
@@ -42,13 +41,13 @@
         <h6 class="card-title">{{ __('analytics.recent_launches') }}</h6>
         <div class="table-responsive">
             <table class="table table-sm an-table" id="an-recent">
-                <thead><tr><th>{{ __('analytics.date') }}</th><th>{{ __('analytics.country') }}</th><th>{{ __('analytics.tier_h') }}</th><th>{{ __('analytics.warhead') }}</th><th>{{ __('analytics.target') }}</th><th class="text-end">{{ __('analytics.distance') }}</th></tr></thead>
+                <thead><tr><th>{{ __('analytics.date') }}</th><th>{{ __('analytics.country') }}</th><th>{{ __('analytics.tier_h') }}</th><th>{{ __('analytics.warhead') }}</th><th>{{ __('analytics.target') }}</th><th class="num">{{ __('analytics.distance') }}</th></tr></thead>
                 <tbody>
                 @forelse ($recent as $m)
                     <tr class="an-click" data-missile="{{ $m['id'] }}">
-                        <td class="text-nowrap">{{ $G::fmtDate($m['ts']) }}</td><td>{{ $m['ref'] ?: '—' }}</td>
-                        <td><span class="an-chip">T{{ $m['tier'] }}</span></td><td>{{ $m['warhead'] ?: '—' }}</td>
-                        <td>{{ $m['target_faction'] ?: '—' }}</td><td class="text-end">{{ $G::num($m['distance']) }}</td>
+                        <td class="text-nowrap">{{ $G::fmtDate($m['ts']) }}</td><td>{{ $m['refName'] ?: '—' }}</td>
+                        <td><span class="an-chip">{{ __('analytics.tier', ['n' => $m['tier']]) }}</span></td><td>{{ $m['warheadName'] ?: '—' }}</td>
+                        <td>{{ $m['targetName'] ?: '—' }}</td><td class="num">{{ $G::num($m['distance']) }}</td>
                     </tr>
                 @empty
                     <tr><td colspan="6" class="text-center text-muted py-3">{{ __('analytics.no_launches') }}</td></tr>
@@ -67,11 +66,11 @@
         <div class="card shadow-sm border-0 h-100"><div class="card-body">
             <h6 class="card-title">{{ __('analytics.refusals') }}</h6>
             <table class="table table-sm an-table" id="an-reasons"><tbody>
-                @forelse ($reasons as $k => $n)<tr><td>{{ $k }}</td><td class="text-end">{{ $n }}</td></tr>@empty<tr><td class="text-muted text-center">{{ __('analytics.none') }}</td></tr>@endforelse
+                @forelse ($reasons as [$k, $n])<tr><td>{{ $k }}</td><td class="num">{{ $n }}</td></tr>@empty<tr><td class="text-muted text-center">{{ __('analytics.none') }}</td></tr>@endforelse
             </tbody></table>
             <h6 class="card-title mt-3">{{ __('analytics.intercepted_by') }}</h6>
             <table class="table table-sm an-table" id="an-by"><tbody>
-                @forelse ($by as $k => $n)<tr><td>{{ $k }}</td><td class="text-end">{{ $n }}</td></tr>@empty<tr><td class="text-muted text-center">{{ __('analytics.none') }}</td></tr>@endforelse
+                @forelse ($by as [$k, $n])<tr><td>{{ $k }}</td><td class="num">{{ $n }}</td></tr>@empty<tr><td class="text-muted text-center">{{ __('analytics.none') }}</td></tr>@endforelse
             </tbody></table>
         </div></div>
     </div>
@@ -82,8 +81,8 @@
         <div class="card shadow-sm border-0 h-100"><div class="card-body">
             <h6 class="card-title">{{ __('analytics.offensive') }}</h6>
             <table class="table table-sm an-table" id="an-offense">
-                <thead><tr><th>{{ __('analytics.country') }}</th><th class="text-end">{{ __('analytics.launched') }}</th><th class="text-end">{{ __('analytics.refused') }}</th></tr></thead>
-                <tbody>@forelse ($offense as $r)<tr><td>{{ $r['name'] }}</td><td class="text-end">{{ $r['launched'] }}</td><td class="text-end">{{ $r['refused'] }}</td></tr>@empty<tr><td colspan="3" class="text-center text-muted">{{ __('analytics.none') }}</td></tr>@endforelse</tbody>
+                <thead><tr><th>{{ __('analytics.country') }}</th><th class="num">{{ __('analytics.launched') }}</th><th class="num">{{ __('analytics.refused') }}</th></tr></thead>
+                <tbody>@forelse ($offense as $r)<tr><td><span class="an-dot" style="--c: {{ $G::colorOf($r['name']) }}"></span>{{ $G::country($r['name']) }}</td><td class="num">{{ $G::num($r['launched']) }}</td><td class="num">{{ $G::num($r['refused']) }}</td></tr>@empty<tr><td colspan="3" class="text-center text-muted">{{ __('analytics.none') }}</td></tr>@endforelse</tbody>
             </table>
         </div></div>
     </div>
@@ -91,8 +90,8 @@
         <div class="card shadow-sm border-0 h-100"><div class="card-body">
             <h6 class="card-title">{{ __('analytics.defensive') }}</h6>
             <table class="table table-sm an-table" id="an-defense">
-                <thead><tr><th>{{ __('analytics.country') }}</th><th class="text-end">{{ __('analytics.targeted') }}</th><th class="text-end">{{ __('analytics.intercepted') }}</th><th class="text-end">{{ __('analytics.hit') }}</th><th class="text-end">%</th></tr></thead>
-                <tbody>@forelse ($defense as $r)<tr><td>{{ $r['name'] }}</td><td class="text-end">{{ $r['targeted'] }}</td><td class="text-end">{{ $r['intercepted'] }}</td><td class="text-end">{{ $r['hit'] }}</td><td class="text-end">{{ $G::num($r['rate']) }}</td></tr>@empty<tr><td colspan="5" class="text-center text-muted">{{ __('analytics.none') }}</td></tr>@endforelse</tbody>
+                <thead><tr><th>{{ __('analytics.country') }}</th><th class="num">{{ __('analytics.targeted') }}</th><th class="num">{{ __('analytics.intercepted') }}</th><th class="num">{{ __('analytics.hit') }}</th><th class="num">%</th></tr></thead>
+                <tbody>@forelse ($defense as $r)<tr><td><span class="an-dot" style="--c: {{ $G::colorOf($r['name']) }}"></span>{{ $G::country($r['name']) }}</td><td class="num">{{ $r['targeted'] }}</td><td class="num">{{ $r['intercepted'] }}</td><td class="num">{{ $r['hit'] }}</td><td class="num">{{ $G::num($r['rate']) }}</td></tr>@empty<tr><td colspan="5" class="text-center text-muted">{{ __('analytics.none') }}</td></tr>@endforelse</tbody>
             </table>
         </div></div>
     </div>
@@ -104,8 +103,8 @@
         <div class="table-responsive">
             <table class="table table-sm an-table" id="an-missile-metrics">
                 @php $cols = ['launched_24h','tier1_24h','tier2_24h','tier3_24h','tier4_24h','tier5_24h','intercepted_24h','hit_24h','refused_24h','interception_rate_pct','blocks_destroyed_24h','defense_radars','defense_interceptors','defense_ciws']; @endphp
-                <thead><tr><th>{{ __('analytics.country') }}</th>@foreach ($cols as $m)<th class="text-end">{{ $G::metricLabel($m) }}</th>@endforeach</tr></thead>
-                <tbody>@forelse ($metricRows as $r)<tr><td>{{ $r['name'] }}</td>@foreach ($cols as $m)<td class="text-end">{{ $G::num($r[$m]) }}</td>@endforeach</tr>@empty<tr><td colspan="15" class="text-center text-muted">{{ __('analytics.none') }}</td></tr>@endforelse</tbody>
+                <thead><tr><th>{{ __('analytics.country') }}</th>@foreach ($cols as $m)<th class="num">{{ $G::metricTitle($m) }}</th>@endforeach</tr></thead>
+                <tbody>@forelse ($metricRows as $r)<tr><td><span class="an-dot" style="--c: {{ $G::colorOf($r['name']) }}"></span>{{ $G::country($r['name']) }}</td>@foreach ($cols as $m)<td class="num">{{ $G::num($r[$m]) }}</td>@endforeach</tr>@empty<tr><td colspan="15" class="text-center text-muted">{{ __('analytics.none') }}</td></tr>@endforelse</tbody>
             </table>
         </div>
     </div>
@@ -119,8 +118,8 @@
             <div class="table-responsive">
                 <table class="table table-sm an-table" id="an-kd">
                     @php $kc = ['kills_24h','deaths_24h','kd_ratio','sieges_active','assault_gauge_peak','annexed_claims','reparations_paid']; @endphp
-                    <thead><tr><th>{{ __('analytics.country') }}</th>@foreach ($kc as $m)<th class="text-end">{{ $G::metricLabel($m) }}</th>@endforeach</tr></thead>
-                    <tbody>@forelse ($kdRows as $r)<tr><td>{{ $r['name'] }}</td>@foreach ($kc as $m)<td class="text-end">{{ $G::num($r[$m]) }}</td>@endforeach</tr>@empty<tr><td colspan="8" class="text-center text-muted">{{ __('analytics.none') }}</td></tr>@endforelse</tbody>
+                    <thead><tr><th>{{ __('analytics.country') }}</th>@foreach ($kc as $m)<th class="num">{{ $G::metricTitle($m) }}</th>@endforeach</tr></thead>
+                    <tbody>@forelse ($kdRows as $r)<tr><td><span class="an-dot" style="--c: {{ $G::colorOf($r['name']) }}"></span>{{ $G::country($r['name']) }}</td>@foreach ($kc as $m)<td class="num">{{ $G::num($r[$m]) }}</td>@endforeach</tr>@empty<tr><td colspan="8" class="text-center text-muted">{{ __('analytics.none') }}</td></tr>@endforelse</tbody>
                 </table>
             </div>
         </div></div>

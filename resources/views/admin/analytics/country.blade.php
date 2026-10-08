@@ -3,7 +3,7 @@
 @section('an')
 @php $G = \App\Services\GameAnalytics::class; @endphp
 <p><a href="{{ route('admin.analytics.countries', ['period' => $period]) }}"><i class="bi bi-arrow-left"></i> {{ __('analytics.back_countries') }}</a></p>
-<h4 class="mb-3" id="an-country-name">{{ $country }}</h4>
+<h4 class="mb-3" id="an-country-name"><span class="an-dot" style="--c: {{ \App\Services\GameAnalytics::colorOf($country) }}"></span>{{ $G::country($country) }}</h4>
 @include('admin.analytics._kpi', ['kpi' => collect($now)->map(fn ($v, $m) => [$m, $v, null])->values()->all()])
 @include('admin.analytics._charts', ['charts' => $charts])
 <div class="card shadow-sm border-0 mb-4">
