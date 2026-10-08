@@ -234,6 +234,24 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::put('/launcher-content/{item}', [AdminLauncherContentController::class, 'update'])->name('admin.launcher-content.update');
     Route::patch('/launcher-content/{item}/toggle', [AdminLauncherContentController::class, 'toggle'])->name('admin.launcher-content.toggle');
     Route::delete('/launcher-content/{item}', [AdminLauncherContentController::class, 'destroy'])->name('admin.launcher-content.destroy');
+
+    // Geoventure Analytics : pages d'analyse lues dans la base du jeu (gf_metrics / gf_events).
+    Route::prefix('analytics')->name('admin.analytics.')->group(function () {
+        $c = \App\Http\Controllers\Admin\AnalyticsController::class;
+        Route::get('/', [$c, 'overview'])->name('overview');
+        Route::get('/countries', [$c, 'countries'])->name('countries');
+        Route::get('/countries/{country}', [$c, 'country'])->name('country');
+        Route::get('/research', [$c, 'research'])->name('research');
+        Route::get('/oil', [$c, 'oil'])->name('oil');
+        Route::get('/economy', [$c, 'economy'])->name('economy');
+        Route::get('/ecology', [$c, 'ecology'])->name('ecology');
+        Route::get('/players', [$c, 'players'])->name('players');
+        Route::get('/events', [$c, 'events'])->name('events');
+        Route::get('/events/export.csv', [$c, 'export'])->name('events.export');
+        Route::get('/war', [$c, 'war'])->name('war');
+        Route::get('/usage', [$c, 'usage'])->name('usage');
+        Route::get('/data', [$c, 'data'])->middleware('throttle:600,1,analytics')->name('data');
+    });
 });
 
 // Routes sans le préfixe 'admin'
