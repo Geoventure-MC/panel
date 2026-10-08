@@ -113,8 +113,22 @@ class PublicDashboard
             $r = app(ServerStatusController::class)->getServersStatusCached();
             $d = json_decode($r->getContent(), true);
             $rows = is_array($d) ? array_values(array_filter($d, 'is_array')) : [];
+            // Disponibilité 24 h (supervision) : absente si pas encore de sondes.
+            $uptime = [];
+            foreach (\App\Http\Controllers\api\UptimeController::rows() as $u) {
+                $uptime[$u['id'] ?? ''] = $u['uptime24h'] ?? null;
+            }
+
             // Pas d'IP/port côté page publique.
-            return array_map(fn ($s) => array_diff_key($s, ['ip' => 1, 'port' => 1]), $rows);
+            return array_map(function ($s) use ($uptime) {
+                $s = array_diff_key($s, ['ip' => 1, 'port' => 1]);
+                $up = $uptime[$s['id'] ?? ''] ?? null;
+                if ($up !== null) {
+                    $s['uptime24h'] = $up;
+                }
+
+                return $s;
+            }, $rows);
         } catch (\Throwable $e) {
             Log::warning('PublicDashboard@servers: ' . $e->getMessage());
 

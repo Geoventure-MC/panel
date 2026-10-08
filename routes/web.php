@@ -226,6 +226,10 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
     Route::get('/stats/export.csv', [StatsController::class, 'export'])->name('admin.stats.export');
 
+    Route::get('/monitor', [\App\Http\Controllers\AdminMonitorController::class, 'index'])->name('admin.monitor');
+    Route::put('/monitor', [\App\Http\Controllers\AdminMonitorController::class, 'update'])->name('admin.monitor.update');
+    Route::post('/monitor/test', [\App\Http\Controllers\AdminMonitorController::class, 'test'])->middleware('throttle:5,1,monitortest')->name('admin.monitor.test');
+
     Route::get('/dashboard/live', [LiveDashboardController::class, 'index'])->name('admin.dashboard.live');
     Route::get('/dashboard/feed', [LiveDashboardController::class, 'feed'])->name('admin.dashboard.feed');
 
@@ -284,6 +288,8 @@ Route::prefix('utils')->middleware(['throttle:120,1,utils'])->group(function () 
     Route::get('/scheduled-events', [ScheduledEventController::class, 'index']);
     Route::post('/scheduled-events/claim', [ScheduledEventController::class, 'claim']);
 });
+// Disponibilité publique : compteur de throttle PROPRE (le tableau de bord /joueurs l'appelle à chaque chargement).
+Route::get('/utils/uptime', [\App\Http\Controllers\api\UptimeController::class, 'index'])->middleware('throttle:60,1,uptime');
 Route::get('/data', [FileController::class, 'getFiles'])->middleware('throttle:120,1,data');
 Route::get('/api/centralcorp/community-mods', [CommunityModController::class, 'getCommunityMods']);
 Route::get('/api-schema.json', fn() => response()->json(['schemaVersion' => '1.0.0'], 200, [], JSON_UNESCAPED_SLASHES));

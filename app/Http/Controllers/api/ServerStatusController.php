@@ -136,6 +136,21 @@ class ServerStatusController extends Controller
         }
     }
 
+    /**
+     * Ping SLP direct, sans cache ni effet de bord (supervision `geo:monitor`).
+     * Ne lève jamais : un échec donne un statut hors ligne.
+     *
+     * @return array{online: bool, players: ?int, max_players: ?int, version: ?string, latency: ?int}
+     */
+    public function probe(string $ip, int $port): array
+    {
+        try {
+            return $this->doPing($ip, $port, null);
+        } catch (\Throwable $e) {
+            return ['online' => false, 'players' => null, 'max_players' => null, 'version' => null, 'latency' => null];
+        }
+    }
+
     private function doPing(string $ip, int $port, ?string $serverKey = null): array
     {
             $empty = [

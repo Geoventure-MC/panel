@@ -54,4 +54,32 @@ class DiscordWebhook
             Log::warning('Discord webhook failed: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Envoie un embed arbitraire à un webhook donné. Renvoie true si Discord
+     * (ou le récepteur) a répondu 2xx ; ne lève jamais.
+     */
+    public static function sendEmbed(string $url, string $title, string $description, int $color): bool
+    {
+        if (! preg_match('#^https?://#i', $url)) {
+            return false;
+        }
+
+        try {
+            $response = Http::timeout(3)->connectTimeout(2)->post($url, [
+                'embeds' => [[
+                    'title'       => $title,
+                    'description' => mb_substr($description, 0, 1800),
+                    'color'       => $color,
+                    'timestamp'   => now()->toIso8601String(),
+                ]],
+            ]);
+
+            return $response->successful();
+        } catch (\Throwable $e) {
+            Log::warning('Discord webhook failed: ' . $e->getMessage());
+
+            return false;
+        }
+    }
 }

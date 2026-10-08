@@ -12,8 +12,9 @@
 <div class="pills" id="servers" aria-live="polite">
     @forelse($servers as $s)
         @php $on = ! empty($s['online']); @endphp
-        <span class="pill {{ $on ? 'on' : 'off' }}"><i class="dot"></i>{{ $s['name'] ?? $s['id'] ?? '—' }}
-            <small>@if($on){{ $s['players'] ?? '?' }}/{{ $s['max_players'] ?? '?' }}@else{{ __('messages.dashboard.server_offline') }}@endif</small></span>
+        <span class="pill {{ $on ? 'on' : 'off' }}" data-id="{{ $s['id'] ?? '' }}"><i class="dot"></i>{{ $s['name'] ?? $s['id'] ?? '—' }}
+            <small>@if($on){{ $s['players'] ?? '?' }}/{{ $s['max_players'] ?? '?' }}@else{{ __('messages.dashboard.server_offline') }}@endif</small>
+            @if(isset($s['uptime24h']))<small class="up" title="{{ __('messages.dashboard.uptime_24h') }}">{{ rtrim(rtrim(number_format((float) $s['uptime24h'], 1, ',', ''), '0'), ',') }} %</small>@endif</span>
     @empty
         <span class="sub">{{ __('messages.dashboard.no_servers') }}</span>
     @endforelse
@@ -261,7 +262,7 @@
     var h = (location.hash || '').replace('#', '');
     if (tabs.indexOf(h) >= 0) show(h, false);
 
-    var L = {on: @json(__('messages.dashboard.server_online')), off: @json(__('messages.dashboard.server_offline'))};
+    var L = {up: @json(__('messages.dashboard.uptime_24h')), on: @json(__('messages.dashboard.server_online')), off: @json(__('messages.dashboard.server_offline'))};
     function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
     function refresh() {
         fetch('/utils/servers-status', {headers: {Accept: 'application/json'}}).then(function (r) { return r.ok ? r.json() : null; }).then(function (list) {
@@ -271,15 +272,33 @@
             var anchor = document.getElementById('total');
             list.forEach(function (s) {
                 var on = !!s.online; if (on) total += parseInt(s.players || 0, 10) || 0;
-                var p = el('span', 'pill ' + (on ? 'on' : 'off')); p.appendChild(el('i', 'dot'));
+                var p = el('span', 'pill ' + (on ? 'on' : 'off')); p.setAttribute('data-id', String(s.id == null ? '' : s.id)); p.appendChild(el('i', 'dot'));
                 p.appendChild(document.createTextNode(String(s.name || s.id || '')));
                 p.appendChild(el('small', null, on ? (s.players == null ? '?' : s.players) + '/' + (s.max_players == null ? '?' : s.max_players) : L.off));
                 box.insertBefore(p, anchor);
             });
+            setUptime();
             document.getElementById('total-count').textContent = total; anchor.hidden = false;
         }).catch(function () {});
     }
-    refresh(); setInterval(refresh, 30000);
+    var UP = {};
+    function setUptime() {
+        document.querySelectorAll('#servers .pill').forEach(function (p) {
+            var id = p.getAttribute('data-id'); var v = id != null ? UP[id] : null;
+            var u = p.querySelector('small.up');
+            if (v == null) { if (u) u.remove(); return; }
+            if (!u) { u = el('small', 'up'); u.title = L.up; p.appendChild(u); }
+            u.textContent = (Math.round(v * 10) / 10).toString().replace('.', ',') + ' %';
+        });
+    }
+    function refreshUptime() {
+        fetch('/utils/uptime', {headers: {Accept: 'application/json'}}).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+            if (!d || !Array.isArray(d.servers)) return;
+            UP = {}; d.servers.forEach(function (s) { UP[s.id] = s.uptime24h; });
+            setUptime();
+        }).catch(function () {});
+    }
+    refresh(); setInterval(refresh, 30000); refreshUptime(); setInterval(refreshUptime, 120000);
 })();
 </script>
 @endsection

@@ -157,4 +157,15 @@ return [
         'limit' => 50,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Supervision : langue des alertes Discord
+    |--------------------------------------------------------------------------
+    |
+    | Les alertes partent depuis la CLI (cron), sans session : langue fixe.
+    |
+    */
+
+    'monitor_alert_locale' => env('GEO_ALERT_LOCALE', 'fr'),
+
 ];
