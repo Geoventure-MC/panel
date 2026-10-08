@@ -9,7 +9,7 @@ const PAGES = [
   ['changelog', '/admin/changelog'], ['community-mods', '/admin/community-mods'], ['achievements', '/admin/achievements'],
   ['seasons', '/admin/seasons'], ['wonder', '/admin/wonder'], ['scheduled-events', '/admin/scheduled-events'],
   ['audit', '/admin/audit'], ['game-commands', '/admin/game-commands'], ['stats', '/admin/stats'],
-  ['launcher-content', '/admin/launcher-content'], ['two-factor', '/admin/two-factor'], ['config', '/admin/config'],
+  ['monitor', '/admin/monitor'], ['launcher-content', '/admin/launcher-content'], ['two-factor', '/admin/two-factor'], ['config', '/admin/config'],
   ['sso', '/admin/sso'], ['update', '/admin/update'],
 ];
 
@@ -30,6 +30,7 @@ test.describe('admin', () => {
   });
 
   test('login puis toutes les pages admin répondent 200 sans erreur JS', async ({ page }) => {
+    test.setTimeout(90000); // ~30 pages, machine de CI lente
     await login(page);
     await shot(page, 'admin-dashboard');
     const problems = [];
