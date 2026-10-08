@@ -87,7 +87,8 @@ return [
         // unconfigured by default — when the DB is unreachable the endpoint
         // simply returns [] (no 5xx).
         'game' => [
-            'driver' => 'mysql',
+            // 'sqlite' accepté pour les tests E2E (base jetable) ; mysql en production.
+            'driver' => env('GEO_GAME_DB_DRIVER', 'mysql'),
             'host' => env('GEO_GAME_DB_HOST', '127.0.0.1'),
             'port' => env('GEO_GAME_DB_PORT', '3306'),
             'database' => env('GEO_GAME_DB_DATABASE', ''),
@@ -100,6 +101,8 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                // Base du jeu injoignable : échouer vite (pages Analytique).
+                PDO::ATTR_TIMEOUT => 3,
             ]) : [],
         ],
 
