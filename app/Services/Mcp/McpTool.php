@@ -20,6 +20,10 @@ class McpTool
         public Closure $handler,
         public bool $destructive = false,
     ) {
+        // Règle de sécurité : tout outil destructif exige la portée admin.
+        if ($destructive && $scope !== 'admin') {
+            throw new \LogicException("L'outil destructif {$name} doit avoir la portée admin.");
+        }
     }
 
     public static function make(string $name, string $scope, string $description, array $properties = [], array $required = [], array $rules = [], ?Closure $handler = null, bool $destructive = false): self
