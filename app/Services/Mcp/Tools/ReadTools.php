@@ -82,6 +82,23 @@ class ReadTools
                     ]);
                 }),
 
+            McpTool::make('launcher_content_list', 'read',
+                'Contenu de l\'accueil du launcher : bannières d\'actualité, raccourcis et cartes « À découvrir » (section, titre, description, icône, image, lien, ordre, actif).',
+                ['section' => ['type' => 'string', 'enum' => ['news_banner', 'shortcut', 'discover']]], [],
+                ['section' => 'sometimes|in:news_banner,shortcut,discover'],
+                function (array $a) {
+                    $q = \App\Models\OptionsLauncherContent::query()->orderBy('section')->orderBy('sort_order')->orderByDesc('id');
+                    if (! empty($a['section'])) {
+                        $q->where('section', $a['section']);
+                    }
+
+                    return $q->get()->map(fn ($i) => [
+                        'id' => $i->id, 'section' => $i->section, 'title' => $i->title, 'description' => $i->description,
+                        'icon' => $i->icon, 'image_url' => $i->image_url, 'url' => $i->url, 'sort_order' => (int) $i->sort_order,
+                        'active' => (bool) $i->active,
+                    ])->all();
+                }),
+
             McpTool::make('achievements_list', 'read',
                 'Catalogue des succès du launcher (code, rareté, catégorie, condition, points, niveaux, secret).',
                 $P + [

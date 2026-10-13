@@ -52,6 +52,49 @@ class WriteTools
                     return ['id' => $n->id, 'type' => $n->type, 'active' => true, 'expires_at' => Support::iso($n->expires_at)];
                 }),
 
+            McpTool::make('launcher_content_upsert', 'write',
+                'Crée ou modifie un élément de l\'accueil du launcher (bannière d\'actualité, raccourci ou carte « À découvrir »). Sans id : création (section et titre obligatoires).',
+                [
+                    'id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'Élément existant à modifier.'],
+                    'section' => ['type' => 'string', 'enum' => ['news_banner', 'shortcut', 'discover']],
+                    'title' => ['type' => 'string', 'maxLength' => 255],
+                    'description' => ['type' => 'string', 'maxLength' => 1000],
+                    'icon' => ['type' => 'string', 'maxLength' => 255, 'description' => 'Emoji ou icône (raccourcis).'],
+                    'image_url' => ['type' => 'string', 'maxLength' => 255, 'description' => 'Image https (cartes et bannières).'],
+                    'url' => ['type' => 'string', 'maxLength' => 255, 'description' => 'Lien http/https ouvert au clic.'],
+                    'sort_order' => ['type' => 'integer', 'minimum' => -1000, 'maximum' => 1000],
+                    'active' => ['type' => 'boolean'],
+                ], [],
+                [
+                    'id' => 'sometimes|integer|min:1',
+                    'section' => 'sometimes|in:news_banner,shortcut,discover',
+                    'title' => 'sometimes|string|min:1|max:255',
+                    'description' => 'sometimes|nullable|string|max:1000',
+                    'icon' => 'sometimes|nullable|string|max:255',
+                    'image_url' => 'sometimes|nullable|url|max:255|starts_with:https://',
+                    'url' => 'sometimes|nullable|url|max:255|starts_with:http://,https://',
+                    'sort_order' => 'sometimes|integer|min:-1000|max:1000',
+                    'active' => 'sometimes|boolean',
+                ],
+                function (array $a, McpContext $ctx) {
+                    $fields = array_intersect_key($a, array_flip(['section', 'title', 'description', 'icon', 'image_url', 'url', 'sort_order', 'active']));
+                    if (isset($a['id'])) {
+                        $item = \App\Models\OptionsLauncherContent::find($a['id']) ?? throw new McpToolError('Élément introuvable.');
+                        $before = $item->only(array_keys($fields));
+                        $item->update($fields);
+                        $ctx->audit('launcher_content.update', $item, $before, $fields);
+
+                        return ['id' => $item->id, 'created' => false];
+                    }
+                    if (empty($a['section']) || empty($a['title'])) {
+                        throw new McpToolError('Création : section et title obligatoires.');
+                    }
+                    $item = \App\Models\OptionsLauncherContent::create($fields + ['sort_order' => 0, 'active' => true]);
+                    $ctx->audit('launcher_content.create', $item, [], $fields);
+
+                    return ['id' => $item->id, 'created' => true];
+                }),
+
             McpTool::make('notification_toggle', 'write',
                 'Active ou désactive une annonce du launcher (bascule).',
                 ['id' => ['type' => 'integer', 'minimum' => 1]], ['id'], ['id' => 'required|integer|min:1'],
