@@ -126,6 +126,11 @@ class ReadTools
                 [], [], [],
                 fn () => \App\Models\GameEvent::orderBy('id')->get()->map->toPublic()->all()),
 
+            McpTool::make('modpack_backups', 'read',
+                'Jars mis de côté par les publications précédentes (sauvegardes horodatées, les plus récentes d\'abord) : ce que modpack_rollback peut restaurer.',
+                [], [], [],
+                fn () => \App\Services\ModpackPublisher::backups()),
+
             McpTool::make('modpack_list', 'read',
                 'Fichiers (jars) actuellement publiés dans le modpack du launcher, pour une instance et un sous-dossier (défaut mods).',
                 ['instance' => ['type' => 'string', 'maxLength' => 64], 'subfolder' => ['type' => 'string', 'maxLength' => 64]], [],

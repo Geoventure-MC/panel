@@ -155,11 +155,17 @@ return [
         'bourse' => "Bourse",
         'wheel' => "Roue et tombola",
         'arcade' => "Arcade",
+        'events' => "Événements saisonniers",
         'boss' => "Boss",
         'disasters' => "Catastrophes",
         'other' => "Autres usages",
     ],
     'm' => [
+        'halloween_players' => "Halloween : joueurs présents",
+        'halloween_participants' => "Halloween : participants",
+        'halloween_boss_kills_24h' => "Halloween : boss vaincus (24 h)",
+        'halloween_points_total' => "Halloween : points cumulés",
+
         'players_online' => "Joueurs en ligne",
         'players_peak_day' => "Pic du jour",
         'tps' => "TPS",

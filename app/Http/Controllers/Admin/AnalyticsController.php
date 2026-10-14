@@ -853,7 +853,7 @@ class AnalyticsController extends Controller
     private function family(string $metric): string
     {
         $map = ['weapons' => '/^(weapon|gun|arme)/', 'transport' => '/^(vehicle|train|convoy|boat|ship|tractor)/', 'crates' => '/^(crate|lootbox|caisse|box)/',
-            'bourse' => '/^(bourse|stock|market)/', 'wheel' => '/^(wheel|roue|tombola|raffle|ticket)/', 'arcade' => '/^arcade/', 'boss' => '/^boss/',
+            'bourse' => '/^(bourse|stock|market)/', 'wheel' => '/^(wheel|roue|tombola|raffle|ticket)/', 'arcade' => '/^arcade/', 'events' => '/^(halloween|noel|christmas|event_)/', 'boss' => '/^boss/',
             'disasters' => '/^(disaster|catastrophe|meltdown|nuclear|earthquake|volcano|meteor|oil_spill)/'];
         foreach ($map as $fam => $re) {
             if (preg_match($re, $metric)) {
@@ -901,7 +901,7 @@ class AnalyticsController extends Controller
         foreach ($this->a->latestBatch('usage', $c['lb']) as $row) {
             $fams[$this->family($row['metric'])][] = $row;
         }
-        $order = ['weapons', 'transport', 'crates', 'bourse', 'wheel', 'arcade', 'boss', 'disasters', 'other'];
+        $order = ['events', 'weapons', 'transport', 'crates', 'bourse', 'wheel', 'arcade', 'boss', 'disasters', 'other'];
         $groups = [];
         foreach ($order as $f) {
             if (empty($fams[$f])) {

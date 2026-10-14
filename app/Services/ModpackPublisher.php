@@ -157,6 +157,65 @@ class ModpackPublisher
         return ['removed' => $relPath];
     }
 
+    /**
+     * Annule la dernière publication d'un mod : le jar actuel du préfixe (ex. geomods) part dans une nouvelle
+     * sauvegarde, la version la plus récente de ce préfixe trouvée dans storage/app/modpack-backup revient.
+     * Le choix est fait par date de sauvegarde (dossiers horodatés), jamais par numéro de version.
+     */
+    public static function rollback(?string $instance, string $sub, string $prefix): array
+    {
+        if (! preg_match('/^[A-Za-z0-9._+]+$/', $prefix)) {
+            throw new \RuntimeException('Préfixe invalide.');
+        }
+        $sub = self::safeSub($sub);
+        $dir = self::baseDir($instance) . ($sub !== '' ? '/' . $sub : '');
+        $root = storage_path('app/modpack-backup');
+        $match = fn (string $b) => str_starts_with($b, $prefix . '-') || str_starts_with($b, $prefix . '_');
+        $current = array_values(array_filter(glob($dir . '/*.jar') ?: [], fn ($f) => $match(basename($f))));
+        $candidate = null;
+        $dirs = glob($root . '/*', GLOB_ONLYDIR) ?: [];
+        rsort($dirs);
+        foreach ($dirs as $d) {
+            foreach (glob($d . '/*.jar') ?: [] as $f) {
+                if ($match(basename($f)) && ! in_array(basename($f), array_map('basename', $current), true)) {
+                    $candidate = $f;
+                    break 2;
+                }
+            }
+        }
+        if ($candidate === null) {
+            throw new \RuntimeException('Aucune version précédente de « ' . $prefix . ' » dans les sauvegardes.');
+        }
+        File::ensureDirectoryExists($dir);
+        $bak = $root . '/' . date('Ymd-His') . '-rollback';
+        $moved = [];
+        foreach ($current as $f) {
+            File::ensureDirectoryExists($bak);
+            File::move($f, $bak . '/' . basename($f));
+            $moved[] = basename($f);
+        }
+        File::move($candidate, $dir . '/' . basename($candidate));
+        @touch(self::baseDir($instance));
+        @touch($dir);
+
+        return ['restored' => basename($candidate), 'set_aside' => $moved, 'sha1' => sha1_file($dir . '/' . basename($candidate))];
+    }
+
+    /** Sauvegardes disponibles (les plus récentes d'abord). */
+    public static function backups(): array
+    {
+        $out = [];
+        $dirs = glob(storage_path('app/modpack-backup') . '/*', GLOB_ONLYDIR) ?: [];
+        rsort($dirs);
+        foreach (array_slice($dirs, 0, 30) as $d) {
+            foreach (glob($d . '/*.jar') ?: [] as $f) {
+                $out[] = ['backup' => basename($d), 'file' => basename($f), 'size' => filesize($f)];
+            }
+        }
+
+        return $out;
+    }
+
     public static function listing(?string $instance, string $sub = 'mods'): array
     {
         $dir = self::baseDir($instance) . ($sub !== '' ? '/' . self::safeSub($sub) : '');

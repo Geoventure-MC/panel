@@ -232,6 +232,34 @@ class AdminTools
                     return $r;
                 }),
 
+            McpTool::make('modpack_rollback', 'admin',
+                'Annule la dernière publication d\'un mod : remet la version précédente (dernière sauvegarde du même préfixe, ex. « geomods ») et met de côté l\'actuelle. Les joueurs reçoivent la version restaurée au prochain lancement.',
+                [
+                    'prefix' => ['type' => 'string', 'maxLength' => 64, 'description' => 'Préfixe du mod (ex. geomods).'],
+                    'instance' => ['type' => 'string', 'maxLength' => 64],
+                    'subfolder' => ['type' => 'string', 'maxLength' => 64, 'description' => 'Défaut « mods ».'],
+                    'notify' => ['type' => 'string', 'maxLength' => 300, 'description' => 'Annonce launcher (optionnelle).'],
+                ], ['prefix'],
+                [
+                    'prefix' => ['required', 'string', 'max:64', 'regex:/^[A-Za-z0-9._+]+$/'],
+                    'instance' => ['sometimes', 'nullable', 'string', 'max:64', 'regex:/^[A-Za-z0-9_-]+$/'],
+                    'subfolder' => 'sometimes|nullable|string|max:64',
+                    'notify' => 'sometimes|nullable|string|max:300',
+                ],
+                function (array $a, McpContext $ctx) {
+                    try {
+                        $r = \App\Services\ModpackPublisher::rollback($a['instance'] ?? null, $a['subfolder'] ?? 'mods', $a['prefix']);
+                    } catch (\RuntimeException $e) {
+                        throw new McpToolError($e->getMessage());
+                    }
+                    if (! empty($a['notify'])) {
+                        OptionsNotification::create(['type' => 'info', 'message' => $a['notify'], 'active' => true, 'expires_at' => now()->addDays(3)]);
+                    }
+                    $ctx->audit('modpack.rollback', null, [], ['instance' => $a['instance'] ?? null] + $r);
+
+                    return $r;
+                }),
+
             McpTool::make('modpack_remove_file', 'admin',
                 'Retire un jar du modpack du launcher (mis de côté hors modpack, récupérable sur le serveur). Les joueurs le perdent au prochain lancement.',
                 [

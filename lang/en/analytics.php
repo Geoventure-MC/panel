@@ -155,11 +155,17 @@ return [
         'bourse' => "Stock market",
         'wheel' => "Wheel and raffle",
         'arcade' => "Arcade",
+        'events' => "Seasonal events",
         'boss' => "Bosses",
         'disasters' => "Disasters",
         'other' => "Other usage",
     ],
     'm' => [
+        'halloween_players' => "Halloween: players present",
+        'halloween_participants' => "Halloween: participants",
+        'halloween_boss_kills_24h' => "Halloween: bosses defeated (24 h)",
+        'halloween_points_total' => "Halloween: total points",
+
         'players_online' => "Players online",
         'players_peak_day' => "Daily peak",
         'tps' => "TPS",
