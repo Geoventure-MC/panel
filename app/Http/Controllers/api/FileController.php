@@ -29,7 +29,8 @@ class FileController extends Controller
             $folder = $instance ? $instance->modpack_folder : $slug;
             // Anti path-traversal : on slugifie le nom de dossier.
             $folder = preg_replace('/[^A-Za-z0-9_-]/', '', (string) $folder);
-            if ($folder !== '' && is_dir($base . '/' . $folder)) {
+            // Un dossier d'instance sans AUCUN fichier ne doit pas masquer le modpack racine (manifeste vide = launcher qui supprime).
+            if ($folder !== '' && is_dir($base . '/' . $folder) && $this->hasFiles($base . '/' . $folder)) {
                 $dir = $base . '/' . $folder;
                 $urlPrefix = 'data/' . $folder;
             }
@@ -51,6 +52,17 @@ class FileController extends Controller
         });
 
         return response()->json($manifest, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    }
+
+    private function hasFiles(string $dir): bool
+    {
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)) as $f) {
+            if ($f->isFile()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function dirToArray($dir, $basePath = '', $ignoredFolders = [], $urlPrefix = 'data')

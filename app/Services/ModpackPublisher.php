@@ -71,6 +71,10 @@ class ModpackPublisher
         $filename = self::safeName($filename);
         $sub = self::safeSub($sub);
         $dir = self::baseDir($instance) . ($sub !== '' ? '/' . $sub : '');
+        // Piège : créer data/<instance>/ fait basculer le launcher sur ce dossier (modpack racine ignoré).
+        if ($instance && ! is_dir(self::baseDir($instance))) {
+            throw new \RuntimeException('Le dossier modpack de cette instance n\'existe pas : publier sans « instance » (modpack racine) ou y copier d\'abord TOUT le modpack.');
+        }
         File::ensureDirectoryExists($dir);
 
         // Préfixe d'artefact par défaut : nom avant la première « -<chiffre> » (geomods-3.21.36.jar -> geomods).
@@ -144,7 +148,11 @@ class ModpackPublisher
         $bak = storage_path('app/modpack-backup/' . date('Ymd-His'));
         File::ensureDirectoryExists($bak);
         File::move($file, $bak . '/' . $name);
-        @touch(self::baseDir($instance));
+        // Retire les dossiers devenus vides (sinon un dossier d'instance vide masquerait le modpack racine).
+        $root = storage_path('app/public/data');
+        for ($d = dirname($file); str_starts_with($d, $root . '/') && @rmdir($d); $d = dirname($d)) {
+        }
+        @touch(is_dir(self::baseDir($instance)) ? self::baseDir($instance) : $root);
 
         return ['removed' => $relPath];
     }
