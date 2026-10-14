@@ -181,6 +181,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::post('/notifications', [AdminNotificationController::class, 'store'])->name('admin.notifications.store');
     Route::patch('/notifications/{notification}/toggle', [AdminNotificationController::class, 'toggle'])->name('admin.notifications.toggle');
     Route::delete('/notifications/{notification}', [AdminNotificationController::class, 'destroy'])->name('admin.notifications.destroy');
+    Route::get('/game-events', [\App\Http\Controllers\AdminGameEventController::class, 'index'])->name('admin.game-events');
+    Route::put('/game-events/{event}', [\App\Http\Controllers\AdminGameEventController::class, 'update'])->name('admin.game-events.update');
 
     Route::get('/changelog', [AdminChangelogController::class, 'index'])->name('admin.changelog');
     Route::post('/changelog', [AdminChangelogController::class, 'store'])->name('admin.changelog.store');
@@ -296,6 +298,7 @@ Route::prefix('utils')->middleware(['throttle:120,1,utils'])->group(function () 
     Route::post('/achievements/unlock', [AchievementUnlockController::class, 'store']);
     Route::get('/seasons', [SeasonController::class, 'index']);
     Route::get('/wonder', [WonderController::class, 'index']);
+    Route::get('/game-events', [\App\Http\Controllers\api\GameEventController::class, 'index']);
     Route::post('/seasons/sync', [SeasonController::class, 'sync']);
     Route::get('/scheduled-events', [ScheduledEventController::class, 'index']);
     Route::post('/scheduled-events/claim', [ScheduledEventController::class, 'claim']);

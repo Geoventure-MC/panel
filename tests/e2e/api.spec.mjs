@@ -3,13 +3,13 @@ import { PORT_DOWN } from './global-setup.mjs';
 
 // Endpoints JSON lus par le launcher. Jamais de 500, JSON valide, même base du jeu absente OU injoignable.
 const JSON_ENDPOINTS = [
-  '/utils/api', '/utils/mods', '/utils/notifications', '/utils/achievements', '/utils/wonder', '/utils/collecte',
+  '/utils/api', '/utils/mods', '/utils/notifications', '/utils/achievements', '/utils/wonder', '/utils/game-events', '/utils/collecte',
   '/utils/seasons', '/utils/leaderboards', '/utils/factions', '/utils/servers-status', '/utils/community-mods',
   '/utils/changelog', '/utils/launcher-content', '/utils/scheduled-events', '/utils/servers-history', '/data',
   '/api-schema.json',
 ];
 // Documentés avec ETag + Cache-Control max-age=30 + 304.
-const ETAG_ENDPOINTS = ['/utils/leaderboards', '/utils/factions', '/utils/wonder', '/utils/collecte'];
+const ETAG_ENDPOINTS = ['/utils/leaderboards', '/utils/factions', '/utils/wonder', '/utils/game-events', '/utils/collecte'];
 
 for (const [label, base] of [['base du jeu absente', null], ['base du jeu injoignable', `http://127.0.0.1:${PORT_DOWN}`]]) {
   test.describe(`API publique (${label})`, () => {

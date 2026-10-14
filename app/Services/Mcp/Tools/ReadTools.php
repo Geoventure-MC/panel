@@ -121,6 +121,11 @@ class ReadTools
                     ]));
                 }),
 
+            McpTool::make('game_events_list', 'read',
+                'Liste des événements de jeu pilotés par le panel (Halloween…) : état, dates (epoch ms), réglages.',
+                [], [], [],
+                fn () => \App\Models\GameEvent::orderBy('id')->get()->map->toPublic()->all()),
+
             McpTool::make('wonder_editions', 'read',
                 'Liste des éditions du concours de construction Wonder (phase, dates, nombre d\'équipes).',
                 ['limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 50, 'description' => 'Nombre maximum (défaut 20).']], [],

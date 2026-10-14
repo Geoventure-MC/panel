@@ -75,6 +75,11 @@
                 </li>
                 @endif
                 <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.game-events*') ? 'active' : '' }}" href="{{ route('admin.game-events') }}">
+                        <i class="bi bi-calendar-event align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.game_events') }}</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}" href="{{ route('admin.notifications') }}">
                         <i class="bi bi-megaphone align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.notifications') }}</span>
                     </a>

@@ -52,6 +52,45 @@ class WriteTools
                     return ['id' => $n->id, 'type' => $n->type, 'active' => true, 'expires_at' => Support::iso($n->expires_at)];
                 }),
 
+            McpTool::make('game_event_set', 'write',
+                'Configure un événement de jeu (ex. slug « halloween ») : activation, dates d\'ouverture/fin (ISO 8601 ; sans fuseau = heure de Paris), réglages (mob_cap, mob_local, boss_respawn_minutes, flight_minutes, rewards = 4 entiers) et annonce automatique dans le launcher. Le plugin applique le changement en moins d\'une minute.',
+                [
+                    'slug' => ['type' => 'string', 'maxLength' => 32, 'description' => 'Identifiant de l\'événement (halloween).'],
+                    'enabled' => ['type' => 'boolean'],
+                    'opens_at' => ['type' => 'string', 'description' => 'Ouverture ISO 8601.'],
+                    'ends_at' => ['type' => 'string', 'description' => 'Fin ISO 8601 (après l\'ouverture).'],
+                    'announce' => ['type' => 'boolean', 'description' => 'Publier/retirer l\'annonce dans le launcher.'],
+                    'settings' => ['type' => 'object', 'description' => 'Réglages numériques bornés (clés inconnues ignorées).', 'additionalProperties' => true],
+                ], ['slug'],
+                [
+                    'slug' => 'required|string|max:32|regex:/^[a-z0-9_-]+$/',
+                    'enabled' => 'sometimes|boolean', 'announce' => 'sometimes|boolean',
+                    'opens_at' => 'sometimes|nullable|date', 'ends_at' => 'sometimes|nullable|date',
+                    'settings' => 'sometimes|array',
+                ],
+                function (array $a, McpContext $ctx) {
+                    $ev = \App\Models\GameEvent::where('slug', $a['slug'])->first() ?? throw new McpToolError('Événement inconnu (créé par migration : halloween).');
+                    $tz = 'Europe/Paris';
+                    $upd = [];
+                    foreach (['enabled', 'announce'] as $k) {
+                        if (array_key_exists($k, $a)) { $upd[$k] = (bool) $a[$k]; }
+                    }
+                    foreach (['opens_at', 'ends_at'] as $k) {
+                        if (array_key_exists($k, $a)) { $upd[$k] = $a[$k] ? \Illuminate\Support\Carbon::parse($a[$k], $tz)->utc() : null; }
+                    }
+                    $o = $upd['opens_at'] ?? $ev->opens_at; $e = $upd['ends_at'] ?? $ev->ends_at;
+                    if ($o && $e && $e->lte($o)) { throw new McpToolError('ends_at doit être après opens_at.'); }
+                    if (isset($a['settings'])) {
+                        $upd['settings'] = \App\Models\GameEvent::cleanSettings($ev->slug, $a['settings']) + ($ev->settings ?? []);
+                    }
+                    $before = $ev->only(['enabled', 'announce', 'opens_at', 'ends_at', 'settings']);
+                    $ev->update($upd);
+                    $ev->syncNotification();
+                    $ctx->audit('game_event.set', $ev, $before, $ev->only(['enabled', 'announce', 'opens_at', 'ends_at', 'settings']));
+
+                    return $ev->toPublic();
+                }),
+
             McpTool::make('launcher_content_upsert', 'write',
                 'Crée ou modifie un élément de l\'accueil du launcher (bannière d\'actualité, raccourci ou carte « À découvrir »). Sans id : création (section et titre obligatoires).',
                 [
