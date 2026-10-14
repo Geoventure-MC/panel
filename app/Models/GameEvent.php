@@ -58,6 +58,23 @@ class GameEvent extends Model
             }
         }
 
+        // Modes créés à la volée (hors événements à réglages connus) : scalaires courts seulement.
+        if (! isset(self::SETTINGS[$slug])) {
+            foreach ($in as $k => $v) {
+                if (is_string($k) && preg_match('/^[a-z][a-z0-9_]{0,31}$/', $k) && (is_int($v) || is_float($v) || is_bool($v) || (is_string($v) && mb_strlen($v) <= 200))) {
+                    $out[$k] = $v;
+                }
+            }
+        }
+        // Commandes exécutées par le plugin à l'ouverture / à la fin (le plugin filtre par liste blanche).
+        foreach (['on_open', 'on_end'] as $k) {
+            if (isset($in[$k]) && is_array($in[$k])) {
+                $out[$k] = array_values(array_slice(array_filter(array_map(
+                    fn ($c) => is_string($c) ? trim(ltrim(trim($c), '/')) : '', $in[$k]
+                ), fn ($c) => $c !== '' && mb_strlen($c) <= 200), 0, 10));
+            }
+        }
+
         return $out;
     }
 

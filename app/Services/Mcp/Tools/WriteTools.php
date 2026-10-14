@@ -60,7 +60,7 @@ class WriteTools
                     'opens_at' => ['type' => 'string', 'description' => 'Ouverture ISO 8601.'],
                     'ends_at' => ['type' => 'string', 'description' => 'Fin ISO 8601 (après l\'ouverture).'],
                     'announce' => ['type' => 'boolean', 'description' => 'Publier/retirer l\'annonce dans le launcher.'],
-                    'settings' => ['type' => 'object', 'description' => 'Réglages numériques bornés (clés inconnues ignorées).', 'additionalProperties' => true],
+                    'settings' => ['type' => 'object', 'description' => 'Réglages (bornés pour halloween ; libres pour un mode créé, scalaires courts). Clés spéciales : on_open / on_end = liste de commandes console jouées une fois par le plugin à l\'ouverture / à la fin (liste blanche côté plugin).', 'additionalProperties' => true],
                 ], ['slug'],
                 [
                     'slug' => 'required|string|max:32|regex:/^[a-z0-9_-]+$/',

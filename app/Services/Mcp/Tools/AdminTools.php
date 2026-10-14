@@ -142,6 +142,63 @@ class AdminTools
                     return ['id' => $u->id, 'name' => $u->name, 'role' => 'moderator', 'changed' => true];
                 }, true),
 
+            McpTool::make('game_event_create', 'admin',
+                'Crée un NOUVEAU mode/événement de jeu poussé par le panel (slug minuscule unique). Il apparaît dans GET /utils/game-events ; à l\'ouverture/fin le plugin joue settings.on_open / settings.on_end (commandes console autorisées) et annonce le mode. Ensuite l\'ajuster avec game_event_set.',
+                [
+                    'slug' => ['type' => 'string', 'maxLength' => 32, 'description' => 'a-z, 0-9, _ ou - (ex. noel, double_xp).'],
+                    'name' => ['type' => 'string', 'maxLength' => 60],
+                    'enabled' => ['type' => 'boolean'],
+                    'opens_at' => ['type' => 'string', 'description' => 'ISO 8601 (sans fuseau = Paris).'],
+                    'ends_at' => ['type' => 'string'],
+                    'announce' => ['type' => 'boolean'],
+                    'settings' => ['type' => 'object', 'additionalProperties' => true],
+                ], ['slug', 'name'],
+                [
+                    'slug' => 'required|string|max:32|regex:/^[a-z0-9_-]+$/',
+                    'name' => 'required|string|min:1|max:60',
+                    'enabled' => 'sometimes|boolean', 'announce' => 'sometimes|boolean',
+                    'opens_at' => 'sometimes|nullable|date', 'ends_at' => 'sometimes|nullable|date',
+                    'settings' => 'sometimes|array',
+                ],
+                function (array $a, McpContext $ctx) {
+                    if (\App\Models\GameEvent::where('slug', $a['slug'])->exists()) {
+                        throw new McpToolError('Ce slug existe déjà (utiliser game_event_set).');
+                    }
+                    $tz = 'Europe/Paris';
+                    $o = ! empty($a['opens_at']) ? \Illuminate\Support\Carbon::parse($a['opens_at'], $tz)->utc() : null;
+                    $e = ! empty($a['ends_at']) ? \Illuminate\Support\Carbon::parse($a['ends_at'], $tz)->utc() : null;
+                    if ($o && $e && $e->lte($o)) {
+                        throw new McpToolError('ends_at doit être après opens_at.');
+                    }
+                    $ev = \App\Models\GameEvent::create([
+                        'slug' => $a['slug'], 'name' => $a['name'], 'enabled' => (bool) ($a['enabled'] ?? false),
+                        'announce' => (bool) ($a['announce'] ?? true), 'opens_at' => $o, 'ends_at' => $e,
+                        'settings' => \App\Models\GameEvent::cleanSettings($a['slug'], $a['settings'] ?? []),
+                    ]);
+                    $ev->syncNotification();
+                    $ctx->audit('game_event.create', $ev, [], $ev->only(['slug', 'name', 'enabled', 'opens_at', 'ends_at', 'settings']));
+
+                    return $ev->toPublic();
+                }),
+
+            McpTool::make('game_event_delete', 'admin',
+                'Supprime un mode/événement de jeu créé via le panel (irréversible ; « halloween » est protégé) et retire son annonce.',
+                ['slug' => ['type' => 'string', 'maxLength' => 32]], ['slug'],
+                ['slug' => 'required|string|max:32|regex:/^[a-z0-9_-]+$/'],
+                function (array $a, McpContext $ctx) {
+                    if ($a['slug'] === 'halloween') {
+                        throw new McpToolError('Halloween est protégé : le désactiver avec game_event_set.');
+                    }
+                    $ev = \App\Models\GameEvent::where('slug', $a['slug'])->first() ?? throw new McpToolError('Événement introuvable.');
+                    $ctx->audit('game_event.delete', $ev, $ev->only(['slug', 'name', 'enabled', 'opens_at', 'ends_at', 'settings']));
+                    if ($ev->notification_id) {
+                        OptionsNotification::find($ev->notification_id)?->delete();
+                    }
+                    $ev->delete();
+
+                    return ['deleted' => true, 'slug' => $a['slug']];
+                }, true),
+
             McpTool::make('notification_delete', 'admin',
                 'Supprime définitivement UNE annonce du launcher (irréversible).',
                 ['id' => ['type' => 'integer', 'minimum' => 1]], ['id'], ['id' => 'required|integer|min:1'],
