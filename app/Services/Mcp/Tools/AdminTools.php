@@ -199,6 +199,57 @@ class AdminTools
                     return ['deleted' => true, 'slug' => $a['slug']];
                 }, true),
 
+            McpTool::make('modpack_publish_jar', 'admin',
+                'Publie un mod (.jar) dans le modpack du launcher : télécharge l\'URL (https, github.com / objects.githubusercontent.com), remplace les anciennes versions du même mod (mises de côté hors modpack) et invalide le manifeste /data. Les joueurs reçoivent la mise à jour au prochain lancement. Option notify = annonce dans le launcher.',
+                [
+                    'url' => ['type' => 'string', 'maxLength' => 1000, 'description' => 'URL https du jar (lien signé GitHub accepté).'],
+                    'instance' => ['type' => 'string', 'maxLength' => 64, 'description' => 'Slug d\'instance (dossier data/<slug>/) ; vide = modpack racine.'],
+                    'subfolder' => ['type' => 'string', 'maxLength' => 64, 'description' => 'Sous-dossier du modpack (défaut « mods »).'],
+                    'filename' => ['type' => 'string', 'maxLength' => 120, 'description' => 'Nom du fichier (défaut : celui de l\'URL).'],
+                    'replace_prefix' => ['type' => 'string', 'maxLength' => 64, 'description' => 'Préfixe des anciens jars à retirer (défaut : déduit du nom, ex. geomods).'],
+                    'notify' => ['type' => 'string', 'maxLength' => 300, 'description' => 'Message d\'annonce launcher (optionnel).'],
+                ], ['url'],
+                [
+                    'url' => 'required|string|max:1000',
+                    'instance' => ['sometimes', 'nullable', 'string', 'max:64', 'regex:/^[A-Za-z0-9_-]+$/'],
+                    'subfolder' => ['sometimes', 'nullable', 'string', 'max:64'],
+                    'filename' => 'sometimes|nullable|string|max:120',
+                    'replace_prefix' => ['sometimes', 'nullable', 'string', 'max:64', 'regex:/^[A-Za-z0-9._+]+$/'],
+                    'notify' => 'sometimes|nullable|string|max:300',
+                ],
+                function (array $a, McpContext $ctx) {
+                    try {
+                        $r = \App\Services\ModpackPublisher::publish($a['url'], $a['instance'] ?? null, $a['subfolder'] ?? 'mods', $a['filename'] ?? null, $a['replace_prefix'] ?? null);
+                    } catch (\RuntimeException $e) {
+                        throw new McpToolError($e->getMessage());
+                    }
+                    if (! empty($a['notify'])) {
+                        $n = OptionsNotification::create(['type' => 'info', 'message' => $a['notify'], 'active' => true, 'expires_at' => now()->addDays(3)]);
+                        $r['notification_id'] = $n->id;
+                    }
+                    $ctx->audit('modpack.publish', null, [], ['instance' => $a['instance'] ?? null] + $r);
+
+                    return $r;
+                }),
+
+            McpTool::make('modpack_remove_file', 'admin',
+                'Retire un jar du modpack du launcher (mis de côté hors modpack, récupérable sur le serveur). Les joueurs le perdent au prochain lancement.',
+                [
+                    'instance' => ['type' => 'string', 'maxLength' => 64],
+                    'path' => ['type' => 'string', 'maxLength' => 200, 'description' => 'Chemin relatif, ex. mods/geomods-3.21.0.jar.'],
+                ], ['path'],
+                ['instance' => ['sometimes', 'nullable', 'string', 'max:64', 'regex:/^[A-Za-z0-9_-]+$/'], 'path' => 'required|string|max:200'],
+                function (array $a, McpContext $ctx) {
+                    try {
+                        $r = \App\Services\ModpackPublisher::remove($a['instance'] ?? null, $a['path']);
+                    } catch (\RuntimeException $e) {
+                        throw new McpToolError($e->getMessage());
+                    }
+                    $ctx->audit('modpack.remove', null, [], ['instance' => $a['instance'] ?? null] + $r);
+
+                    return $r;
+                }, true),
+
             McpTool::make('notification_delete', 'admin',
                 'Supprime définitivement UNE annonce du launcher (irréversible).',
                 ['id' => ['type' => 'integer', 'minimum' => 1]], ['id'], ['id' => 'required|integer|min:1'],

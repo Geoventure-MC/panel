@@ -126,6 +126,18 @@ class ReadTools
                 [], [], [],
                 fn () => \App\Models\GameEvent::orderBy('id')->get()->map->toPublic()->all()),
 
+            McpTool::make('modpack_list', 'read',
+                'Fichiers (jars) actuellement publiés dans le modpack du launcher, pour une instance et un sous-dossier (défaut mods).',
+                ['instance' => ['type' => 'string', 'maxLength' => 64], 'subfolder' => ['type' => 'string', 'maxLength' => 64]], [],
+                ['instance' => ['sometimes', 'nullable', 'string', 'max:64', 'regex:/^[A-Za-z0-9_-]+$/'], 'subfolder' => 'sometimes|nullable|string|max:64'],
+                function (array $a) {
+                    try {
+                        return \App\Services\ModpackPublisher::listing($a['instance'] ?? null, $a['subfolder'] ?? 'mods');
+                    } catch (\RuntimeException $e) {
+                        throw new McpToolError($e->getMessage());
+                    }
+                }),
+
             McpTool::make('wonder_editions', 'read',
                 'Liste des éditions du concours de construction Wonder (phase, dates, nombre d\'équipes).',
                 ['limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 50, 'description' => 'Nombre maximum (défaut 20).']], [],
