@@ -278,6 +278,27 @@ class AdminTools
                     return $r;
                 }, true),
 
+            McpTool::make('ignored_folder_set', 'admin',
+                'Ajoute (add=true) ou retire (add=false) un dossier de la liste « ignored » envoyée au launcher : la vérification '
+                . 'du modpack ne supprime jamais ces chemins du dossier de jeu (ex. « instances », « saves »). Chemin relatif, sans « .. ».',
+                ['folder' => ['type' => 'string', 'maxLength' => 100], 'add' => ['type' => 'boolean']], ['folder', 'add'],
+                ['folder' => ['required', 'string', 'min:1', 'max:100', 'regex:/^[A-Za-z0-9_.\-]+(\/[A-Za-z0-9_.\-]+)*$/', 'not_regex:/(^|\/)\.\.(\/|$)/'], 'add' => 'required|boolean'],
+                function (array $a, McpContext $ctx) {
+                    $folder = trim($a['folder']);
+                    $existing = \App\Models\OptionsIgnore::where('folder_name', $folder)->first();
+                    if ($a['add']) {
+                        if (!$existing) {
+                            $row = \App\Models\OptionsIgnore::create(['folder_name' => $folder]);
+                            $ctx->audit('ignore.folder.add', $row, [], ['folder' => $folder]);
+                        }
+                    } elseif ($existing) {
+                        $ctx->audit('ignore.folder.delete', $existing, ['folder' => $folder]);
+                        \App\Models\OptionsIgnore::where('folder_name', $folder)->delete();
+                    }
+
+                    return ['ignored' => \App\Models\OptionsIgnore::pluck('folder_name')->values()->all()];
+                }),
+
             McpTool::make('notification_delete', 'admin',
                 'Supprime définitivement UNE annonce du launcher (irréversible).',
                 ['id' => ['type' => 'integer', 'minimum' => 1]], ['id'], ['id' => 'required|integer|min:1'],

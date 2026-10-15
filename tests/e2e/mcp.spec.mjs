@@ -198,6 +198,17 @@ test('administration : portée admin, destructifs, élévation interdite', async
   const gcType = await call(request, kw, 'game_command_send', { type: 'rm_rf', target: 'x', amount: 1, reason: 'test e2e', confirm: true });
   expect(gcType.body.result.isError).toBe(true);
 
+  const ignDenied = await call(request, kw, 'ignored_folder_set', { folder: 'instances', add: true, confirm: true });
+  expect(text(ignDenied)).toContain('Portée insuffisante');
+  const ign = await call(request, ka, 'ignored_folder_set', { folder: 'instances', add: true, confirm: true });
+  expect(JSON.parse(text(ign)).ignored).toContain('instances');
+  const ignTwice = await call(request, ka, 'ignored_folder_set', { folder: 'instances', add: true, confirm: true });
+  expect(JSON.parse(text(ignTwice)).ignored.filter((f) => f === 'instances').length).toBe(1);
+  const ignBad = await call(request, ka, 'ignored_folder_set', { folder: '../etc', add: true, confirm: true });
+  expect(ignBad.body.result.isError).toBe(true);
+  const ignOff = await call(request, ka, 'ignored_folder_set', { folder: 'instances', add: false, confirm: true });
+  expect(JSON.parse(text(ignOff)).ignored).not.toContain('instances');
+
   await call(request, kw, 'notification_create', { type: 'info', message: 'à purger', confirm: true });
   const purge = await call(request, ka, 'notification_purge', { scope: 'all', confirm: true });
   expect(JSON.parse(text(purge)).deleted).toBeGreaterThanOrEqual(1);
