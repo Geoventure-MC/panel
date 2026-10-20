@@ -62,9 +62,13 @@ class ModpackPublisher
     }
 
     /** @return array{path:string,size:int,sha1:string,replaced:array} */
-    public static function publish(string $url, ?string $instance, string $sub, ?string $filename, ?string $replacePrefix): array
+    public static function publish(string $url, ?string $instance, string $sub, ?string $filename, ?string $replacePrefix, ?string $sha256 = null): array
     {
         self::checkHost($url);
+        $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+        if (in_array($host, config('mcp.modpack_sha256_required_hosts', []), true) && ($sha256 === null || ! preg_match('/^[0-9a-f]{64}$/i', $sha256))) {
+            throw new \RuntimeException('Cet hôte exige le paramètre sha256 (64 caractères hexadécimaux) du jar attendu.');
+        }
         if ($filename === null || $filename === '') {
             $filename = rawurldecode(basename((string) parse_url($url, PHP_URL_PATH)));
         }
@@ -106,6 +110,9 @@ class ModpackPublisher
             }
             if (file_get_contents($tmp, false, null, 0, 4) !== "PK\x03\x04") {
                 throw new \RuntimeException('Ce n\'est pas un jar (signature ZIP absente).');
+            }
+            if ($sha256 !== null && $sha256 !== '' && ! hash_equals(strtolower($sha256), hash_file('sha256', $tmp))) {
+                throw new \RuntimeException('Le sha256 du fichier téléchargé ne correspond pas.');
             }
             $sha1 = sha1_file($tmp);
 

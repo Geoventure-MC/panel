@@ -208,6 +208,7 @@ class AdminTools
                     'filename' => ['type' => 'string', 'maxLength' => 120, 'description' => 'Nom du fichier (défaut : celui de l\'URL).'],
                     'replace_prefix' => ['type' => 'string', 'maxLength' => 64, 'description' => 'Préfixe des anciens jars à retirer (défaut : déduit du nom, ex. geomods).'],
                     'notify' => ['type' => 'string', 'maxLength' => 300, 'description' => 'Message d\'annonce launcher (optionnel).'],
+                    'sha256' => ['type' => 'string', 'maxLength' => 64, 'description' => 'sha256 attendu du jar (obligatoire pour cdn.modrinth.com, vérifié avant publication).'],
                 ], ['url'],
                 [
                     'url' => 'required|string|max:1000',
@@ -216,10 +217,11 @@ class AdminTools
                     'filename' => 'sometimes|nullable|string|max:120',
                     'replace_prefix' => ['sometimes', 'nullable', 'string', 'max:64', 'regex:/^[A-Za-z0-9._+]+$/'],
                     'notify' => 'sometimes|nullable|string|max:300',
+                    'sha256' => ['sometimes', 'nullable', 'string', 'regex:/^[0-9a-fA-F]{64}$/'],
                 ],
                 function (array $a, McpContext $ctx) {
                     try {
-                        $r = \App\Services\ModpackPublisher::publish($a['url'], $a['instance'] ?? null, $a['subfolder'] ?? 'mods', $a['filename'] ?? null, $a['replace_prefix'] ?? null);
+                        $r = \App\Services\ModpackPublisher::publish($a['url'], $a['instance'] ?? null, $a['subfolder'] ?? 'mods', $a['filename'] ?? null, $a['replace_prefix'] ?? null, $a['sha256'] ?? null);
                     } catch (\RuntimeException $e) {
                         throw new McpToolError($e->getMessage());
                     }

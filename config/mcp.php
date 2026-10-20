@@ -14,7 +14,9 @@ return [
     'lockout'        => 900,
 
     // Publication de mods dans le modpack (outil modpack_publish_jar) : hôtes de téléchargement autorisés (https seulement).
-    'modpack_download_hosts' => ['github.com', 'api.github.com', 'objects.githubusercontent.com', 'release-assets.githubusercontent.com'],
+    'modpack_download_hosts' => ['github.com', 'api.github.com', 'objects.githubusercontent.com', 'release-assets.githubusercontent.com', 'cdn.modrinth.com'],
+    // Hôtes tiers : le jar n'est accepté que si le sha256 fourni correspond (voir ModpackPublisher).
+    'modpack_sha256_required_hosts' => ['cdn.modrinth.com'],
     'modpack_max_bytes'      => 300 * 1024 * 1024,
 
     // Taille maximale du corps d'une requête (octets).
