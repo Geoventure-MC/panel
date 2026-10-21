@@ -9,7 +9,7 @@ const PAGES = [
   ['changelog', '/admin/changelog'], ['community-mods', '/admin/community-mods'], ['achievements', '/admin/achievements'],
   ['seasons', '/admin/seasons'], ['wonder', '/admin/wonder'], ['scheduled-events', '/admin/scheduled-events'],
   ['audit', '/admin/audit'], ['game-commands', '/admin/game-commands'], ['stats', '/admin/stats'],
-  ['monitor', '/admin/monitor'], ['launcher-content', '/admin/launcher-content'], ['two-factor', '/admin/two-factor'], ['config', '/admin/config'],
+  ['monitor', '/admin/monitor'], ['moderation', '/admin/moderation'], ['launcher-content', '/admin/launcher-content'], ['two-factor', '/admin/two-factor'], ['config', '/admin/config'],
   ['sso', '/admin/sso'], ['update', '/admin/update'],
 ];
 

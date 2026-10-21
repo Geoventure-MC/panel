@@ -192,3 +192,28 @@ if ($mode === 'full') {
     foreach ($cat as [$k, $id, $lab, $x]) { $c->execute([$k, $id, $lab, $x ? json_encode($x, JSON_UNESCAPED_UNICODE) : null, $now]); }
 }
 $db->commit();
+
+// ── Modération (gf_sanctions / gf_reports / gf_player_ips) : modes full et nocat ──
+// ip_hash et adresses factices : le panel ne doit JAMAIS les afficher (le test cherche « HASHSECRET » et « 203.0.113 »).
+$db->exec("CREATE TABLE gf_sanctions (id INTEGER PRIMARY KEY AUTOINCREMENT, player_uuid VARCHAR(36) NOT NULL, player_name VARCHAR(32) NOT NULL, type VARCHAR(8) NOT NULL, reason VARCHAR(255), staff_name VARCHAR(32), staff_uuid VARCHAR(36), created_at BIGINT NOT NULL, expires_at BIGINT, active TINYINT NOT NULL DEFAULT 1, revoked_by VARCHAR(32), revoked_at BIGINT, revoke_reason VARCHAR(255), ip_hash VARCHAR(64))");
+$db->exec("CREATE TABLE gf_reports (id INTEGER PRIMARY KEY AUTOINCREMENT, reporter_uuid VARCHAR(36) NOT NULL, reporter_name VARCHAR(32) NOT NULL, target_name VARCHAR(32) NOT NULL, reason VARCHAR(255), world VARCHAR(64), x DOUBLE, y DOUBLE, z DOUBLE, context TEXT, status VARCHAR(8) NOT NULL DEFAULT 'open', handled_by VARCHAR(32), created_at BIGINT NOT NULL, closed_at BIGINT, note VARCHAR(500))");
+$db->exec('CREATE TABLE gf_player_ips (player_uuid VARCHAR(36) NOT NULL, ip_hash VARCHAR(64) NOT NULL, first_seen BIGINT NOT NULL, last_seen BIGINT NOT NULL, PRIMARY KEY (player_uuid, ip_hash))');
+$U = ['Alice' => '11111111-1111-4111-8111-111111111111', 'Bob' => '22222222-2222-4222-8222-222222222222', 'Carol' => '33333333-3333-4333-8333-333333333333', 'Dave' => '44444444-4444-4444-8444-444444444444'];
+$s = $db->prepare('INSERT INTO gf_sanctions (player_uuid, player_name, type, reason, staff_name, staff_uuid, created_at, expires_at, active, revoked_by, revoked_at, revoke_reason, ip_hash) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)');
+$H = 'HASHSECRET-aaaa';
+$rows = [
+    ['Alice', 'ban', 'Triche (fly)', 'ModOne', $now - 5 * 86400, null, 1, null, null, null],
+    ['Alice', 'warn', 'Insultes', 'ModTwo', $now - 20 * 86400, null, 0, null, null, null],
+    ['Bob', 'mute', 'Spam <b>gras</b> du chat', 'ModOne', $now - 3600, $now + 7200, 1, null, null, null],
+    ['Bob', 'kick', 'AFK-farm', 'ModOne', $now - 2 * 86400, null, 0, null, null, null],
+    ['Carol', 'ban', '=HYPERLINK("http://evil")', 'ModTwo', $now - 10 * 86400, $now - 86400, 0, null, null, null],
+    ['Carol', 'ban', 'Grief', 'ModTwo', $now - 40 * 86400, null, 0, 'ModOne', $now - 30 * 86400, 'Appel accepté'],
+    ['Dave', 'warn', 'Contact 203.0.113.9 mail dave@example.test', 'ModOne', $now - 7200, null, 1, null, null, null],
+];
+foreach ($rows as [$n, $t, $r, $st, $c, $e, $a, $rb, $ra, $rr]) { $s->execute([$U[$n], $n, $t, $r, $st, null, $c, $e, $a, $rb, $ra, $rr, $H]); }
+$rp = $db->prepare('INSERT INTO gf_reports (reporter_uuid, reporter_name, target_name, reason, world, x, y, z, context, status, handled_by, created_at, closed_at, note) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+$rp->execute([$U['Bob'], 'Bob', 'Alice', 'Fly hack', 'world', 120, 70, -340, "<Alice> regarde 203.0.113.7\n<script>alert(1)</script>§cligne rouge\n<Bob> mon mail bob@example.test", 'open', null, $now - 1800, null, null]);
+$rp->execute([$U['Alice'], 'Alice', 'Bob', 'Spam', 'world_nether', 5, 60, 5, "<Bob> achetez ici", 'taken', 'ModOne', $now - 86400, null, 'En cours']);
+$rp->execute([$U['Dave'], 'Dave', 'Carol', 'Grief', 'world', 10, 64, 10, "<Carol> hehe", 'closed', 'ModTwo', $now - 3 * 86400, $now - 3 * 86400 + 3600, 'Sanctionnée']);
+$ip = $db->prepare('INSERT INTO gf_player_ips (player_uuid, ip_hash, first_seen, last_seen) VALUES (?,?,?,?)');
+foreach (['Alice' => $H, 'Bob' => $H, 'Carol' => 'HASHSECRET-cccc', 'Dave' => $H] as $n => $h) { $ip->execute([$U[$n], $h, $now - 86400 * 30, $now - 600]); }

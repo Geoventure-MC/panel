@@ -140,6 +140,11 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.moderation.*') ? 'active' : '' }}" href="{{ route('admin.moderation.index') }}">
+                        <i class="bi bi-shield-exclamation align-middle"></i> <span class="align-middle">{{ __('moderation.sidebar') }}</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.sso*') ? 'active' : '' }}" href="{{ route('admin.sso') }}">
                         <i class="bi bi-shield-lock align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.sso') }}</span>
                     </a>

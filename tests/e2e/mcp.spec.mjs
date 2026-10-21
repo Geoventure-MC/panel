@@ -276,3 +276,13 @@ test('journal des appels visible dans la page admin', async ({ page }) => {
   await expect(page.locator('body')).toContainText('MCP:e2e-wr');
   await setEnabled(false);
 });
+
+test('moderation_overview : outil de lecture, fail-safe sans base du jeu', async ({ request }) => {
+  await setEnabled(true);
+  const kr = await mkKey('e2e-mod-r', 'read');
+  expect(names(await rpc(request, kr, 'tools/list'))).toContain('moderation_overview');
+  const r = await call(request, kr, 'moderation_overview');
+  expect(r.body.result.isError).not.toBe(true);
+  expect(JSON.parse(text(r)).status.state).toBe('unconfigured');
+  await setEnabled(false);
+});

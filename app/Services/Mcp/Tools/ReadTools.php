@@ -273,6 +273,28 @@ class ReadTools
                     return ['status' => $svc->status(), 'last_metric_at' => $last ? Carbon::createFromTimestamp($last)->toIso8601String() : null];
                 }),
 
+            McpTool::make('moderation_overview', 'read',
+                'Modération (lecture seule, base du jeu) : état de la base, bans/mutes actifs, sanctions récentes, signalements ouverts, délai moyen de traitement. Aucun pseudo, motif, IP ni e-mail.',
+                [], [], [],
+                function () {
+                    $svc = app(\App\Services\GameModeration::class);
+                    $st = $svc->status();
+                    if ($st['state'] !== 'ok') {
+                        return ['status' => $st];
+                    }
+                    $s = $svc->stats();
+
+                    return [
+                        'status' => $st,
+                        'active_bans' => $s['active_bans'], 'active_mutes' => $s['active_mutes'],
+                        'sanctions_24h' => $s['s24'], 'sanctions_7d' => $s['s7'], 'sanctions_30d' => $s['s30'],
+                        'by_type_30d' => $s['by_type'],
+                        'reports_open' => $s['reports_open'], 'reports_taken' => $s['reports_taken'], 'reports_30d' => $s['reports_30'],
+                        'avg_handling_seconds' => $s['avg_handle_s'],
+                        'latest_sanctions' => array_map(fn ($r) => ['id' => $r['id'], 'type' => $r['type'], 'state' => $r['state'], 'at' => Carbon::createFromTimestamp($r['created_at'])->toIso8601String()], $svc->recentSanctions(5)),
+                    ];
+                }),
+
             McpTool::make('launcher_config_preview', 'read',
                 'Aperçu de ce que le launcher recevrait de /utils/api pour une instance (liste blanche de joueurs abrégée).',
                 ['instance' => ['type' => 'string', 'maxLength' => 64, 'description' => 'Slug d\'instance ; vide = configuration globale.']], [],

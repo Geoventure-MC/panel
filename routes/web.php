@@ -270,6 +270,19 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         }
         Route::get('/data', [$c, 'data'])->middleware('throttle:600,1,analytics')->name('data');
     });
+
+    // Modération : sanctions et signalements lus (lecture seule) dans la base du jeu (gf_sanctions / gf_reports).
+    Route::prefix('moderation')->name('admin.moderation.')->middleware('throttle:240,1,moderation')->group(function () {
+        $m = \App\Http\Controllers\Admin\ModerationController::class;
+        Route::get('/', [$m, 'index'])->name('index');
+        Route::get('/sanctions', [$m, 'sanctions'])->name('sanctions');
+        Route::get('/sanctions/{id}', [$m, 'sanction'])->whereNumber('id')->name('sanction');
+        Route::get('/reports', [$m, 'reports'])->name('reports');
+        Route::get('/reports/{id}', [$m, 'report'])->whereNumber('id')->name('report');
+        Route::get('/search', [$m, 'search'])->name('search');
+        Route::get('/players/{player}', [$m, 'player'])->where('player', '[A-Za-z0-9_.\-]{1,36}')->name('player');
+        Route::middleware('superadmin')->get('/export.csv', [$m, 'export'])->name('export');
+    });
 });
 
 // Routes sans le préfixe 'admin'
