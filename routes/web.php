@@ -312,7 +312,7 @@ Route::prefix('utils')->middleware(['throttle:120,1,utils'])->group(function () 
     Route::get('/seasons', [SeasonController::class, 'index']);
     Route::get('/wonder', [WonderController::class, 'index']);
     Route::get('/game-events', [\App\Http\Controllers\api\GameEventController::class, 'index']);
-    Route::post('/seasons/sync', [SeasonController::class, 'sync']);
+    Route::post('/seasons/sync', [SeasonController::class, 'sync'])->middleware('throttle:60,1,seasonsync');
     Route::get('/scheduled-events', [ScheduledEventController::class, 'index']);
     Route::post('/scheduled-events/claim', [ScheduledEventController::class, 'claim']);
 });
@@ -320,6 +320,7 @@ Route::prefix('utils')->middleware(['throttle:120,1,utils'])->group(function () 
 Route::get('/utils/uptime', [\App\Http\Controllers\api\UptimeController::class, 'index'])->middleware('throttle:60,1,uptime');
 Route::get('/data', [FileController::class, 'getFiles'])->middleware('throttle:120,1,data');
 Route::get('/api/centralcorp/community-mods', [CommunityModController::class, 'getCommunityMods']);
+Route::post('/api/geoventure/season-archive', [SeasonController::class, 'sync'])->middleware('throttle:60,1,seasonarchive');
 Route::get('/api-schema.json', fn() => response()->json(['schemaVersion' => '1.0.0'], 200, [], JSON_UNESCAPED_SLASHES));
 
 // Page de statut publique (partageable), lecture cache uniquement.

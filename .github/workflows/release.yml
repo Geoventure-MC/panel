@@ -2,7 +2,7 @@ name: Panel Build & Release
 
 on:
   push:
-    branches: [main]
+    branches: [main, test]
   workflow_dispatch:
 
 permissions:
@@ -24,8 +24,8 @@ jobs:
 
       - name: Configure git
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "Peterdu1109"
+          git config user.email "peter1109@hotmail.fr"
 
       - name: Decide release
         id: decide
@@ -172,7 +172,7 @@ jobs:
         run: |
           git add package.json config/app.php
           git commit -m "chore: release v${{ steps.version.outputs.version }} [skip ci]" || exit 0
-          git push origin HEAD:main
+          git push origin "HEAD:${GITHUB_REF_NAME}"
 
       - name: Create GitHub Release
         if: steps.decide.outputs.release == 'true'
@@ -182,6 +182,8 @@ jobs:
           name: "Geoventure Panel v${{ steps.version.outputs.version }}"
           body_path: RELEASE_NOTES.md
           files: panel-${{ steps.version.outputs.version }}.zip
+          prerelease: ${{ github.ref_name == 'test' }}
+          make_latest: ${{ github.ref_name != 'test' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
