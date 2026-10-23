@@ -36,20 +36,24 @@ class ServerStatusController extends Controller
     private function buildStatuses(bool $cachedOnly)
     {
         $servers = OptionsServer::all();
+        $isTest = strtolower((string) request()->query('channel', 'stable')) === 'test';
         $statuses = [];
 
         foreach ($servers as $server) {
-            $serverKey = $server->instance_slug ?: $server->server_id;
+            $serverKey = ($server->instance_slug ?: $server->server_id) . ($isTest ? '-test' : '');
+            $ip = ($isTest && !empty($server->test_ip)) ? $server->test_ip : $server->server_ip;
+            $port = (int) (($isTest && !empty($server->test_port)) ? $server->test_port : $server->server_port);
             $ping = $cachedOnly
-                ? $this->cachedPing($server->server_ip, (int) $server->server_port)
-                : $this->pingServer($server->server_ip, (int) $server->server_port, (string) $serverKey);
+                ? $this->cachedPing($ip, $port)
+                : $this->pingServer($ip, $port, (string) $serverKey);
 
             $status = [
                 'id'          => $server->instance_slug ?: $server->server_id,
                 'server_id'   => $server->server_id,
-                'name'        => $server->server_name,
-                'ip'          => $server->server_ip,
-                'port'        => (int) $server->server_port,
+                'name'        => $isTest ? ($server->server_name . ' (Test)') : $server->server_name,
+                'channel'     => $isTest ? 'test' : 'stable',
+                'ip'          => $ip,
+                'port'        => $port,
                 'online'      => $ping['online'],
                 'players'     => $ping['players'],
                 'max_players' => $ping['max_players'],
