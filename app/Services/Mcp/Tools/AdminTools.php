@@ -98,6 +98,12 @@ class AdminTools
                     'loader_activation' => ['type' => 'boolean'],
                     'data_folder' => ['type' => 'string', 'maxLength' => 64, 'description' => 'Sous-dossier du modpack [a-z0-9_-].'],
                     'theme_color' => ['type' => 'string', 'description' => 'Couleur #rrggbb.'],
+                    'channel' => ['type' => 'string', 'enum' => ['stable', 'test', 'both'], 'description' => 'Canal disponible (stable, test, both).'],
+                    'allowed_roles' => ['type' => 'string', 'maxLength' => 500, 'description' => 'Grades Azuriom autorisés pour Stable (CSV, vide = tous).'],
+                    'test_roles' => ['type' => 'string', 'maxLength' => 500, 'description' => 'Grades Azuriom autorisés pour Test (CSV).'],
+                    'test_ip' => ['type' => 'string', 'maxLength' => 253, 'description' => 'Hôte ou IPv4 du serveur Test (optionnel).'],
+                    'test_port' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 65535, 'description' => 'Port du serveur Test (optionnel).'],
+                    'test_data_folder' => ['type' => 'string', 'maxLength' => 64, 'description' => 'Sous-dossier modpack du canal Test [a-z0-9_-].'],
                 ], [],
                 [
                     'server_id' => 'sometimes|integer|min:1',
@@ -112,6 +118,12 @@ class AdminTools
                     'loader_activation' => 'sometimes|nullable|boolean',
                     'data_folder' => ['sometimes', 'nullable', 'string', 'max:64', 'regex:/^[a-z0-9_-]+$/'],
                     'theme_color' => ['sometimes', 'nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+                    'channel' => 'sometimes|nullable|in:stable,test,both',
+                    'allowed_roles' => 'sometimes|nullable|string|max:500',
+                    'test_roles' => 'sometimes|nullable|string|max:500',
+                    'test_ip' => ['sometimes', 'nullable', 'string', 'max:253', 'regex:/^[A-Za-z0-9.\-]+$/'],
+                    'test_port' => 'sometimes|nullable|integer|min:1|max:65535',
+                    'test_data_folder' => ['sometimes', 'nullable', 'string', 'max:64', 'regex:/^[a-z0-9_-]+$/'],
                 ],
                 fn (array $a, McpContext $ctx) => self::serverUpsert($a, $ctx)),
 
@@ -384,6 +396,9 @@ class AdminTools
         }
         if (isset($fields['server_port'])) {
             $fields['server_port'] = (string) $fields['server_port'];
+        }
+        if (isset($fields['test_port']) && $fields['test_port'] !== null) {
+            $fields['test_port'] = (string) $fields['test_port'];
         }
 
         if (isset($a['server_id'])) {

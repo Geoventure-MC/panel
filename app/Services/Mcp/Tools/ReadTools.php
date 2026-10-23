@@ -222,6 +222,13 @@ class ReadTools
                     'minecraft_version' => $s->minecraft_version, 'loader_type' => $s->loader_type,
                     'loader_build_version' => $s->loader_build_version, 'loader_activation' => $s->loader_activation,
                     'data_folder' => $s->data_folder, 'modpack_folder' => $s->modpack_folder, 'theme_color' => $s->theme_color,
+                    'channel' => $s->channel ?? 'both',
+                    'allowed_roles' => $s->allowed_roles_list,
+                    'test_roles' => $s->test_roles_list,
+                    'test_ip' => $s->test_ip,
+                    'test_port' => $s->test_port !== null && $s->test_port !== '' ? (int) $s->test_port : null,
+                    'test_data_folder' => $s->test_data_folder,
+                    'test_modpack_folder' => $s->test_modpack_folder,
                     'is_default' => (bool) $s->is_default,
                 ])->all()),
 

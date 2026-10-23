@@ -284,3 +284,23 @@ Pages **Admin → Modération** (sidebar `bi-shield-exclamation`, middleware `ad
 - **MCP** : outil read `moderation_overview` (comptes, dernières sanctions id/type/état/date ; aucun pseudo, motif, IP ni e-mail).
 - **Tests** : `tests/e2e/fixtures/make-game-db.php` crée les trois tables (modes `full` et `nocat`, ip_hash `HASHSECRET-…`, adresse `203.0.113.x` et e-mails factices dans les textes pour prouver le masquage) ; `tests/e2e/moderation.spec.mjs` (données, nocat, tables absentes, injoignable, non configurée, filtres, valeurs hostiles, échappement, fiche, comptes liés, export, modérateur 403, audit) ; `/admin/moderation` dans `admin.spec.mjs` ; test MCP dans `mcp.spec.mjs`.
 - ⚠ **Non vérifié** : base MySQL réelle (les tests tournent sur SQLite ; les requêtes utilisent `lower(col) like ? escape '!'`, `case`, `avg(a-b)`, valides en MySQL mais jamais exécutées ici), volumétrie (index conseillés côté plugin : `gf_sanctions(player_uuid, created_at)`, `(created_at)`, `gf_reports(status, created_at)`, `(target_name)`, `gf_player_ips(ip_hash)`), format réel des UUID (avec ou sans tirets : les deux sont testés à la recherche), noms réels des colonnes tant que le plugin n'a pas écrit ses tables.
+
+## Système de canaux d'instances Stable / Test lié aux grades Azuriom & branche `test` (2026-10-23)
+
+- **Branche `test` & auto-push** : branche `test` configurée avec `.github/workflows/ci.yml` + `.github/workflows/release.yml` (pré-release GitHub `prerelease: true` sous `Peterdu1109 <peter1109@hotmail.fr>`) et hook `.git/hooks/post-commit` qui push automatiquement sur `origin/test`.
+- **Migration & modèle (`OptionsServer`)** :
+  - `database/migrations/2026_10_23_120000_add_channel_and_roles_to_options_server_table.php` (idempotente via `Schema::hasColumn`) ajoute sur `options_server` :
+    - `channel` (`stable` | `test` | `both`, défaut `both`)
+    - `allowed_roles` (CSV des grades Azuriom autorisés en Stable ; vide = accessible à tous)
+    - `test_roles` (CSV des grades Azuriom autorisés en Test, ex. `Fondateur, Admin, Développeur, Bêta-Testeur`)
+    - `test_ip`, `test_port` (hôte/port optionnels spécifiques au serveur Test ; repli sur `server_ip`/`server_port`)
+    - `test_data_folder` (sous-dossier modpack du canal Test ; repli sur `<modpack_folder>-test`)
+  - `app/Models/OptionsServer.php` expose les accesseurs `$server->test_modpack_folder`, `$server->allowed_roles_list`, `$server->test_roles_list`.
+- **Routes API Launcher (`?channel=test`)** :
+  - `GET /utils/api?instance=<slug>&channel=test` (`ApiController@getOptions`) : retourne `channel`, `allowed_roles`, `test_roles`, `has_test_channel`, et bascule automatiquement `server_ip`/`server_port` sur `test_ip`/`test_port` lorsque `channel=test`.
+  - `GET /data?instance=<slug>&channel=test` (`FileController@getFiles`) : sert le modpack depuis `storage/app/public/data/<test_modpack_folder>/` (avec repli sur le modpack stable si le dossier test n'existe pas encore).
+  - `GET /utils/servers-status?channel=test` (`ServerStatusController@getServersStatus`) : sonde `test_ip:test_port` et inclut `channel`, `allowedRoles`, `testRoles` par serveur.
+- **Interface Admin & Outils MCP** :
+  - `AdminServerController` et `resources/views/admin/server.blade.php` permettent d'éditer le canal, les grades Azuriom (`allowed_roles`, `test_roles`), l'IP/port de test et le dossier modpack de test.
+  - Outils MCP mis à jour (`app/Services/Mcp/Tools/ReadTools.php` `servers_list` et `AdminTools.php` `server_instance_upsert`) pour lire et modifier `channel`, `allowed_roles`, `test_roles`, `test_ip`, `test_port`, `test_data_folder`.
+  - Endpoint MCP de production : `https://launcher.geoventure.fr/api/mcp` (clé `gmcp_…` hors dépôt). Déploiement de `geomods-3.23.0-all.jar` effectué via `modpack_publish_jar`.
