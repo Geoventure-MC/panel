@@ -50,6 +50,12 @@ class AdminServerController extends Controller
                 'loader_activation' => $server->loader_activation,
                 'data_folder' => $server->data_folder,
                 'theme_color' => $server->theme_color,
+                'channel' => $server->channel ?: 'stable',
+                'allowed_roles' => $server->allowed_roles,
+                'test_roles' => $server->test_roles ?: implode(', ', OptionsServer::DEFAULT_TEST_ROLES),
+                'test_ip' => $server->test_ip,
+                'test_port' => $server->test_port,
+                'test_data_folder' => $server->test_data_folder,
 
             ];
         })->toArray();
@@ -164,6 +170,12 @@ class AdminServerController extends Controller
             'loader_activation'    => 'nullable|boolean',
             'data_folder'          => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
             'theme_color'          => 'nullable|string|regex:/^#[0-9a-fA-F]{6}$/',
+            'channel'              => 'nullable|string|in:stable,test',
+            'allowed_roles'        => 'nullable|string|max:1000',
+            'test_roles'           => 'nullable|string|max:1000',
+            'test_ip'              => 'nullable|string|max:255',
+            'test_port'            => 'nullable|integer|min:1|max:65535',
+            'test_data_folder'     => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
 
         ]);
 
@@ -193,6 +205,12 @@ class AdminServerController extends Controller
             'loader_activation'    => $request->has('loader_activation') ? (bool) $request->input('loader_activation') : null,
             'data_folder'          => $validated['data_folder'] ?? null,
             'theme_color'          => $validated['theme_color'] ?? null,
+            'channel'              => $validated['channel'] ?? 'stable',
+            'allowed_roles'        => $validated['allowed_roles'] ?? null,
+            'test_roles'           => $validated['test_roles'] ?? null,
+            'test_ip'              => $validated['test_ip'] ?? null,
+            'test_port'            => isset($validated['test_port']) ? (string) $validated['test_port'] : null,
+            'test_data_folder'     => $validated['test_data_folder'] ?? null,
             'is_default'           => $isFirst, // premier serveur ajouté = défaut
             'is_default'           => $isFirst,
         ]);
@@ -223,6 +241,12 @@ class AdminServerController extends Controller
             'loader_activation'    => 'nullable|boolean',
             'data_folder'          => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
             'theme_color'          => 'nullable|string|regex:/^#[0-9a-fA-F]{6}$/',
+            'channel'              => 'nullable|string|in:stable,test',
+            'allowed_roles'        => 'nullable|string|max:1000',
+            'test_roles'           => 'nullable|string|max:1000',
+            'test_ip'              => 'nullable|string|max:255',
+            'test_port'            => 'nullable|integer|min:1|max:65535',
+            'test_data_folder'     => 'nullable|string|max:64|regex:/^[a-z0-9_-]+$/',
 
         ]);
 
@@ -243,6 +267,12 @@ class AdminServerController extends Controller
             'loader_activation'    => $request->has('loader_activation') ? (bool) $request->input('loader_activation') : null,
             'data_folder'          => $validated['data_folder'] ?? null,
             'theme_color'          => $validated['theme_color'] ?? null,
+            'channel'              => $validated['channel'] ?? 'stable',
+            'allowed_roles'        => $validated['allowed_roles'] ?? null,
+            'test_roles'           => $validated['test_roles'] ?? null,
+            'test_ip'              => $validated['test_ip'] ?? null,
+            'test_port'            => isset($validated['test_port']) ? (string) $validated['test_port'] : null,
+            'test_data_folder'     => $validated['test_data_folder'] ?? null,
 
         ]);
 

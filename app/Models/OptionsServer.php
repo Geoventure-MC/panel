@@ -9,10 +9,25 @@ class OptionsServer extends Model
 {
     use HasFactory;
 
+    public const DEFAULT_TEST_ROLES = [
+        'Admin',
+        'Administrateur',
+        'Fondateur',
+        'Développeur',
+        'Dev',
+        'Modérateur',
+        'Modo',
+        'Staff',
+        'Testeur',
+        'Beta',
+        'Bêta-Testeur',
+    ];
+
     protected $table = 'options_server';
     protected $fillable = [
         'server_id',
         'instance_slug',
+        'channel',
         'server_name',
         'server_ip',
         'server_port',
@@ -25,6 +40,11 @@ class OptionsServer extends Model
         'loader_activation',
         'data_folder',
         'theme_color',
+        'allowed_roles',
+        'test_roles',
+        'test_ip',
+        'test_port',
+        'test_data_folder',
         'is_default'
     ];
 
@@ -65,6 +85,46 @@ class OptionsServer extends Model
     public function getModpackFolderAttribute(): ?string
     {
         return $this->data_folder ?: $this->instance_slug;
+    }
+
+    /**
+     * Le sous-dossier modpack pour le canal test (test_data_folder ou <slug>-test).
+     */
+    public function getTestModpackFolderAttribute(): string
+    {
+        if (!empty($this->test_data_folder)) {
+            return $this->test_data_folder;
+        }
+        $base = $this->data_folder ?: $this->instance_slug;
+        return $base ? ($base . '-test') : 'test';
+    }
+
+    /**
+     * Liste des grades Azuriom autorisés sur le canal Stable (vide = tous les grades).
+     */
+    public function getAllowedRolesListAttribute(): array
+    {
+        return self::parseRolesList($this->allowed_roles, []);
+    }
+
+    /**
+     * Liste des grades Azuriom autorisés sur le canal Test.
+     */
+    public function getTestRolesListAttribute(): array
+    {
+        return self::parseRolesList($this->test_roles, self::DEFAULT_TEST_ROLES);
+    }
+
+    public static function parseRolesList(?string $raw, array $default = []): array
+    {
+        if ($raw === null || trim($raw) === '') {
+            return $default;
+        }
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded)) {
+            return array_values(array_filter(array_map('trim', $decoded), fn ($r) => $r !== ''));
+        }
+        return array_values(array_filter(array_map('trim', explode(',', $raw)), fn ($r) => $r !== ''));
     }
 
     /**

@@ -24,15 +24,29 @@ class FileController extends Controller
         $dir = $base;
 
         $slug = request()->query('instance');
-        if ($slug) {
-            $instance = OptionsServer::resolveInstance($slug);
-            $folder = $instance ? $instance->modpack_folder : $slug;
-            // Anti path-traversal : on slugifie le nom de dossier.
-            $folder = preg_replace('/[^A-Za-z0-9_-]/', '', (string) $folder);
-            // Un dossier d'instance sans AUCUN fichier ne doit pas masquer le modpack racine (manifeste vide = launcher qui supprime).
-            if ($folder !== '' && is_dir($base . '/' . $folder) && $this->hasFiles($base . '/' . $folder)) {
-                $dir = $base . '/' . $folder;
-                $urlPrefix = 'data/' . $folder;
+        $channel = strtolower((string) request()->query('channel', 'stable')) === 'test' ? 'test' : 'stable';
+        if ($slug || $channel === 'test') {
+            $instance = $slug ? OptionsServer::resolveInstance($slug) : OptionsServer::where('is_default', true)->first();
+            if ($channel === 'test') {
+                $testFolder = $instance ? $instance->test_modpack_folder : ($slug ? ($slug . '-test') : 'test');
+                $testFolder = preg_replace('/[^A-Za-z0-9_-]/', '', (string) $testFolder);
+                if ($testFolder !== '' && is_dir($base . '/' . $testFolder) && $this->hasFiles($base . '/' . $testFolder)) {
+                    $dir = $base . '/' . $testFolder;
+                    $urlPrefix = 'data/' . $testFolder;
+                } elseif (is_dir($base . '/test') && $this->hasFiles($base . '/test')) {
+                    $dir = $base . '/test';
+                    $urlPrefix = 'data/test';
+                }
+            }
+            if ($dir === $base && $slug) {
+                $folder = $instance ? $instance->modpack_folder : $slug;
+                // Anti path-traversal : on slugifie le nom de dossier.
+                $folder = preg_replace('/[^A-Za-z0-9_-]/', '', (string) $folder);
+                // Un dossier d'instance sans AUCUN fichier ne doit pas masquer le modpack racine (manifeste vide = launcher qui supprime).
+                if ($folder !== '' && is_dir($base . '/' . $folder) && $this->hasFiles($base . '/' . $folder)) {
+                    $dir = $base . '/' . $folder;
+                    $urlPrefix = 'data/' . $folder;
+                }
             }
         }
 

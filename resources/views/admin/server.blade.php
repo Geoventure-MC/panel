@@ -107,6 +107,33 @@
                                 <input type="text" name="theme_color" class="form-control" placeholder="#4ade80" pattern="#[0-9a-fA-F]{6}">
                                 <small class="text-muted">{{ __('messages.server.theme_color_hint') }}</small>
                             </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Canal par défaut</label>
+                                <select name="channel" class="form-select">
+                                    <option value="stable" selected>Stable</option>
+                                    <option value="test">Test</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Grades Azuriom autorisés (Stable)</label>
+                                <input type="text" name="allowed_roles" class="form-control" placeholder="Vide = tous les grades">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Grades Azuriom autorisés (Instance Test)</label>
+                                <input type="text" name="test_roles" class="form-control" placeholder="Admin, Fondateur, Développeur, Staff, Testeur">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">IP Serveur Test (optionnel)</label>
+                                <input type="text" name="test_ip" class="form-control" placeholder="test.geoventure.fr">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Port Test</label>
+                                <input type="text" name="test_port" class="form-control" placeholder="25566">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Dossier Modpack Test</label>
+                                <input type="text" name="test_data_folder" class="form-control" placeholder="geoventure-test">
+                            </div>
 
                             <div class="col-12">
                                 <button type="submit" class="btn btn-success">
@@ -280,6 +307,33 @@
                                                                 @endif
                                                                 <input type="text" name="theme_color" class="form-control form-control-sm" value="{{ $server['theme_color'] }}" placeholder="#4ade80" pattern="#[0-9a-fA-F]{6}">
                                                             </div>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <label class="form-label mb-1">Canal par défaut</label>
+                                                            <select name="channel" class="form-select form-select-sm">
+                                                                <option value="stable" {{ ($server['channel'] ?? 'stable') === 'stable' ? 'selected' : '' }}>Stable</option>
+                                                                <option value="test" {{ ($server['channel'] ?? 'stable') === 'test' ? 'selected' : '' }}>Test</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-5">
+                                                            <label class="form-label mb-1">Grades Azuriom autorisés (Stable — vide = tous)</label>
+                                                            <input type="text" name="allowed_roles" class="form-control form-control-sm" value="{{ $server['allowed_roles'] ?? '' }}" placeholder="Vide = public (ex: Joueur, VIP, Admin)">
+                                                        </div>
+                                                        <div class="col-md-5">
+                                                            <label class="form-label mb-1">Grades Azuriom autorisés (Instance Test)</label>
+                                                            <input type="text" name="test_roles" class="form-control form-control-sm" value="{{ $server['test_roles'] ?? '' }}" placeholder="Admin, Fondateur, Développeur, Staff, Testeur">
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label class="form-label mb-1">IP Serveur Test (optionnel)</label>
+                                                            <input type="text" name="test_ip" class="form-control form-control-sm" value="{{ $server['test_ip'] ?? '' }}" placeholder="{{ $server['address'] }}">
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <label class="form-label mb-1">Port Test</label>
+                                                            <input type="text" name="test_port" class="form-control form-control-sm" value="{{ $server['test_port'] ?? '' }}" placeholder="{{ $server['port'] }}">
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <label class="form-label mb-1">Dossier Modpack Test</label>
+                                                            <input type="text" name="test_data_folder" class="form-control form-control-sm" value="{{ $server['test_data_folder'] ?? '' }}" placeholder="{{ ($server['instance_slug'] ?: 'test') . '-test' }}">
                                                         </div>
                                                         <div class="col-md-12 d-flex align-items-center gap-3 mt-1">
                                                             <div class="form-check">

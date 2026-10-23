@@ -32,9 +32,10 @@ class ApiController extends Controller
         $rpc = OptionsRPC::first();
         $loader = OptionsLoader::first();
 
-        // Multi-instance : si le launcher passe ?instance=<slug>, on charge
-        // l'instance correspondante et on surcharge loader/version/serveur.
+        // Multi-instance & canal (stable / test) : si le launcher passe
+        // ?instance=<slug> et/ou ?channel=test, on charge l'instance et le canal.
         // Sans paramètre → comportement global historique (rétrocompatible).
+        $channel = strtolower((string) request()->query('channel', 'stable')) === 'test' ? 'test' : 'stable';
         $instance = OptionsServer::resolveInstance(request()->query('instance'));
         $server = $instance ?: OptionsServer::where('is_default', true)->first();
         $allServers = OptionsServer::orderByDesc('is_default')->orderBy('server_name')->get();
@@ -75,6 +76,9 @@ class ApiController extends Controller
                 : "Maintenance in progress, please try again later.",
             "game_version" => $gameVersion,
             "instance" => $instance ? ($instance->instance_slug ?: (string) $instance->server_id) : null,
+            "channel" => $channel,
+            "allowed_roles" => $server ? $server->allowed_roles_list : [],
+            "test_roles" => $server ? $server->test_roles_list : OptionsServer::DEFAULT_TEST_ROLES,
             // Thème par instance : couleur d'accent du launcher (hex #rrggbb).
             // Null si non configurée → le launcher applique ses défauts.
             "theme_color" => ($instance ? $instance->theme_color : ($server ? $server->theme_color : null)) ?: null,
@@ -84,9 +88,9 @@ class ApiController extends Controller
             "java" => $general ? (bool)$general->embedded_java : true,
             "dataDirectory" => $general ? $general->game_folder_name : "centralcorp",
             "status" => [
-                "nameServer" => $server ? $server->server_name : "Syphera",
-                "ip" => $server ? $server->server_ip : "84.235.238.100",
-                "port" => $server ? $server->server_port : 25566
+                "nameServer" => $server ? ($channel === 'test' ? ($server->server_name . ' (Test)') : $server->server_name) : ($channel === 'test' ? "Syphera (Test)" : "Syphera"),
+                "ip" => $server ? ($channel === 'test' && !empty($server->test_ip) ? $server->test_ip : $server->server_ip) : "84.235.238.100",
+                "port" => $server ? ($channel === 'test' && !empty($server->test_port) ? $server->test_port : $server->server_port) : 25566
             ],
             // Liste complète des serveurs : permet à UN seul panel d'alimenter
             // les 3 serveurs du launcher (Geoventure, Elandor, Pokeland...).
@@ -101,6 +105,11 @@ class ApiController extends Controller
                     "icon"       => $s->icon_url,
                     "theme_color" => $s->theme_color ?: null,
                     "is_default" => (bool) $s->is_default,
+                    "channel" => $s->channel ?: "stable",
+                    "test_ip" => $s->test_ip ?: $s->server_ip,
+                    "test_port" => (int) ($s->test_port ?: $s->server_port),
+                    "allowed_roles" => $s->allowed_roles_list,
+                    "test_roles" => $s->test_roles_list,
                     // Toujours renvoyer une chaîne (jamais null) : le launcher
                     // plante sur azauth null (config.js getAzAuthUrl).
                     "azauth"     => $azuriomSites->get($s->server_id)?->url
