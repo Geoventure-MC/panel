@@ -2,7 +2,7 @@ name: Panel Build & Release
 
 on:
   push:
-    branches: [main, test]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -45,7 +45,7 @@ jobs:
           while IFS= read -r MSG; do
             [ -z "$MSG" ] && continue
             case "$MSG" in
-              docs:*|chore:*|style:*|ci:*|test:*|refactor:*|build:*) continue ;;
+              docs:*|chore:*|style:*|ci:*|test:*|refactor:*|build:*|Documentation*|Maintenance*|Publication*) continue ;;
               "📝"*|"📚"*|"🔄"*|"✅"*|"🔖"*|"💚"*|"👷"*|"📄"*) continue ;;
             esac
             NONTRIVIAL=1
@@ -87,13 +87,13 @@ jobs:
           COMMITS=$(git log $RANGE --no-merges --pretty=format:"%s" | grep -v "\[skip ci\]" || true)
 
           # Classement des commits en sections lisibles (messages en français).
-          COMMITS=$(echo "$COMMITS" | awk '!seen[$0]++' | grep -v '\[skip ci\]' | grep -vE '^(chore|Merge )' || true)
+          COMMITS=$(echo "$COMMITS" | awk '!seen[$0]++' | grep -v '\[skip ci\]' | grep -viE '^(chore|docs|ci|style|test|build|Merge |Publication de la version|Documentation|Maintenance)' || true)
           TECH=$(echo "$COMMITS"  | grep -E  '^(Correction build|Correction des? workflow|CI( |:)|Workflow|Refactor|Suppression|Nettoyage|Documentation|README|CLAUDE)' || true)
           REST=$(echo "$COMMITS"  | grep -vE '^(Correction build|Correction des? workflow|CI( |:)|Workflow|Refactor|Suppression|Nettoyage|Documentation|README|CLAUDE)' || true)
-          FIXES=$(echo "$REST"    | grep -E  '^(Correction|Corrige|Fix|Hotfix|Bugfix|Répar)' || true)
-          PERFS=$(echo "$REST"    | grep -E  '^(Optimisation|Amélioration|Perf|Robustesse|Stabilité)' || true)
-          FEATS=$(echo "$REST"    | grep -vE '^(Correction|Corrige|Fix|Hotfix|Bugfix|Répar|Optimisation|Amélioration|Perf|Robustesse|Stabilité)' || true)
-          section() { if [ -n "$2" ]; then echo "### $1"; echo ""; echo "$2" | sed 's/^/- /'; echo ""; fi; }
+          FIXES=$(echo "$REST"    | grep -iE  '^(fix(\(.+\))?:|Correction|Corrige|Fix|Hotfix|Bugfix|Répar)' || true)
+          PERFS=$(echo "$REST"    | grep -iE  '^(perf(\(.+\))?:|Optimisation|Amélioration|Perf|Robustesse|Stabilité)' || true)
+          FEATS=$(echo "$REST"    | grep -viE '^(fix(\(.+\))?:|perf(\(.+\))?:|Correction|Corrige|Fix|Hotfix|Bugfix|Répar|Optimisation|Amélioration|Perf|Robustesse|Stabilité)' || true)
+          section() { if [ -n "$2" ]; then echo "### $1"; echo ""; echo "$2" | sed -E 's/^(feat|fix|perf|refactor|docs|ci|chore|style|test|build)(\([^)]*\))?!?:[[:space:]]*//I; s/^(Ajout|Nouveauté|Nouveau|Fonctionnalité)[[:space:]]*:[[:space:]]*//I; s/^/- /'; echo ""; fi; }
 
           {
             echo "# 🖥 Geoventure Panel v${VERSION}"
@@ -171,7 +171,7 @@ jobs:
         if: steps.decide.outputs.release == 'true'
         run: |
           git add package.json config/app.php
-          git commit -m "chore: release v${{ steps.version.outputs.version }} [skip ci]" || exit 0
+          git commit -m "Publication de la version v${{ steps.version.outputs.version }} [skip ci]" || exit 0
           git push origin "HEAD:${GITHUB_REF_NAME}"
 
       - name: Create GitHub Release
@@ -182,8 +182,8 @@ jobs:
           name: "Geoventure Panel v${{ steps.version.outputs.version }}"
           body_path: RELEASE_NOTES.md
           files: panel-${{ steps.version.outputs.version }}.zip
-          prerelease: ${{ github.ref_name == 'test' }}
-          make_latest: ${{ github.ref_name != 'test' }}
+          prerelease: false
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

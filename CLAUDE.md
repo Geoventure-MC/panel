@@ -287,7 +287,7 @@ Pages **Admin → Modération** (sidebar `bi-shield-exclamation`, middleware `ad
 
 ## Système de canaux d'instances Stable / Test lié aux grades Azuriom & branche `test` (2026-10-23)
 
-- **Branche `test` & auto-push** : branche `test` configurée avec `.github/workflows/ci.yml` + `.github/workflows/release.yml` (pré-release GitHub `prerelease: true` sous `Peterdu1109 <peter1109@hotmail.fr>`) et hook `.git/hooks/post-commit` qui push automatiquement sur `origin/test`.
+- **Branche `test` & auto-push** : branche `test` configurée avec `.github/workflows/ci.yml` + `.github/workflows/release.yml` (pré-release GitHub `prerelease: true` sous `Peterdu1109 <peter1109@hotmail.fr>`) et hook `.git/hooks/post-commit` qui push automatiquement sur `origin/main`.
 - **Migration & modèle (`OptionsServer`)** :
   - `database/migrations/2026_10_23_120000_add_channel_and_roles_to_options_server_table.php` (idempotente via `Schema::hasColumn`) ajoute sur `options_server` :
     - `channel` (`stable` | `test` | `both`, défaut `both`)
@@ -304,3 +304,14 @@ Pages **Admin → Modération** (sidebar `bi-shield-exclamation`, middleware `ad
   - `AdminServerController` et `resources/views/admin/server.blade.php` permettent d'éditer le canal, les grades Azuriom (`allowed_roles`, `test_roles`), l'IP/port de test et le dossier modpack de test.
   - Outils MCP mis à jour (`app/Services/Mcp/Tools/ReadTools.php` `servers_list` et `AdminTools.php` `server_instance_upsert`) pour lire et modifier `channel`, `allowed_roles`, `test_roles`, `test_ip`, `test_port`, `test_data_folder`.
   - Endpoint MCP de production : `https://launcher.geoventure.fr/api/mcp` (clé `gmcp_…` hors dépôt). Déploiement de `geomods-3.23.0-all.jar` effectué via `modpack_publish_jar`.
+
+## Règle absolue : Tout en français (Commits, Releases, Pull Requests)
+
+- **Branche unique `main`** : Tout le développement et tous les pushs se font directement sur `main` (plus de branche `test`). Le hook `.git/hooks/post-commit` pousse automatiquement sur `origin/main` avec l'identité `Peterdu1109 <peter1109@hotmail.fr>`.
+- **100 % en français** : Tous les messages de commit Git, titres et descriptions de Pull Requests, notes de version (GitHub Releases) et commentaires doivent être rédigés **exclusivement en français**.
+- **Format des messages de commit** :
+  - Nouveauté (bump `minor`) : `Ajout : description claire en français` (ou `feat: description en français`)
+  - Correction (bump `patch`) : `Correction : description claire en français` (ou `fix: description en français`)
+  - Amélioration (bump `patch`) : `Amélioration : description claire en français` (ou `Optimisation : ...`)
+  - Maintenance / Doc (sans release) : `Maintenance : ...` ou `Documentation : ...`
+  - Ne jamais écrire de message de commit en anglais.
