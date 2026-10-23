@@ -3,7 +3,7 @@ name: CentralCorp CI
 on:
   # pull_request seulement : push + PR lançaient deux fois le même build
   pull_request:
-    branches: [main]
+    branches: [main, test]
   workflow_dispatch:
 
 concurrency:
