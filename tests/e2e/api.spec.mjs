@@ -29,6 +29,13 @@ for (const [label, base] of [['base du jeu absente', null], ['base du jeu injoig
       });
     }
 
+    test('GET /utils/seasons expose hallOfFame (additif)', async () => {
+      const j = await (await api.get('/utils/seasons')).json();
+      expect(j.hallOfFame).toBeTruthy();
+      expect(Array.isArray(j.hallOfFame.champions)).toBe(true);
+      expect(typeof j.hallOfFame.seasonsPlayed).toBe('number');
+    });
+
     for (const p of ETAG_ENDPOINTS) {
       test(`ETag/304 sur ${p}`, async () => {
         const r1 = await api.get(p);

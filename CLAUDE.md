@@ -305,6 +305,10 @@ Pages **Admin → Modération** (sidebar `bi-shield-exclamation`, middleware `ad
   - Outils MCP mis à jour (`app/Services/Mcp/Tools/ReadTools.php` `servers_list` et `AdminTools.php` `server_instance_upsert`) pour lire et modifier `channel`, `allowed_roles`, `test_roles`, `test_ip`, `test_port`, `test_data_folder`.
   - Endpoint MCP de production : `https://launcher.geoventure.fr/api/mcp` (clé `gmcp_…` hors dépôt). Déploiement de `geomods-3.23.0-all.jar` effectué via `modpack_publish_jar`.
 
+## Saisons : podium récompensé, hall of fame, annonce launcher (2026-10-27)
+
+`POST /utils/seasons/sync` `action=end` accepte en plus (additif) `podium` `[{rank,name,score,reward,title}]` (colonne `seasons.podium`, ⚠ `php artisan migrate`, migration `2026_10_27_120000`). `GET /utils/seasons` ajoute `past[].podium` et `hallOfFame` `{seasonsPlayed, champions[], history[], records{}}` (calculé par `App\Services\SeasonHallOfFame` sur les saisons terminées). La PREMIÈRE clôture d'une saison crée une annonce launcher (`options_notifications`, type `event`, 7 jours) ; un `end` rejoué n'en recrée pas. Ids de saison : `AAAA-MM` ou `AAAA-MM-JJ` (cycle en jours côté plugin).
+
 ## Règle absolue : Tout en français (Commits, Releases, Pull Requests)
 
 - **Branche unique `main`** : Tout le développement et tous les pushs se font directement sur `main` (plus de branche `test`). Le hook `.git/hooks/post-commit` pousse automatiquement sur `origin/main` avec l'identité `Peterdu1109 <peter1109@hotmail.fr>`.

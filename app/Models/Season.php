@@ -12,11 +12,12 @@ class Season extends Model
     protected $table = 'seasons';
     protected $fillable = [
         'external_id', 'name', 'starts_at', 'ends_at', 'status',
-        'winner_name', 'winner_faction', 'winner_score', 'reward',
+        'winner_name', 'winner_faction', 'winner_score', 'reward', 'podium',
     ];
     protected $casts = [
         'starts_at'    => 'datetime',
         'ends_at'      => 'datetime',
         'winner_score' => 'integer',
+        'podium'       => 'array',
     ];
 }

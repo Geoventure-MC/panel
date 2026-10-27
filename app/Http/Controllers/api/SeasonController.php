@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
+use App\Models\OptionsNotification;
 use App\Models\Season;
+use App\Services\SeasonHallOfFame;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -82,6 +84,16 @@ class SeasonController extends Controller
                     $attributes['reward']         = $this->str($winner['reward'] ?? null);
                 }
 
+                // Podium récompensé (additif, assaini : 10 lignes max, textes tronqués).
+                $podium = $this->cleanPodium($request->input('podium'));
+                if ($podium !== null && \Illuminate\Support\Facades\Schema::hasColumn('seasons', 'podium')) {
+                    $attributes['podium'] = $podium;
+                }
+
+                // Annonce launcher UNIQUEMENT à la première clôture de cette saison
+                // (le plugin peut renvoyer le même "end" : pas de doublon).
+                $wasEnded = Season::where('external_id', $externalId)->where('status', 'ended')->exists();
+
                 Season::updateOrCreate(
                     ['external_id' => $externalId],
                     array_merge($attributes, [
@@ -89,6 +101,10 @@ class SeasonController extends Controller
                         'starts_at' => $this->parseDate($season['starts_at'] ?? null),
                     ])
                 );
+
+                if (!$wasEnded) {
+                    $this->announceEnd($name !== '' ? $name : $externalId, $winner);
+                }
 
                 return response()->json(['status' => 'ok'], 200, [], JSON_UNESCAPED_SLASHES);
             }
@@ -137,11 +153,15 @@ class SeasonController extends Controller
                         'score'   => $s->winner_score,
                     ],
                     'reward'  => $s->reward,
+                    'podium'  => is_array($s->podium) ? $s->podium : [],
                 ])->values(),
+                'hallOfFame' => SeasonHallOfFame::compute(
+                    Season::where('status', 'ended')->orderBy('external_id')->limit(500)->get()
+                ),
             ];
         } catch (\Throwable $e) {
             Log::warning('SeasonController@index: ' . $e->getMessage());
-            $payload = ['current' => null, 'past' => []];
+            $payload = ['current' => null, 'past' => [], 'hallOfFame' => SeasonHallOfFame::compute([])];
         }
 
         return response()->json($payload, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
@@ -188,6 +208,53 @@ class SeasonController extends Controller
         } catch (\Throwable $e) {
             Log::warning('SeasonController@standings: ' . $e->getMessage());
             return [];
+        }
+    }
+
+    /** Podium envoyé par le plugin -> tableau assaini [{rank,name,score,reward,title}] (10 max) ou null. */
+    private function cleanPodium($raw): ?array
+    {
+        if (!is_array($raw)) {
+            return null;
+        }
+        $out = [];
+        foreach (array_slice($raw, 0, 10) as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $rank = (int) ($row['rank'] ?? 0);
+            $name = $this->str($row['name'] ?? null);
+            if ($rank < 1 || $name === null) {
+                continue;
+            }
+            $out[] = [
+                'rank'   => $rank,
+                'name'   => $name,
+                'score'  => (int) ($row['score'] ?? 0),
+                'reward' => $this->str($row['reward'] ?? null),
+                'title'  => $this->str($row['title'] ?? null),
+            ];
+        }
+        return $out;
+    }
+
+    /** Annonce in-app du launcher (voie des notifications existante) : fin de saison + champion. */
+    private function announceEnd(string $seasonName, array $winner): void
+    {
+        try {
+            $champion = $this->str($winner['name'] ?? null);
+            $message = $champion !== null
+                ? "Fin de la {$seasonName} : {$champion} remporte la saison ! Les récompenses ont été distribuées."
+                : "Fin de la {$seasonName} : les récompenses ont été distribuées.";
+            OptionsNotification::create([
+                'type'       => 'event',
+                'message'    => mb_substr($message, 0, 500),
+                'url'        => null,
+                'active'     => true,
+                'expires_at' => now()->addDays(7),
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('SeasonController@announceEnd: ' . $e->getMessage());
         }
     }
 
