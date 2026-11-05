@@ -8,10 +8,11 @@ use App\Models\OptionsServer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
 
 class FileController extends Controller
 {
-    public function getFiles(): JsonResponse
+    public function getFiles(): Response
     {
         $base = storage_path('app/public/data');
         $ignoredFolders = OptionsIgnore::pluck('folder_name')->toArray();
@@ -57,15 +58,48 @@ class FileController extends Controller
             return response()->json([], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         }
 
-        // Le hash sha1 de tout le modpack est coûteux : on met le manifeste en
-        // cache 5 min. La clé inclut la mtime du dossier et les dossiers ignorés
-        // pour invalider le cache dès qu'un fichier change ou que la config bouge.
-        $cacheKey = 'modpack_manifest_' . md5($dir . '|' . filemtime($dir) . '|' . implode(',', $ignoredFolders));
-        $manifest = Cache::remember($cacheKey, 300, function () use ($dir, $ignoredFolders, $urlPrefix) {
-            return $this->dirToArray($dir, '', $ignoredFolders, $urlPrefix);
-        });
+        // Le hash sha1 de tout le modpack est coûteux : le manifeste reste en cache tant que l'empreinte de
+        // l'arborescence (mtime, taille, nombre de fichiers, sous-dossiers compris) ne change pas.
+        $cacheKey = 'modpack_manifest_' . md5($dir . '|' . $this->treeStamp($dir) . '|' . implode(',', $ignoredFolders));
+        $manifest = Cache::get($cacheKey);
+        if ($manifest === null) {
+            $build = fn () => $this->dirToArray($dir, '', $ignoredFolders, $urlPrefix);
+            try {
+                // Un seul calcul à la fois : les clients simultanés attendent son résultat au lieu de tout rehacher.
+                $manifest = Cache::lock($cacheKey . '_lock', 300)->block(120, fn () => Cache::remember($cacheKey, 86400, $build));
+            } catch (\Throwable $e) {
+                // Verrou indisponible ou attente dépassée : le launcher doit quand même recevoir son manifeste.
+                $manifest = $build();
+            }
+        }
 
-        return response()->json($manifest, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $response = response()->json($manifest, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $etag = '"' . md5($response->getContent()) . '"';
+        $headers = ['ETag' => $etag, 'Cache-Control' => 'public, max-age=30'];
+        if (trim((string) request()->header('If-None-Match', '')) === $etag) {
+            return response('', 304, $headers);
+        }
+
+        return $response->withHeaders($headers);
+    }
+
+    /** Empreinte peu coûteuse de l'arborescence (aucun hash de contenu), recalculée au plus toutes les 30 s. */
+    private function treeStamp(string $dir): string
+    {
+        return Cache::remember('modpack_stamp_' . md5($dir), 30, function () use ($dir) {
+            $count = 0;
+            $size = 0;
+            $newest = 0;
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)) as $f) {
+                if ($f->isFile()) {
+                    $count++;
+                    $size += $f->getSize();
+                    $newest = max($newest, $f->getMTime());
+                }
+            }
+
+            return $count . '-' . $size . '-' . $newest;
+        });
     }
 
     private function hasFiles(string $dir): bool
