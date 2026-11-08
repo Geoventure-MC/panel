@@ -231,6 +231,73 @@ class WriteTools
                     return ['id' => $m->id, 'name' => $m->name, 'active' => (bool) $m->active];
                 }),
 
+            McpTool::make('community_mod_upsert', 'write',
+                'Cr\u00e9e ou met \u00e0 jour un mod communaut\u00e9 pour le launcher (Forgematica, MaFgLib, Tweakerge, etc.).',
+                [
+                    'id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'ID pour modification (optionnel si cr\u00e9ation).'],
+                    'name' => ['type' => 'string', 'maxLength' => 255, 'description' => 'Nom affich\u00e9 du mod.'],
+                    'filename' => ['type' => 'string', 'maxLength' => 255, 'description' => 'Nom de fichier jar cible.'],
+                    'url' => ['type' => 'string', 'maxLength' => 500, 'description' => 'URL directe de t\u00e9l\u00e9chargement du jar.'],
+                    'description' => ['type' => 'string', 'maxLength' => 1000, 'description' => 'Description d\u00e9taill\u00e9e du mod.'],
+                    'icon' => ['type' => 'string', 'maxLength' => 500, 'description' => 'URL de l\'ic\u00f4ne.'],
+                    'category' => ['type' => 'string', 'maxLength' => 100, 'description' => 'Cat\u00e9gorie (Construction, Utilitaires, etc.).'],
+                    'author' => ['type' => 'string', 'maxLength' => 100, 'description' => 'Auteur du mod.'],
+                    'version' => ['type' => 'string', 'maxLength' => 50, 'description' => 'Version du mod.'],
+                    'active' => ['type' => 'boolean', 'description' => 'Actif ou non (d\u00e9faut true).'],
+                ], ['name', 'filename', 'url'],
+                [
+                    'id' => 'sometimes|nullable|integer|min:1',
+                    'name' => 'required|string|max:255',
+                    'filename' => 'required|string|max:255',
+                    'url' => 'required|url|max:500',
+                    'description' => 'sometimes|nullable|string|max:1000',
+                    'icon' => 'sometimes|nullable|url|max:500',
+                    'category' => 'sometimes|nullable|string|max:100',
+                    'author' => 'sometimes|nullable|string|max:100',
+                    'version' => 'sometimes|nullable|string|max:50',
+                    'active' => 'sometimes|boolean',
+                ],
+                function (array $a, McpContext $ctx) {
+                    $id = $a['id'] ?? null;
+                    $mod = $id ? CommunityMod::find($id) : null;
+                    $created = false;
+                    if (!$mod) {
+                        $mod = CommunityMod::where('filename', $a['filename'])->orWhere('name', $a['name'])->first();
+                    }
+                    if (!$mod) {
+                        $mod = new CommunityMod();
+                        $created = true;
+                    }
+                    $before = $mod->exists ? $mod->toArray() : [];
+                    $mod->name = $a['name'];
+                    $mod->filename = $a['filename'];
+                    $mod->url = $a['url'];
+                    if (array_key_exists('description', $a)) $mod->description = $a['description'];
+                    if (array_key_exists('icon', $a)) $mod->icon = $a['icon'];
+                    if (array_key_exists('category', $a)) $mod->category = $a['category'];
+                    if (array_key_exists('author', $a)) $mod->author = $a['author'];
+                    if (array_key_exists('version', $a)) $mod->version = $a['version'];
+                    if (array_key_exists('active', $a)) $mod->active = (bool) $a['active'];
+                    elseif ($created) $mod->active = true;
+                    $mod->save();
+
+                    $ctx->audit($created ? 'community_mod.create' : 'community_mod.update', $mod, $before, $mod->toArray());
+
+                    return ['created' => $created, 'id' => $mod->id, 'name' => $mod->name, 'filename' => $mod->filename, 'active' => (bool) $mod->active];
+                }),
+
+            McpTool::make('community_mod_delete', 'write',
+                'Supprime un mod communaut\u00e9 du catalogue du launcher.',
+                ['id' => ['type' => 'integer', 'minimum' => 1]], ['id'],
+                ['id' => 'required|integer|min:1'],
+                function (array $a, McpContext $ctx) {
+                    $mod = CommunityMod::find($a['id']) ?? throw new McpToolError('Mod communaut\u00e9 introuvable.');
+                    $ctx->audit('community_mod.delete', $mod, $mod->toArray(), []);
+                    $mod->delete();
+
+                    return ['deleted' => true, 'id' => $a['id']];
+                }),
+
             McpTool::make('wonder_edition_update', 'write',
                 'Modifie les champs d\'une édition Wonder (liste blanche) puis la renvoie au jeu. Refusé une fois l\'édition publiée (résultats figés).',
                 [
