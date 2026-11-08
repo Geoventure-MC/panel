@@ -40,7 +40,7 @@ return [
     */
 
     'debug' => (bool) env('APP_DEBUG', false),
-    'version' => '1.21.1',
+    'version' => '1.22.0',
     /*
     |--------------------------------------------------------------------------
     | Application URL
