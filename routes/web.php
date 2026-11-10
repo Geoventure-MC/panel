@@ -289,7 +289,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
 Route::get('/file-manager', function () {
     return view('admin.file-manager');
-})->name('admin.file-manager')->middleware('auth');
+})->name('admin.file-manager')->middleware(['auth', 'admin']);
 
 // Préfixes distincts : sans eux, tous les `throttle:N,1` partagent le MÊME compteur (clé = IP),
 // donc 30 appels /utils/* suffisaient à faire répondre 429 à /utils/telemetry (limite 30).
