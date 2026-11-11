@@ -57,11 +57,13 @@
                     </a>
                 </li>
                 @endif
+                @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.file-manager') ? 'active' : '' }}" href="{{ route('admin.file-manager') }}">
                         <i class="bi bi-folder align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.file_manager') }}</span>
                     </a>
                 </li>
+                @endif
                 @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.update') ? 'active' : '' }}" href="{{ route('admin.update') }}">
@@ -74,11 +76,13 @@
                     </a>
                 </li>
                 @endif
+                @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.game-events*') ? 'active' : '' }}" href="{{ route('admin.game-events') }}">
                         <i class="bi bi-calendar-event align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.game_events') }}</span>
                     </a>
                 </li>
+                @endif
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}" href="{{ route('admin.notifications') }}">
                         <i class="bi bi-megaphone align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.notifications') }}</span>
@@ -119,11 +123,13 @@
                         <i class="bi bi-clock-history align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.audit') }}</span>
                     </a>
                 </li>
+                @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.game-commands*') ? 'active' : '' }}" href="{{ route('admin.game-commands') }}">
                         <i class="bi bi-joystick align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.game_commands') }}</span>
                     </a>
                 </li>
+                @endif
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.monitor*') ? 'active' : '' }}" href="{{ route('admin.monitor') }}">
                         <i class="bi bi-activity align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.monitor') }}</span>
@@ -144,89 +150,111 @@
                         <i class="bi bi-shield-exclamation align-middle"></i> <span class="align-middle">{{ __('moderation.sidebar') }}</span>
                     </a>
                 </li>
+                @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.sso*') ? 'active' : '' }}" href="{{ route('admin.sso') }}">
                         <i class="bi bi-shield-lock align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.sso') }}</span>
                     </a>
                 </li>
+                @endif
                 <li class="sidebar-header">
                     {{ __('messages.sidebar.configuration') }}
                 </li>
                 
+                @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.general') ? 'active' : '' }}" href="{{ route('admin.general') }}">
                         <i class="bi bi-sliders align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.general') }}</span>
                     </a>
                 </li>
+                @endif
+                @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.rpc') ? 'active' : '' }}" href="{{ route('admin.rpc') }}">
                         <i class="bi bi-cpu align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.rpc') }}</span>
                     </a>
                 </li>
+                @endif
+                @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.server') ? 'active' : '' }}" href="{{ route('admin.server') }}">
                         <i class="bi bi-hdd align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.server') }}</span>
                     </a>
                 </li>
+                @endif
 
                 <li class="sidebar-header">
                     {{ __('messages.sidebar.security_header') }}
                 </li>
+                @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.security') ? 'active' : '' }}" href="{{ route('admin.security') }}">
                         <i class="bi bi-lock align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.security_link') }}</span>
                     </a>
                 </li>
+                @endif
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.two-factor*') ? 'active' : '' }}" href="{{ route('admin.two-factor.index') }}">
                         <i class="bi bi-shield-lock align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.two_factor') }}</span>
                     </a>
                 </li>
+                @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.whitelist') ? 'active' : '' }}" href="{{ route('admin.whitelist') }}">
                         <i class="bi bi-list-check align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.whitelist') }}</span>
                     </a>
                 </li>
+                @endif
                 
 
                 <li class="sidebar-header">
                     {{ __('messages.sidebar.client') }}
                 </li>
                 
+                @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.mods') ? 'active' : '' }}" href="{{ route('admin.mods') }}">
                         <i class="bi bi-box align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.optional_mods') }}</span>
                     </a>
                 </li>
+                @endif
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.community-mods*') ? 'active' : '' }}" href="{{ route('admin.community-mods') }}">
                         <i class="bi bi-puzzle align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.community_mods') }}</span>
                     </a>
                 </li>
+                @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.loader') ? 'active' : '' }}" href="{{ route('admin.loader') }}">
                         <i class="bi bi-cloud-arrow-down"></i> <span class="align-middle">{{ __('messages.sidebar.loader') }}</span>
                     </a>
                 </li>
+                @endif
+                @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.ignore') ? 'active' : '' }}" href="{{ route('admin.ignore') }}">
                         <i class="bi bi-slash align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.ignore') }}</span>
                     </a>
                 </li>
+                @endif
 
                 <li class="sidebar-header">
                     {{ __('messages.sidebar.interface') }}
                 </li>
+                @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.ui') ? 'active' : '' }}" href="{{ route('admin.ui') }}">
                         <i class="bi bi-display align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.ui') }}</span>
                     </a>
                 </li>
+                @endif
+                @if(auth()->user()->isSuperAdmin())
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.bg') ? 'active' : '' }}" href="{{ route('admin.bg') }}">
                         <i class="bi bi-image align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.background') }}</span>
                     </a>
                 </li>
+                @endif
                 <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.launcher-content*') ? 'active' : '' }}" href="{{ route('admin.launcher-content') }}">
                         <i class="bi bi-layout-text-window-reverse align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.launcher_content') }}</span>

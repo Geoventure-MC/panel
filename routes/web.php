@@ -105,48 +105,48 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::post('/config/azuriom/{id}/primary', [AdminConfigController::class, 'setPrimaryAzuriom'])->name('admin.config.azuriom.primary');
     });
 
-    Route::get('/general', [AdminController::class, 'general'])->name('admin.general');
-    Route::post('/general/update', [AdminController::class, 'updateGeneral'])->name('admin.general.update');
-    Route::get('/security', [AdminSecurityController::class, 'show'])->name('admin.security');
-    Route::post('/security/update', [AdminSecurityController::class, 'update'])->name('admin.security.update');
-    Route::post('/maintenance/toggle', [AdminSecurityController::class, 'toggleMaintenance'])->name('admin.maintenance.toggle');
+    Route::get('/general', [AdminController::class, 'general'])->middleware('superadmin')->name('admin.general');
+    Route::post('/general/update', [AdminController::class, 'updateGeneral'])->middleware('superadmin')->name('admin.general.update');
+    Route::get('/security', [AdminSecurityController::class, 'show'])->middleware('superadmin')->name('admin.security');
+    Route::post('/security/update', [AdminSecurityController::class, 'update'])->middleware('superadmin')->name('admin.security.update');
+    Route::post('/maintenance/toggle', [AdminSecurityController::class, 'toggleMaintenance'])->middleware('superadmin')->name('admin.maintenance.toggle');
 
-    Route::get('/server', [AdminServerController::class, 'show'])->name('admin.server');
-    Route::post('/server/set-default', [AdminServerController::class, 'setDefaultServer'])->name('admin.server.set-default');
-    Route::post('/server/sync', [AdminServerController::class, 'sync'])->name('admin.server.sync');
-    Route::post('/server/add', [AdminServerController::class, 'addServer'])->name('admin.server.add');
-    Route::post('/server/{serverId}/edit', [AdminServerController::class, 'editServer'])->name('admin.server.edit');
-    Route::delete('/server/{serverId}', [AdminServerController::class, 'deleteServer'])->name('admin.server.delete');
-    Route::post('/server/{serverId}/icon', [AdminServerController::class, 'updateIcon'])->name('admin.server.updateIcon');
-    Route::delete('/server/{serverId}/icon', [AdminServerController::class, 'deleteIcon'])->name('admin.server.deleteIcon');
+    Route::get('/server', [AdminServerController::class, 'show'])->middleware('superadmin')->name('admin.server');
+    Route::post('/server/set-default', [AdminServerController::class, 'setDefaultServer'])->middleware('superadmin')->name('admin.server.set-default');
+    Route::post('/server/sync', [AdminServerController::class, 'sync'])->middleware('superadmin')->name('admin.server.sync');
+    Route::post('/server/add', [AdminServerController::class, 'addServer'])->middleware('superadmin')->name('admin.server.add');
+    Route::post('/server/{serverId}/edit', [AdminServerController::class, 'editServer'])->middleware('superadmin')->name('admin.server.edit');
+    Route::delete('/server/{serverId}', [AdminServerController::class, 'deleteServer'])->middleware('superadmin')->name('admin.server.delete');
+    Route::post('/server/{serverId}/icon', [AdminServerController::class, 'updateIcon'])->middleware('superadmin')->name('admin.server.updateIcon');
+    Route::delete('/server/{serverId}/icon', [AdminServerController::class, 'deleteIcon'])->middleware('superadmin')->name('admin.server.deleteIcon');
 
-    Route::get('/ui', [AdminUIController::class, 'show'])->name('admin.ui');
-    Route::post('/ui/update', [AdminUIController::class, 'update'])->name('admin.ui.update');
+    Route::get('/ui', [AdminUIController::class, 'show'])->middleware('superadmin')->name('admin.ui');
+    Route::post('/ui/update', [AdminUIController::class, 'update'])->middleware('superadmin')->name('admin.ui.update');
 
-    Route::get('/whitelist', [AdminWhitelistController::class, 'index'])->name('admin.whitelist');
-    Route::post('/whitelist', [AdminWhitelistController::class, 'store'])->name('admin.whitelist.store');
-    Route::get('/whitelist/fetch-users', [AdminWhitelistController::class, 'fetchUsers'])->name('admin.whitelist.fetchUsers');
-    Route::get('/whitelist/fetch-roles', [AdminWhitelistController::class, 'fetchRoles'])->name('admin.whitelist.fetchRoles');
-    Route::delete('/whitelist/user/{id}', [AdminWhitelistController::class, 'destroyUser'])->name('admin.whitelist.destroyUser');
-    Route::delete('/whitelist/role/{id}', [AdminWhitelistController::class, 'destroyRole'])->name('admin.whitelist.destroyRole');
+    Route::get('/whitelist', [AdminWhitelistController::class, 'index'])->middleware('superadmin')->name('admin.whitelist');
+    Route::post('/whitelist', [AdminWhitelistController::class, 'store'])->middleware('superadmin')->name('admin.whitelist.store');
+    Route::get('/whitelist/fetch-users', [AdminWhitelistController::class, 'fetchUsers'])->middleware('superadmin')->name('admin.whitelist.fetchUsers');
+    Route::get('/whitelist/fetch-roles', [AdminWhitelistController::class, 'fetchRoles'])->middleware('superadmin')->name('admin.whitelist.fetchRoles');
+    Route::delete('/whitelist/user/{id}', [AdminWhitelistController::class, 'destroyUser'])->middleware('superadmin')->name('admin.whitelist.destroyUser');
+    Route::delete('/whitelist/role/{id}', [AdminWhitelistController::class, 'destroyRole'])->middleware('superadmin')->name('admin.whitelist.destroyRole');
 
-    Route::get('/ignore', [AdminIgnoreController::class, 'index'])->name('admin.ignore');
-    Route::post('/ignore', [AdminIgnoreController::class, 'store'])->name('admin.ignore.store');
-    Route::delete('/ignore/folder/{id}', [AdminIgnoreController::class, 'destroyFolder'])->name('admin.ignore.destroyFolder');
+    Route::get('/ignore', [AdminIgnoreController::class, 'index'])->middleware('superadmin')->name('admin.ignore');
+    Route::post('/ignore', [AdminIgnoreController::class, 'store'])->middleware('superadmin')->name('admin.ignore.store');
+    Route::delete('/ignore/folder/{id}', [AdminIgnoreController::class, 'destroyFolder'])->middleware('superadmin')->name('admin.ignore.destroyFolder');
 
-    Route::get('/mods', [AdminModController::class, 'index'])->name('admin.mods');
-    Route::post('/mods/add', [AdminModController::class, 'addOptionalMod'])->name('admin.mods.addOptional');
-    Route::post('/mods/update', [AdminModController::class, 'updateOptionalMod'])->name('admin.mods.updateOptional');
-    Route::post('/mods/delete/{id}', [AdminModController::class, 'deleteOptionalMod'])->name('admin.mods.delete');
-    Route::get('/mods/{id}', [AdminModController::class, 'getOptionalModDetails'])->name('admin.mods.getOptionalModDetails');
+    Route::get('/mods', [AdminModController::class, 'index'])->middleware('superadmin')->name('admin.mods');
+    Route::post('/mods/add', [AdminModController::class, 'addOptionalMod'])->middleware('superadmin')->name('admin.mods.addOptional');
+    Route::post('/mods/update', [AdminModController::class, 'updateOptionalMod'])->middleware('superadmin')->name('admin.mods.updateOptional');
+    Route::post('/mods/delete/{id}', [AdminModController::class, 'deleteOptionalMod'])->middleware('superadmin')->name('admin.mods.delete');
+    Route::get('/mods/{id}', [AdminModController::class, 'getOptionalModDetails'])->middleware('superadmin')->name('admin.mods.getOptionalModDetails');
 
-    Route::get('/loader', [AdminLoaderController::class, 'index'])->name('admin.loader');
-    Route::post('/loader/update', [AdminLoaderController::class, 'update'])->name('admin.loader.update');
-    Route::get('/loader/builds/', [AdminLoaderController::class, 'getForgeBuilds'])->name('admin.loader.builds');
-    Route::get('/loader/fabric-versions', [AdminLoaderController::class, 'getFabricVersions'])->name('admin.loader.fabric-versions');
+    Route::get('/loader', [AdminLoaderController::class, 'index'])->middleware('superadmin')->name('admin.loader');
+    Route::post('/loader/update', [AdminLoaderController::class, 'update'])->middleware('superadmin')->name('admin.loader.update');
+    Route::get('/loader/builds/', [AdminLoaderController::class, 'getForgeBuilds'])->middleware('superadmin')->name('admin.loader.builds');
+    Route::get('/loader/fabric-versions', [AdminLoaderController::class, 'getFabricVersions'])->middleware('superadmin')->name('admin.loader.fabric-versions');
 
-    Route::get('/rpc', [AdminRpcController::class, 'show'])->name('admin.rpc');
-    Route::post('/rpc/update', [AdminRpcController::class, 'update'])->name('admin.rpc.update');
+    Route::get('/rpc', [AdminRpcController::class, 'show'])->middleware('superadmin')->name('admin.rpc');
+    Route::post('/rpc/update', [AdminRpcController::class, 'update'])->middleware('superadmin')->name('admin.rpc.update');
 
     // Gestion des utilisateurs : réservé aux super-admins.
     Route::middleware('superadmin')->group(function () {
@@ -162,9 +162,9 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::post('/settings/import', [SettingsExportController::class, 'import'])->name('admin.settings.import');
     });
 
-    Route::get('/bg', [AdminBgController::class, 'index'])->name('admin.bg');
-    Route::post('/bg/update', [AdminBgController::class, 'update'])->name('admin.bg.update');
-    Route::delete('/bg/destroy/{role_id}', [AdminBgController::class, 'destroy'])->name('admin.bg.destroy');
+    Route::get('/bg', [AdminBgController::class, 'index'])->middleware('superadmin')->name('admin.bg');
+    Route::post('/bg/update', [AdminBgController::class, 'update'])->middleware('superadmin')->name('admin.bg.update');
+    Route::delete('/bg/destroy/{role_id}', [AdminBgController::class, 'destroy'])->middleware('superadmin')->name('admin.bg.destroy');
 
     // Auto-mise à jour du panel : réservé aux super-admins.
     Route::middleware('superadmin')->group(function () {
@@ -181,8 +181,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::post('/notifications', [AdminNotificationController::class, 'store'])->name('admin.notifications.store');
     Route::patch('/notifications/{notification}/toggle', [AdminNotificationController::class, 'toggle'])->name('admin.notifications.toggle');
     Route::delete('/notifications/{notification}', [AdminNotificationController::class, 'destroy'])->name('admin.notifications.destroy');
-    Route::get('/game-events', [\App\Http\Controllers\AdminGameEventController::class, 'index'])->name('admin.game-events');
-    Route::put('/game-events/{event}', [\App\Http\Controllers\AdminGameEventController::class, 'update'])->name('admin.game-events.update');
+    Route::get('/game-events', [\App\Http\Controllers\AdminGameEventController::class, 'index'])->middleware('superadmin')->name('admin.game-events');
+    Route::put('/game-events/{event}', [\App\Http\Controllers\AdminGameEventController::class, 'update'])->middleware('superadmin')->name('admin.game-events.update');
 
     Route::get('/changelog', [AdminChangelogController::class, 'index'])->name('admin.changelog');
     Route::post('/changelog', [AdminChangelogController::class, 'store'])->name('admin.changelog.store');
@@ -205,21 +205,21 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/seasons', [AdminSeasonController::class, 'index'])->name('admin.seasons');
 
     Route::get('/wonder', [AdminWonderController::class, 'index'])->name('admin.wonder');
-    Route::post('/wonder', [AdminWonderController::class, 'store'])->name('admin.wonder.store');
-    Route::put('/wonder/{edition}', [AdminWonderController::class, 'update'])->name('admin.wonder.update');
-    Route::delete('/wonder/{edition}', [AdminWonderController::class, 'destroy'])->name('admin.wonder.destroy');
-    Route::post('/wonder/{edition}/sync', [AdminWonderController::class, 'sync'])->name('admin.wonder.sync');
-    Route::post('/wonder/{edition}/publish', [AdminWonderController::class, 'publish'])->name('admin.wonder.publish');
-    Route::post('/wonder/{edition}/teams', [AdminWonderController::class, 'storeTeam'])->name('admin.wonder.teams.store');
-    Route::put('/wonder/teams/{team}', [AdminWonderController::class, 'updateTeam'])->name('admin.wonder.teams.update');
-    Route::delete('/wonder/teams/{team}', [AdminWonderController::class, 'destroyTeam'])->name('admin.wonder.teams.destroy');
-    Route::post('/wonder/teams/{team}/scores', [AdminWonderController::class, 'score'])->name('admin.wonder.scores.store');
-    Route::delete('/wonder/scores/{score}', [AdminWonderController::class, 'destroyScore'])->name('admin.wonder.scores.destroy');
+    Route::post('/wonder', [AdminWonderController::class, 'store'])->middleware('superadmin')->name('admin.wonder.store');
+    Route::put('/wonder/{edition}', [AdminWonderController::class, 'update'])->middleware('superadmin')->name('admin.wonder.update');
+    Route::delete('/wonder/{edition}', [AdminWonderController::class, 'destroy'])->middleware('superadmin')->name('admin.wonder.destroy');
+    Route::post('/wonder/{edition}/sync', [AdminWonderController::class, 'sync'])->middleware('superadmin')->name('admin.wonder.sync');
+    Route::post('/wonder/{edition}/publish', [AdminWonderController::class, 'publish'])->middleware('superadmin')->name('admin.wonder.publish');
+    Route::post('/wonder/{edition}/teams', [AdminWonderController::class, 'storeTeam'])->middleware('superadmin')->name('admin.wonder.teams.store');
+    Route::put('/wonder/teams/{team}', [AdminWonderController::class, 'updateTeam'])->middleware('superadmin')->name('admin.wonder.teams.update');
+    Route::delete('/wonder/teams/{team}', [AdminWonderController::class, 'destroyTeam'])->middleware('superadmin')->name('admin.wonder.teams.destroy');
+    Route::post('/wonder/teams/{team}/scores', [AdminWonderController::class, 'score'])->middleware('superadmin')->name('admin.wonder.scores.store');
+    Route::delete('/wonder/scores/{score}', [AdminWonderController::class, 'destroyScore'])->middleware('superadmin')->name('admin.wonder.scores.destroy');
 
     Route::get('/scheduled-events', [AdminScheduledEventController::class, 'index'])->name('admin.scheduled-events');
-    Route::post('/scheduled-events', [AdminScheduledEventController::class, 'store'])->name('admin.scheduled-events.store');
-    Route::patch('/scheduled-events/{event}/cancel', [AdminScheduledEventController::class, 'cancel'])->name('admin.scheduled-events.cancel');
-    Route::delete('/scheduled-events/{event}', [AdminScheduledEventController::class, 'destroy'])->name('admin.scheduled-events.destroy');
+    Route::post('/scheduled-events', [AdminScheduledEventController::class, 'store'])->middleware('superadmin')->name('admin.scheduled-events.store');
+    Route::patch('/scheduled-events/{event}/cancel', [AdminScheduledEventController::class, 'cancel'])->middleware('superadmin')->name('admin.scheduled-events.cancel');
+    Route::delete('/scheduled-events/{event}', [AdminScheduledEventController::class, 'destroy'])->middleware('superadmin')->name('admin.scheduled-events.destroy');
 
     Route::get('/audit', [AdminAuditController::class, 'index'])->name('admin.audit.index');
 
@@ -230,15 +230,15 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::post('/mcp/keys', [\App\Http\Controllers\AdminMcpController::class, 'store'])->name('admin.mcp.keys.store');
         Route::delete('/mcp/keys/{key}', [\App\Http\Controllers\AdminMcpController::class, 'revoke'])->name('admin.mcp.keys.revoke');
     });
-    Route::get('/game-commands', [AdminGameCommandController::class, 'index'])->name('admin.game-commands');
-    Route::post('/game-commands', [AdminGameCommandController::class, 'store'])->name('admin.game-commands.store');
+    Route::get('/game-commands', [AdminGameCommandController::class, 'index'])->middleware('superadmin')->name('admin.game-commands');
+    Route::post('/game-commands', [AdminGameCommandController::class, 'store'])->middleware('superadmin')->name('admin.game-commands.store');
 
     Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
     Route::get('/stats/export.csv', [StatsController::class, 'export'])->name('admin.stats.export');
 
     Route::get('/monitor', [\App\Http\Controllers\AdminMonitorController::class, 'index'])->name('admin.monitor');
-    Route::put('/monitor', [\App\Http\Controllers\AdminMonitorController::class, 'update'])->name('admin.monitor.update');
-    Route::post('/monitor/test', [\App\Http\Controllers\AdminMonitorController::class, 'test'])->middleware('throttle:5,1,monitortest')->name('admin.monitor.test');
+    Route::put('/monitor', [\App\Http\Controllers\AdminMonitorController::class, 'update'])->middleware('superadmin')->name('admin.monitor.update');
+    Route::post('/monitor/test', [\App\Http\Controllers\AdminMonitorController::class, 'test'])->middleware(['throttle:5,1,monitortest', 'superadmin'])->name('admin.monitor.test');
 
     Route::get('/dashboard/live', [LiveDashboardController::class, 'index'])->name('admin.dashboard.live');
     Route::get('/dashboard/feed', [LiveDashboardController::class, 'feed'])->name('admin.dashboard.feed');
@@ -289,7 +289,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
 Route::get('/file-manager', function () {
     return view('admin.file-manager');
-})->name('admin.file-manager')->middleware(['auth', 'admin']);
+})->name('admin.file-manager')->middleware(['auth', 'admin', 'superadmin']);
 
 // Préfixes distincts : sans eux, tous les `throttle:N,1` partagent le MÊME compteur (clé = IP),
 // donc 30 appels /utils/* suffisaient à faire répondre 429 à /utils/telemetry (limite 30).

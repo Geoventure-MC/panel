@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use RuntimeException;
@@ -60,12 +61,28 @@ class InstallController extends Controller
                 return redirect('/')->with('error', __('messages.install.already_installed'));
             }
 
+            // Garde-fou : avec une vraie clé ET des comptes déjà en base, l'installation ne doit JAMAIS repartir
+            // (elle lance migrate:fresh et crée un administrateur) même si le fichier « installed » a disparu.
+            if ($hasRealKey && $this->hasUsers()) {
+                abort(404);
+            }
+
             // Si seulement une des conditions est vraie, il y a un état incohérent
             // On permet l'accès aux routes d'installation pour corriger
             // (ex: fichier installed existe mais clé temporaire, ou vice versa)
 
             return $next($request);
         });
+    }
+
+    /** Vrai si la base configurée contient déjà au moins un compte (base absente ou illisible : faux). */
+    private function hasUsers(): bool
+    {
+        try {
+            return Schema::hasTable('users') && DB::table('users')->exists();
+        } catch (Throwable $e) {
+            return false;
+        }
     }
 
     private function getCorrectAppUrl()

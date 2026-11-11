@@ -50,7 +50,7 @@ jobs:
             esac
             NONTRIVIAL=1
             if printf '%s' "$MSG" | grep -qiE 'breaking change|!:'; then BUMP="major";
-            elif printf '%s' "$MSG" | grep -qiE '^feat(\(.+\))?:|^feature|✨|🎉|🚀'; then
+            elif printf '%s' "$MSG" | grep -qiE '^feat(\(.+\))?:|^feature|^Ajout|✨|🎉|🚀'; then
               [ "$BUMP" != "major" ] && BUMP="minor"; fi
           done <<EOF
           $LOG

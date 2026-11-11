@@ -191,11 +191,18 @@ test('administration : portée admin, destructifs, élévation interdite', async
   const lastSuper = await call(request, ka, 'user_role_set', { user_id: 1, role: 'moderator', confirm: true });
   expect(text(lastSuper)).toContain('dernier superadmin');
 
-  const gc = await call(request, kw, 'game_command_send', { type: 'give_coins', target: 'Steve', amount: 10, reason: 'test e2e', confirm: true });
+  // give_coins et bank_deposit : portée admin exigée (une clé write est refusée avant tout le reste).
+  const gcWrite = await call(request, kw, 'game_command_send', { type: 'give_coins', target: 'Steve', amount: 10, reason: 'test e2e', confirm: true });
+  expect(gcWrite.body.result.isError).toBe(true);
+  expect(text(gcWrite)).toContain('Portée insuffisante');
+  const bdWrite = await call(request, kw, 'game_command_send', { type: 'bank_deposit', target: 'France', amount: 10, reason: 'test e2e', confirm: true });
+  expect(text(bdWrite)).toContain('Portée insuffisante');
+  const gc = await call(request, ka, 'game_command_send', { type: 'give_coins', target: 'Steve', amount: 10, reason: 'test e2e', confirm: true });
   expect(gc.body.result.isError).toBe(true); // base du jeu non configurée sur ce serveur
-  const gcCap = await call(request, kw, 'game_command_send', { type: 'give_coins', target: 'Steve', amount: 99999999, reason: 'test e2e', confirm: true });
+  expect(text(gc)).not.toContain('Portée insuffisante');
+  const gcCap = await call(request, ka, 'game_command_send', { type: 'give_coins', target: 'Steve', amount: 99999999, reason: 'test e2e', confirm: true });
   expect(text(gcCap)).toContain('plafond');
-  const gcType = await call(request, kw, 'game_command_send', { type: 'rm_rf', target: 'x', amount: 1, reason: 'test e2e', confirm: true });
+  const gcType = await call(request, kw,'game_command_send', { type: 'rm_rf', target: 'x', amount: 1, reason: 'test e2e', confirm: true });
   expect(gcType.body.result.isError).toBe(true);
 
   const ignDenied = await call(request, kw, 'ignored_folder_set', { folder: 'instances', add: true, confirm: true });

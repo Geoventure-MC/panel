@@ -93,9 +93,10 @@ return [
      * Middleware
      *
      * Add your middleware name to array -> ['web', 'auth', 'admin']
+     * 'superadmin' : le dossier data/ est servi publiquement ; y écrire (un .php par exemple) équivaut à exécuter du code.
      * !!!! RESTRICT ACCESS FOR NON ADMIN USERS !!!!
      */
-    'middleware'        => ['web', 'auth', 'admin'],
+    'middleware'        => ['web', 'auth', 'admin', 'superadmin'],
 
     /***************************************************************************
      * ACL mechanism ON/OFF

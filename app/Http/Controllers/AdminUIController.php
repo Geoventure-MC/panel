@@ -28,21 +28,22 @@ class AdminUIController extends Controller
 
     public function update(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'alert_activation' => 'boolean',
             'alert_scroll' => 'boolean',
             'alert_msg'=>'required|string|max:255',
             'video_activation'=> 'boolean',
-            'video_url'=>'required|string|max:255',
+            'video_url'=>'required|string|max:255|starts_with:https://,http://',
             'splash'=>'required|string|max:255',
             'splash_author'=>'required|string|max:255',
-            'accent_color'=>'required|string|max:7',
+            'accent_color'=>['required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
         ]);
 
         $uiOptions = OptionsUI::first();
 
         if ($uiOptions) {
-            $uiOptions->update($request->all());
+            // Seuls les champs validés (et non toute la requête) sont écrits.
+            $uiOptions->update($validated);
         }
 
         return redirect()->route('admin.ui')->with('success', __('messages.flash.ui_updated'));

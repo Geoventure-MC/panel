@@ -36,6 +36,60 @@ php artisan config:cache   # si la config est cachée en prod
 > `POST /utils/seasons/sync` (fail-closed). Le plugin GeoFactions doit utiliser
 > **le même** `SEASONS_INGEST_TOKEN`.
 
+### Proxy inverse et IP des clients (`TRUSTED_PROXIES`)
+
+Derrière nginx / aaPanel / Cloudflare, `$request->ip()` renvoie l'IP du proxy :
+tous les `throttle` par IP partagent alors un seul compteur. Dans `.env` :
+
+```env
+TRUSTED_PROXIES=127.0.0.1        # IP/CIDR des proxys, séparés par des virgules
+```
+
+- Vide (défaut) : aucun proxy de confiance, comportement inchangé. À laisser
+  vide en accès direct.
+- Ne pas mettre `*` si le panel est joignable sans passer par le proxy : un
+  client pourrait falsifier `X-Forwarded-For`. Derrière Cloudflare, lister les
+  plages Cloudflare (ou configurer nginx `real_ip`), pas seulement 127.0.0.1.
+- Puis `php artisan config:clear` (ou `config:cache`).
+- Effet de bord : les IP enregistrées (audit, télémétrie) deviennent les vraies
+  IP clientes ; les visiteurs uniques sont recomptés.
+
+### Télémétrie : `ip_hash` salé
+
+`telemetry_events.ip_hash` est désormais un HMAC-SHA256 de l'IP avec `APP_KEY`
+(l'ancien SHA-256 simple se retrouvait par force brute). Les anciennes lignes ne
+correspondent plus : les visiteurs uniques sont recomptés une fois à la bascule
+(un même joueur compte deux fois sur la période de transition). Changer
+`APP_KEY` provoque le même effet.
+
+### Mods communauté : hôtes autorisés
+
+`community_mod_upsert` (MCP) et Admin → Mods Communauté n'acceptent qu'une URL
+https dont l'hôte est dans `config/mcp.php` → `community_mod_download_hosts`
+(par défaut : github.com, api.github.com, objects.githubusercontent.com,
+release-assets.githubusercontent.com, cdn.modrinth.com) et un `filename` du
+type `^[A-Za-z0-9._+-]+\.jar$`. Les types `give_coins` et `bank_deposit` de
+`game_command_send`, ainsi que `community_mod_delete`, exigent une clé MCP de
+portée `admin`. Après déploiement : `php artisan config:clear`.
+
+### Durcissement à vérifier en production
+
+- **Gestionnaire de fichiers** (`/file-manager`) : réservé aux super-admins (un modérateur ne le voit plus). Il écrit
+  dans `storage/app/public/data/`, servi publiquement via `/storage/data/` : le serveur web ne doit **jamais** y
+  exécuter de PHP. nginx : `location ~* ^/storage/.*\.php$ { return 403; }` placé avant le bloc `\.php$` ;
+  Apache : `php_flag engine off` ou `RemoveHandler .php` dans ce dossier.
+- **Racine web** : elle doit être `public/` (jamais la racine du projet), sinon `.env`, `storage/logs`, `vendor/` et
+  `composer.json` deviennent lisibles. Contrôle : `curl -I https://<domaine>/.env` doit répondre 404/403.
+- **Cookies de session** : `SESSION_SECURE_COOKIE=true` dans `.env` dès que le panel est en HTTPS (sinon le cookie n'est
+  pas marqué `Secure`).
+- **APP_KEY** : la valeur de `.env.example` (et `InstallController::TEMP_KEY`) est publique, c'est la clé TEMPORAIRE de
+  l'installeur. La production doit avoir une clé différente (`php artisan key:generate`) ; sinon le secret SSO chiffré,
+  les cookies chiffrés et `ip_hash` ne protègent rien. À vérifier : `grep -c hmU1T3 .env` doit afficher 0.
+- **Installeur** : `/install` répond désormais 404 dès que la base contient un compte et que la clé n'est plus
+  temporaire, même si `storage/installed` a disparu (il lançait `migrate:fresh`).
+- **Pont web → jeu** : le plugin doit avoir tourné au moins une fois pour ajouter la colonne `request_id` ; sans elle,
+  le panel dépose les commandes sans idempotence (voir `docs/claude/reference.md`).
+
 ### Saisons / leaderboards saisonniers
 
 Le plugin GeoFactions signale le cycle de vie des saisons au panel ; le launcher

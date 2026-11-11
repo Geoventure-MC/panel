@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
+use App\Services\GameBridge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -27,14 +28,27 @@ class AdminGameCommandController extends Controller
         'architecture_rating',
     ];
 
+    /** Types qui créditent de l'argent : réservés aux super-admins (comme la portée « admin » côté MCP). */
+    private const MONEY_TYPES = ['give_coins', 'bank_deposit'];
+
     private function table(): string
     {
-        return config('geoventure.game_table_prefix', 'gf_').'web_commands';
+        return GameBridge::table();
     }
 
     private function gameConfigured(): bool
     {
-        return (string) config('database.connections.game.database') !== '';
+        return GameBridge::configured();
+    }
+
+    /** Types proposés à l'utilisateur connecté (un modérateur n'a pas les types qui créditent de l'argent). */
+    private function allowedTypes(): array
+    {
+        if (auth()->user()?->isSuperAdmin()) {
+            return self::TYPES;
+        }
+
+        return array_values(array_diff(self::TYPES, self::MONEY_TYPES));
     }
 
     public function index()
@@ -54,16 +68,17 @@ class AdminGameCommandController extends Controller
         return view('admin.game_commands', [
             'commands'  => $commands,
             'connected' => $connected,
-            'types'     => self::TYPES,
+            'types'     => $this->allowedTypes(),
         ]);
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'type'   => 'required|in:'.implode(',', self::TYPES),
-            'target' => 'required|string|max:255',
-            'amount' => 'nullable|integer|min:0|max:100000000',
+            'type'       => 'required|in:'.implode(',', $this->allowedTypes()),
+            'target'     => 'required|string|max:255',
+            'amount'     => 'nullable|integer|min:0|max:100000000',
+            'request_id' => 'nullable|uuid',
         ]);
         // La note d'architecture va de 0 à 10 : le plugin la refuserait, autant le dire ici.
         if ($request->type === 'architecture_rating') {
@@ -75,16 +90,23 @@ class AdminGameCommandController extends Controller
         }
 
         try {
-            DB::connection('game')->table($this->table())->insert([
-                'type'   => $request->type,
-                'target' => $request->target,
-                'amount' => (int) ($request->amount ?? 0),
-                'status' => 'pending',
-            ]);
+            // request_id (UUID posé par le formulaire) : un double clic ou un renvoi du même formulaire
+            // ne dépose qu'une commande (index UNIQUE côté jeu).
+            $outcome = GameBridge::queue(
+                $request->type,
+                $request->target,
+                (int) ($request->amount ?? 0),
+                $request->filled('request_id') ? 'panel-'.$request->request_id : null,
+            );
         } catch (\Throwable $e) {
             Log::warning('[GameCommands] insertion impossible : '.$e->getMessage());
 
             return back()->with('error', __('messages.common.errors_occurred'));
+        }
+
+        if ($outcome === 'duplicate') {
+            return redirect()->route('admin.game-commands')
+                ->with('success', __('messages.flash.game_command_created'));
         }
 
         AuditLog::record('game_command.create', null, [

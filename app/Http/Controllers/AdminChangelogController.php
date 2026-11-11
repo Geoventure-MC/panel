@@ -20,7 +20,7 @@ class AdminChangelogController extends Controller
             'version'      => 'nullable|string|max:50',
             'title'        => 'required|string|max:255',
             'body'         => 'required|string|max:10000',
-            'image_url'    => 'nullable|url|max:255',
+            'image_url'    => 'nullable|url|max:255|starts_with:https://,http://',
             'published_at' => 'nullable|date',
         ]);
 
@@ -44,7 +44,7 @@ class AdminChangelogController extends Controller
             'version'      => 'nullable|string|max:50',
             'title'        => 'required|string|max:255',
             'body'         => 'required|string|max:10000',
-            'image_url'    => 'nullable|url|max:255',
+            'image_url'    => 'nullable|url|max:255|starts_with:https://,http://',
             'published_at' => 'nullable|date',
         ]);
 

@@ -7,6 +7,8 @@ use App\Models\CommunityMod;
 use App\Models\OptionsNotification;
 use App\Models\OptionsSecurity;
 use App\Models\WonderEdition;
+use App\Services\CommunityModRules;
+use App\Services\GameBridge;
 use App\Services\Mcp\McpContext;
 use App\Services\Mcp\McpTool;
 use App\Services\Mcp\McpToolError;
@@ -70,6 +72,10 @@ class WriteTools
                 ],
                 function (array $a, McpContext $ctx) {
                     $ev = \App\Models\GameEvent::where('slug', $a['slug'])->first() ?? throw new McpToolError('Événement inconnu (créé par migration : halloween).');
+                    // Les commandes console jouées par le plugin (on_open / on_end) exigent la portée admin, comme game_event_create.
+                    if ((isset($a['settings']['on_open']) || isset($a['settings']['on_end'])) && $ctx->key->level() < 3) {
+                        throw new McpToolError('Portée insuffisante : settings.on_open / settings.on_end exigent une clé de portée « admin ».');
+                    }
                     $tz = 'Europe/Paris';
                     $upd = [];
                     foreach (['enabled', 'announce'] as $k) {
@@ -232,24 +238,23 @@ class WriteTools
                 }),
 
             McpTool::make('community_mod_upsert', 'write',
-                'Cr\u00e9e ou met \u00e0 jour un mod communaut\u00e9 pour le launcher (Forgematica, MaFgLib, Tweakerge, etc.).',
+                'Crée ou met à jour un mod communauté pour le launcher (Forgematica, MaFgLib, Tweakerge, etc.). L\'URL doit être en https sur un hôte autorisé (mcp.community_mod_download_hosts) et le nom de fichier un .jar simple.',
                 [
-                    'id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'ID pour modification (optionnel si cr\u00e9ation).'],
-                    'name' => ['type' => 'string', 'maxLength' => 255, 'description' => 'Nom affich\u00e9 du mod.'],
-                    'filename' => ['type' => 'string', 'maxLength' => 255, 'description' => 'Nom de fichier jar cible.'],
-                    'url' => ['type' => 'string', 'maxLength' => 500, 'description' => 'URL directe de t\u00e9l\u00e9chargement du jar.'],
-                    'description' => ['type' => 'string', 'maxLength' => 1000, 'description' => 'Description d\u00e9taill\u00e9e du mod.'],
-                    'icon' => ['type' => 'string', 'maxLength' => 500, 'description' => 'URL de l\'ic\u00f4ne.'],
-                    'category' => ['type' => 'string', 'maxLength' => 100, 'description' => 'Cat\u00e9gorie (Construction, Utilitaires, etc.).'],
+                    'id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'ID pour modification (optionnel si création).'],
+                    'name' => ['type' => 'string', 'maxLength' => 255, 'description' => 'Nom affiché du mod.'],
+                    'filename' => ['type' => 'string', 'maxLength' => 255, 'description' => 'Nom de fichier jar cible (lettres, chiffres, . _ + - ; extension .jar).'],
+                    'url' => ['type' => 'string', 'maxLength' => 500, 'description' => 'URL https directe de téléchargement du jar (hôte autorisé seulement).'],
+                    'description' => ['type' => 'string', 'maxLength' => 1000, 'description' => 'Description détaillée du mod.'],
+                    'icon' => ['type' => 'string', 'maxLength' => 500, 'description' => 'URL de l\'icône.'],
+                    'category' => ['type' => 'string', 'maxLength' => 100, 'description' => 'Catégorie (Construction, Utilitaires, etc.).'],
                     'author' => ['type' => 'string', 'maxLength' => 100, 'description' => 'Auteur du mod.'],
                     'version' => ['type' => 'string', 'maxLength' => 50, 'description' => 'Version du mod.'],
-                    'active' => ['type' => 'boolean', 'description' => 'Actif ou non (d\u00e9faut true).'],
+                    'active' => ['type' => 'boolean', 'description' => 'Actif ou non (défaut true).'],
                 ], ['name', 'filename', 'url'],
                 [
                     'id' => 'sometimes|nullable|integer|min:1',
                     'name' => 'required|string|max:255',
-                    'filename' => 'required|string|max:255',
-                    'url' => 'required|url|max:500',
+                    ...CommunityModRules::rules(),
                     'description' => 'sometimes|nullable|string|max:1000',
                     'icon' => 'sometimes|nullable|url|max:500',
                     'category' => 'sometimes|nullable|string|max:100',
@@ -286,17 +291,17 @@ class WriteTools
                     return ['created' => $created, 'id' => $mod->id, 'name' => $mod->name, 'filename' => $mod->filename, 'active' => (bool) $mod->active];
                 }),
 
-            McpTool::make('community_mod_delete', 'write',
-                'Supprime un mod communaut\u00e9 du catalogue du launcher.',
+            McpTool::make('community_mod_delete', 'admin',
+                'Supprime définitivement un mod communauté du catalogue du launcher (irréversible).',
                 ['id' => ['type' => 'integer', 'minimum' => 1]], ['id'],
                 ['id' => 'required|integer|min:1'],
                 function (array $a, McpContext $ctx) {
-                    $mod = CommunityMod::find($a['id']) ?? throw new McpToolError('Mod communaut\u00e9 introuvable.');
+                    $mod = CommunityMod::find($a['id']) ?? throw new McpToolError('Mod communauté introuvable.');
                     $ctx->audit('community_mod.delete', $mod, $mod->toArray(), []);
                     $mod->delete();
 
                     return ['deleted' => true, 'id' => $a['id']];
-                }),
+                }, true),
 
             McpTool::make('wonder_edition_update', 'write',
                 'Modifie les champs d\'une édition Wonder (liste blanche) puis la renvoie au jeu. Refusé une fois l\'édition publiée (résultats figés).',
@@ -332,18 +337,21 @@ class WriteTools
 
             McpTool::make('game_command_send', 'write',
                 'Envoie UNE commande au serveur de jeu via gf_web_commands (consommée par le plugin sous ~5 s). Types : ' . implode(', ', $types)
-                . '. Montant plafonné par type, motif obligatoire (consigné dans l\'audit), 30 commandes/heure par clé.',
+                . '. Montant plafonné par type, motif obligatoire (consigné dans l\'audit), 30 commandes/heure par clé. '
+                . 'Les types ' . implode(', ', (array) config('mcp.game_command_admin_types', [])) . ' exigent une clé de portée admin.',
                 [
                     'type' => ['type' => 'string', 'enum' => $types],
                     'target' => ['type' => 'string', 'maxLength' => 255, 'description' => 'Cible : pseudo, pays, message ou identifiant selon le type.'],
                     'amount' => ['type' => 'integer', 'minimum' => 0, 'description' => 'Montant (plafond selon le type ; 0 pour broadcast/trigger_event).'],
                     'reason' => ['type' => 'string', 'minLength' => 5, 'maxLength' => 200, 'description' => 'Motif de l\'action (obligatoire, audité).'],
+                    'request_id' => ['type' => 'string', 'maxLength' => 48, 'description' => 'Identifiant d\'idempotence optionnel (lettres, chiffres, . _ -) : rejouer le même identifiant ne dépose pas la commande une seconde fois.'],
                 ], ['type', 'target', 'reason'],
                 [
                     'type' => ['required', Rule::in($types)],
                     'target' => ['required', 'string', 'min:1', 'max:255', 'regex:/^[^\x00-\x1F\x7F]+$/u'],
                     'amount' => 'sometimes|integer|min:0|max:100000000',
                     'reason' => 'required|string|min:5|max:200',
+                    'request_id' => ['sometimes', 'string', 'max:48', 'regex:/^[A-Za-z0-9._-]+$/'],
                 ],
                 fn (array $a, McpContext $ctx) => self::gameCommand($a, $ctx)),
 
@@ -379,6 +387,10 @@ class WriteTools
         if ($cap === null) {
             throw new McpToolError('Type de commande non autorisé via MCP : ' . $a['type']);
         }
+        // Types qui créditent de l'argent : portée « admin » exigée (l'outil lui-même reste « write »).
+        if (in_array($a['type'], (array) config('mcp.game_command_admin_types', []), true) && $ctx->key->level() < 3) {
+            throw new McpToolError("Portée insuffisante : le type {$a['type']} exige une clé de portée « admin » (clé : « {$ctx->key->scope} »).");
+        }
         $amount = (int) ($a['amount'] ?? 0);
         if ($amount > $cap) {
             throw new McpToolError("Montant trop élevé pour {$a['type']} : plafond {$cap}.");
@@ -400,12 +412,14 @@ class WriteTools
         }
 
         try {
-            DB::connection('game')->table(config('geoventure.game_table_prefix', 'gf_') . 'web_commands')->insert([
-                'type' => $a['type'], 'target' => $a['target'], 'amount' => $amount, 'status' => 'pending',
-            ]);
+            // request_id fourni : préfixé par l'id de la clé pour qu'une autre clé ne puisse pas entrer en collision.
+            $outcome = GameBridge::queue($a['type'], $a['target'], $amount, isset($a['request_id']) ? 'mcp-' . $ctx->key->id . '-' . $a['request_id'] : null);
         } catch (\Throwable $e) {
             Log::warning('[MCP] commande de jeu impossible : ' . $e->getMessage());
             throw new McpToolError('Base du jeu injoignable : commande non envoyée.');
+        }
+        if ($outcome === 'duplicate') {
+            return ['queued' => false, 'duplicate' => true, 'type' => $a['type'], 'amount' => $amount, 'note' => 'Ce request_id a déjà été déposé : aucune nouvelle commande.'];
         }
         Cache::add($hourKey, 0, 3700);
         Cache::increment($hourKey);

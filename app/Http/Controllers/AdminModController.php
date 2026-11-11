@@ -86,7 +86,8 @@ class AdminModController extends Controller
     public function addOptionalMod(Request $request)
     {
         $request->validate([
-            'file'        => 'required|string|max:255',
+            // Nom de fichier simple : le launcher le concatène au dossier mods/ (pas de séparateur ni de « .. »).
+            'file'        => ['required', 'string', 'max:255', 'not_regex:/[\/\\\\]|\.\./'],
             'name'        => 'required|string|max:150',
             'description' => 'nullable|string|max:1000',
             'instance'    => 'nullable|string|max:64',

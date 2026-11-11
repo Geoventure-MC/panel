@@ -35,6 +35,7 @@
                             </span>
                             <p class="text-muted small mb-0">{{ __('messages.dashboard.maintenance_hint') }}</p>
                         </div>
+                        @if(auth()->user()->isSuperAdmin())
                         <form action="{{ route('admin.maintenance.toggle') }}" method="POST" class="m-0">
                             @csrf
                             <button type="submit"
@@ -43,6 +44,7 @@
                                 <i class="bi bi-{{ $maintenanceActive ? 'tools' : 'check-circle' }}"></i>
                             </button>
                         </form>
+                        @endif
                     </div>
                 </div>
             </div>

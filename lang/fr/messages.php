@@ -969,6 +969,8 @@ return [
         'no_code' => "Le site n'a renvoyé aucun code d'autorisation.",
         'exchange_failed' => "Impossible de valider la connexion auprès du site.",
         'no_local_account' => "Aucun compte panel ne correspond à ce compte du site.",
+        'email_unverified' => "Connexion refusée : l'adresse e-mail doit être vérifiée sur le site ET sur le panel pour rattacher ce compte.",
+        'already_linked' => "Connexion refusée : ce compte panel est déjà lié à un autre compte du site.",
     ],
 
     'dashboard' => [

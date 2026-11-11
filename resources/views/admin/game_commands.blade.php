@@ -34,6 +34,8 @@
             <div class="card-body">
                 <form action="{{ route('admin.game-commands.store') }}" method="POST">
                     @csrf
+                    {{-- Identifiant d'idempotence : un double clic ne dépose qu'une seule commande côté jeu. --}}
+                    <input type="hidden" name="request_id" value="{{ \Illuminate\Support\Str::uuid() }}">
                     @if($errors->any())
                         <div class="alert alert-danger">
                             <ul class="mb-0">
@@ -99,6 +101,8 @@
                                             <span class="badge bg-success">done</span>
                                         @elseif($c->status === 'failed')
                                             <span class="badge bg-danger">failed</span>
+                                        @elseif($c->status === 'running')
+                                            <span class="badge bg-warning text-dark">running</span>
                                         @else
                                             <span class="badge bg-secondary">pending</span>
                                         @endif

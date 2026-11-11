@@ -41,9 +41,9 @@ class AdminRpcController extends Controller
             'rpc_small_image' => 'nullable|string|max:255',
             'rpc_small_text' => 'required|string|max:255',
             'rpc_button1' => 'nullable|string|max:50',
-            'rpc_button1_url' => 'nullable|url|max:200',
+            'rpc_button1_url' => 'nullable|url|max:200|starts_with:https://,http://',
             'rpc_button2' => 'nullable|string|max:50',
-            'rpc_button2_url' => 'nullable|url|max:200',
+            'rpc_button2_url' => 'nullable|url|max:200|starts_with:https://,http://',
         ]);
 
         $rpcOptions = OptionsRPC::first();

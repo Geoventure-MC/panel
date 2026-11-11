@@ -99,6 +99,12 @@ return [
 
     'key' => env('APP_KEY'),
 
+    /*
+    | Proxys de confiance (variable TRUSTED_PROXIES) : vide = aucun (comportement par défaut),
+    | « * » = tous, sinon liste d'IP/CIDR séparées par des virgules. Appliqué par AppServiceProvider.
+    */
+    'trusted_proxies' => env('TRUSTED_PROXIES', ''),
+
     'previous_keys' => [
         ...array_filter(
             explode(',', env('APP_PREVIOUS_KEYS', ''))

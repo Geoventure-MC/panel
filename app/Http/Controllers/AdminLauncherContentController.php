@@ -25,8 +25,8 @@ class AdminLauncherContentController extends Controller
             'title'      => 'required|string|max:255',
             'description'=> 'nullable|string',
             'icon'       => 'nullable|string|max:255',
-            'image_url'  => 'nullable|url|max:255',
-            'url'        => 'nullable|url|max:255',
+            'image_url'  => 'nullable|url|max:255|starts_with:https://,http://',
+            'url'        => 'nullable|url|max:255|starts_with:https://,http://',
             'sort_order' => 'nullable|integer',
         ]);
 
@@ -55,8 +55,8 @@ class AdminLauncherContentController extends Controller
             'title'      => 'required|string|max:255',
             'description'=> 'nullable|string',
             'icon'       => 'nullable|string|max:255',
-            'image_url'  => 'nullable|url|max:255',
-            'url'        => 'nullable|url|max:255',
+            'image_url'  => 'nullable|url|max:255|starts_with:https://,http://',
+            'url'        => 'nullable|url|max:255|starts_with:https://,http://',
             'sort_order' => 'nullable|integer',
         ]);
 

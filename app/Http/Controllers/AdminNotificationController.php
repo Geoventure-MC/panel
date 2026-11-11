@@ -19,7 +19,7 @@ class AdminNotificationController extends Controller
         $request->validate([
             'type'       => 'required|in:info,warning,maintenance,event',
             'message'    => 'required|string|max:500',
-            'url'        => 'nullable|url|max:255',
+            'url'        => 'nullable|url|max:255|starts_with:https://,http://',
             'expires_at' => 'nullable|date|after:now',
         ]);
 

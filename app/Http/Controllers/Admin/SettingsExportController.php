@@ -54,16 +54,22 @@ class SettingsExportController extends Controller
         return collect($rows)->map(function ($row) {
             $arr = (array) $row;
             foreach ($arr as $key => $value) {
-                $lower = strtolower((string) $key);
-                if (in_array($lower, self::SECRET_COLUMNS, true)
-                    || str_contains($lower, 'password')
-                    || str_contains($lower, 'token')
-                    || str_contains($lower, 'secret')) {
+                if ($this->isSecretColumn((string) $key)) {
                     $arr[$key] = '';
                 }
             }
             return $arr;
         })->all();
+    }
+
+    private function isSecretColumn(string $key): bool
+    {
+        $lower = strtolower($key);
+
+        return in_array($lower, self::SECRET_COLUMNS, true)
+            || str_contains($lower, 'password')
+            || str_contains($lower, 'token')
+            || str_contains($lower, 'secret');
     }
 
     public function export()
@@ -123,14 +129,24 @@ class SettingsExportController extends Controller
                     throw new \Exception("La table {$table} n'existe pas.");
                 }
 
-                // Vider la table existante
-                DB::table($table)->truncate();
-                
+                // Secrets actuels (clé API, webhook…) : l'export les vide, l'import ne doit pas les effacer.
+                $current = (array) (DB::table($table)->first() ?? []);
+
+                // Vider la table existante. delete() et non truncate() : sur MySQL, TRUNCATE valide
+                // implicitement la transaction et un échec plus loin laisserait un import à moitié fait.
+                DB::table($table)->delete();
+
                 // Insérer les nouvelles données
                 foreach ($data as $row) {
                     // Supprimer les timestamps si présents
                     unset($row['created_at'], $row['updated_at']);
-                    DB::table($table)->insert((array) $row);
+                    $row = (array) $row;
+                    foreach ($row as $col => $val) {
+                        if (($val === '' || $val === null) && $this->isSecretColumn((string) $col) && ! empty($current[$col])) {
+                            $row[$col] = $current[$col];
+                        }
+                    }
+                    DB::table($table)->insert($row);
                 }
             }
             

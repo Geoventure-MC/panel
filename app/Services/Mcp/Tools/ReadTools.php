@@ -311,8 +311,8 @@ class ReadTools
             McpTool::make('game_commands_history', 'read',
                 'Dernières commandes envoyées au jeu (table gf_web_commands) et leur résultat.',
                 ['limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 50, 'description' => 'Nombre (défaut 20).'],
-                 'status' => ['type' => 'string', 'enum' => ['pending', 'done', 'failed'], 'description' => 'Filtrer par statut.']], [],
-                ['limit' => 'sometimes|integer|min:1|max:50', 'status' => 'sometimes|in:pending,done,failed'],
+                 'status' => ['type' => 'string', 'enum' => ['pending', 'running', 'done', 'failed'], 'description' => 'Filtrer par statut (running = réservée par le plugin, en cours ou restée bloquée après un crash).']], [],
+                ['limit' => 'sometimes|integer|min:1|max:50', 'status' => 'sometimes|in:pending,running,done,failed'],
                 fn (array $a) => self::gameHistory($a)),
         ];
     }
@@ -536,7 +536,7 @@ class ReadTools
             if (isset($a['status'])) {
                 $q->where('status', $a['status']);
             }
-            $keep = array_flip(['id', 'type', 'target', 'amount', 'status', 'result', 'created_at', 'processed_at', 'done_at']);
+            $keep = array_flip(['id', 'type', 'target', 'amount', 'status', 'result', 'created_at', 'executed_at', 'processed_at', 'done_at']);
 
             return $q->get()->map(fn ($r) => array_intersect_key((array) $r, $keep))->all();
         } catch (\Throwable $e) {

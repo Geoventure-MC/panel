@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
 use App\Models\CommunityMod;
+use App\Services\CommunityModRules;
 use Illuminate\Http\Request;
 
 class AdminCommunityModController extends Controller
@@ -19,9 +20,8 @@ class AdminCommunityModController extends Controller
         $request->validate([
             'name'        => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'filename'    => 'required|string|max:255',
-            'url'         => 'required|url|max:500',
-            'icon'        => 'nullable|url|max:500',
+            ...CommunityModRules::rules(),
+            'icon'        => 'nullable|url|max:500|starts_with:https://,http://',
             'category'    => 'nullable|string|max:100',
             'author'      => 'nullable|string|max:100',
             'version'     => 'nullable|string|max:50',
@@ -49,9 +49,8 @@ class AdminCommunityModController extends Controller
         $request->validate([
             'name'        => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'filename'    => 'required|string|max:255',
-            'url'         => 'required|url|max:500',
-            'icon'        => 'nullable|url|max:500',
+            ...CommunityModRules::rules(),
+            'icon'        => 'nullable|url|max:500|starts_with:https://,http://',
             'category'    => 'nullable|string|max:100',
             'author'      => 'nullable|string|max:100',
             'version'     => 'nullable|string|max:50',

@@ -38,7 +38,8 @@ class McpController extends Controller
             return $this->fail(404, -32000, 'API MCP désactivée.');
         }
 
-        $ipKey = hash('sha256', (string) $request->ip());
+        // HMAC salé par APP_KEY (comme la télémétrie) : un SHA-256 simple d'une IPv4 se retrouve par force brute.
+        $ipKey = hash_hmac('sha256', (string) $request->ip(), (string) config('app.key'));
 
         if (Cache::has('mcp:lock:' . $ipKey)) {
             return $this->fail(429, -32003, 'Trop d\'échecs d\'authentification : accès temporairement bloqué.', ['Retry-After' => (string) config('mcp.lockout')]);

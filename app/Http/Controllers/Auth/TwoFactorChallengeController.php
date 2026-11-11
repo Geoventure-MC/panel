@@ -9,6 +9,7 @@ use App\Support\Totp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 
 /**
  * Deuxième étape du login pour les comptes avec 2FA : après un mot de passe
@@ -40,14 +41,25 @@ class TwoFactorChallengeController extends Controller
             return redirect()->route('login');
         }
 
+        // Limite PAR COMPTE (en plus du throttle par IP de la route) : un code à 6 chiffres ne doit pas pouvoir être
+        // deviné depuis plusieurs adresses. Au-delà de 5 échecs en 5 minutes, le défi en cours est abandonné.
+        $limiterKey = '2fa:user:' . $user->id;
+        if (RateLimiter::tooManyAttempts($limiterKey, 5)) {
+            $request->session()->forget(['2fa_challenge_user_id', '2fa_challenge_remember']);
+
+            return redirect()->route('login');
+        }
+
         $code = trim($request->input('code'));
         $valid = Totp::verify($user->totp_secret, $code) || $this->useRecoveryCode($user, $code);
 
         if (!$valid) {
+            RateLimiter::hit($limiterKey, 300);
             AuditLog::record('security.2fa.challenge_failed', $user);
 
             return back()->withErrors(['code' => __('messages.two_factor.invalid_code')]);
         }
+        RateLimiter::clear($limiterKey);
 
         $remember = (bool) $request->session()->pull('2fa_challenge_remember', false);
         $request->session()->forget('2fa_challenge_user_id');

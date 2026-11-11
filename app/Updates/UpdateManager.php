@@ -91,7 +91,8 @@ class UpdateManager
             $this->files->makeDirectory($updatesPath, 0755, true);
         }
 
-        $filePath = $updatesPath . $info['file'];
+        // Nom d'asset venant d'une API distante : basename() empêche tout séparateur de sortir de storage/app/updates/.
+        $filePath = $updatesPath . basename((string) $info['file']);
 
         if ($this->files->exists($filePath)) {
             $this->files->delete($filePath);

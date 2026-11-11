@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\SecurityHeaders::class,
         ]);
 
         $middleware->alias([
@@ -26,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'utils/telemetry',
             'utils/achievements/unlock',
             'utils/seasons/sync',
+            'api/geoventure/season-archive', // alias de utils/seasons/sync (même jeton) : sans cela il répondait toujours 419
             'utils/scheduled-events/claim',
         ]);
     })

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Services\SsoAccountLinker;
 use App\Services\SsoClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -63,10 +64,12 @@ class SsoLoginController extends Controller
         }
 
         $profile = $result['user'];
-        $user = $this->resolveUser($profile);
+        $refusal = null;
+        $user = $this->resolveUser($profile, $refusal);
 
         if ($user === null) {
-            return redirect()->route('login')->withErrors(['sso' => __('messages.sso.no_local_account')]);
+            return redirect()->route('login')
+                ->withErrors(['sso' => __('messages.sso.'.($refusal ?? 'no_local_account'))]);
         }
 
         // Le ticket sert à couper la session côté site à la déconnexion.
@@ -83,11 +86,13 @@ class SsoLoginController extends Controller
     /**
      * Retrouve — ou crée — le compte panel correspondant au profil du site.
      *
-     * Ordre de rapprochement : lien déjà établi, puis e-mail. L'e-mail est le
-     * seul point commun fiable entre les deux bases ; le pseudo, lui, peut
-     * changer côté site.
+     * Ordre de rapprochement : lien déjà établi (identifiant du site), puis
+     * e-mail, mais seulement s'il est vérifié des deux côtés (voir
+     * {@see SsoAccountLinker}). Le pseudo, lui, peut changer côté site.
+     *
+     * @param string|null $refusal  reçoit la clé `messages.sso.*` du motif de refus
      */
-    private function resolveUser(array $profile): ?User
+    private function resolveUser(array $profile, ?string &$refusal = null): ?User
     {
         $ssoId = (int) ($profile['id'] ?? 0);
         if ($ssoId <= 0) {
@@ -97,7 +102,16 @@ class SsoLoginController extends Controller
         $user = User::where('sso_id', $ssoId)->first();
 
         if ($user === null && !empty($profile['email'])) {
-            $user = User::where('email', $profile['email'])->first();
+            $candidate = User::where('email', $profile['email'])->first();
+
+            if ($candidate !== null) {
+                // Jamais de repli sur la création : l'adresse est déjà prise.
+                $refusal = SsoAccountLinker::emailLinkRefusal($profile, $candidate);
+                if ($refusal !== null) {
+                    return null;
+                }
+                $user = $candidate;
+            }
         }
 
         if ($user === null) {
@@ -107,10 +121,14 @@ class SsoLoginController extends Controller
 
             $user = new User();
             $user->name = $this->uniqueName((string) ($profile['name'] ?? 'joueur'));
-            $user->email = (string) ($profile['email'] ?? $ssoId.'@sso.local');
+            // Une adresse non vérifiée côté site n'est pas revendiquée.
+            $emailVerified = filter_var($profile['email_verified'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $user->email = ($emailVerified && !empty($profile['email']))
+                ? (string) $profile['email']
+                : $ssoId.'@sso.local';
             // Mot de passe inutilisable : ce compte ne se connecte que par SSO.
             $user->password = Str::random(64);
-            $user->email_verified_at = now();
+            $user->email_verified_at = $emailVerified ? now() : null;
             $user->is_admin = false;
             $user->role = 'moderator';
         }

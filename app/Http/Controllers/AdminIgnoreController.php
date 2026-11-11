@@ -18,6 +18,8 @@ class AdminIgnoreController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate(['ignored_folders' => 'nullable|string|max:2000']);
+
         $ignoreOptions = OptionsIgnore::first();
 
         if ($ignoreOptions) {
@@ -27,7 +29,10 @@ class AdminIgnoreController extends Controller
         if ($request->input('ignored_folders')) {
             $folders = explode(',', $request->input('ignored_folders'));
             foreach ($folders as $folder) {
-                OptionsIgnore::create(['folder_name' => trim($folder)]);
+                $folder = trim($folder);
+                if ($folder !== '') {
+                    OptionsIgnore::create(['folder_name' => $folder]);
+                }
             }
         }
 

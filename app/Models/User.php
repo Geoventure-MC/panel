@@ -52,6 +52,8 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'sso_linked_at' => 'datetime',
+            // Secret TOTP chiffré au repos (APP_KEY) ; migration 2026_11_11_100000 pour les lignes existantes.
+            'totp_secret' => 'encrypted',
         ];
     }
 

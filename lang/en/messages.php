@@ -969,6 +969,8 @@ return [
         'no_code' => "The website returned no authorization code.",
         'exchange_failed' => "Could not validate the login against the website.",
         'no_local_account' => "No panel account matches this website account.",
+        'email_unverified' => "Sign-in refused: the e-mail address must be verified on the website AND on the panel to link this account.",
+        'already_linked' => "Sign-in refused: this panel account is already linked to another website account.",
     ],
 
     'dashboard' => [

@@ -16,6 +16,9 @@ class McpServer
 {
     public const SUPPORTED_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 
+    /** Nombre maximal de messages JSON-RPC dans un lot. */
+    public const MAX_BATCH = 10;
+
     public const E_PARSE = -32700;
     public const E_INVALID = -32600;
     public const E_METHOD = -32601;
@@ -36,6 +39,10 @@ class McpServer
     public function handleBody(mixed $decoded, McpKey $key, Request $request): ?array
     {
         if (is_array($decoded) && array_is_list($decoded) && $decoded !== []) {
+            // Le débit est compté par requête HTTP : sans plafond, un lot de centaines d'appels le contournerait.
+            if (count($decoded) > self::MAX_BATCH) {
+                return self::error(null, self::E_INVALID, 'Lot trop grand : ' . self::MAX_BATCH . ' messages maximum par requête.');
+            }
             $responses = [];
             foreach ($decoded as $msg) {
                 $r = $this->handleMessage($msg, $key, $request);

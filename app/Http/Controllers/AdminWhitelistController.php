@@ -128,6 +128,14 @@ class AdminWhitelistController extends Controller
 
     public function store(Request $request)
     {
+        // Les listes doivent être des tableaux de chaînes : sinon foreach / trim() lèvent une TypeError (500).
+        $request->validate([
+            'whitelist_users'   => 'nullable|array|max:1000',
+            'whitelist_users.*' => 'nullable|string|max:255',
+            'azuriom_roles'     => 'nullable|array|max:200',
+            'azuriom_roles.*'   => 'nullable|string|max:255',
+        ]);
+
         $whitelistActivation = $request->input('whitelist');
 
         $securityOptions = OptionsSecurity::first();

@@ -29,11 +29,15 @@ class AdminUserController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            // Adresse saisie par un super-admin : elle vaut vérifiée (condition du rapprochement SSO par e-mail).
+            'email_verified_at' => now(),
         ]);
+        // Créer un compte (même non admin) doit laisser une trace ; le mot de passe n'y figure jamais.
+        AuditLog::record('user.create', $user, ['name' => $user->name]);
 
         return redirect()->route('admin.users')->with('success', __('messages.flash.user_added'));
     }
@@ -64,6 +68,7 @@ class AdminUserController extends Controller
         }
 
         $user->update($userData);
+        AuditLog::record('user.update', $user, ['name' => $user->name, 'password_changed' => $request->filled('password')]);
 
         return redirect()->route('admin.users')->with('success', __('messages.flash.user_updated'));
     }
