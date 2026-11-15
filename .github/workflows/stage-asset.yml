@@ -1,0 +1,32 @@
+name: Stage Modpack Asset
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Signed URL of the JAR'
+        required: true
+        type: string
+      filename:
+        description: 'Filename of the JAR'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Download and attach asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SRC_URL: ${{ inputs.url }}
+          FILENAME: ${{ inputs.filename }}
+        run: |
+          curl -fSL "$SRC_URL" -o "/tmp/$FILENAME"
+          gh release view stage-modpack -R "${{ github.repository }}" >/dev/null 2>&1 || \
+            gh release create stage-modpack -R "${{ github.repository }}" --title "Stage Modpack" --notes "Staging temporaire" --prerelease --latest=false
+          gh release upload stage-modpack "/tmp/$FILENAME" --clobber -R "${{ github.repository }}"
