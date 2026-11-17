@@ -26,6 +26,7 @@ class ModeratorRoleTest extends TestCase
         'admin.loader', 'admin.loader.update',
         'admin.monitor.update', 'admin.monitor.test',
         'admin.users', 'admin.users.role', 'admin.settings.import', 'admin.update.run', 'admin.mcp', 'admin.sso.update',
+        'admin.versions', 'admin.versions.refresh',
     ];
 
     /** Ce que le modérateur garde : la modération et l'information. */
@@ -68,7 +69,7 @@ class ModeratorRoleTest extends TestCase
 
         $moderator = $this->user('moderator');
 
-        foreach (['/admin/game-commands', '/admin/general', '/admin/server', '/admin/whitelist', '/file-manager'] as $url) {
+        foreach (['/admin/game-commands', '/admin/general', '/admin/server', '/admin/whitelist', '/admin/versions', '/file-manager'] as $url) {
             $this->actingAs($moderator)->getJson($url)->assertForbidden();
         }
     }

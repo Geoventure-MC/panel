@@ -168,4 +168,27 @@ return [
 
     'monitor_alert_locale' => env('GEO_ALERT_LOCALE', 'fr'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Tableau de bord des versions (Admin → Versions)
+    |--------------------------------------------------------------------------
+    |
+    | `github_token` : jeton GitHub OPTIONNEL (variable d'environnement
+    | GEO_GITHUB_TOKEN, jamais en dur). Sans jeton : API publique (60 requêtes/h
+    | par IP) et dépôts publics seulement ; un dépôt privé s'affiche « inconnu ».
+    | Lecture seule suffit (fine-grained : Contents ou Metadata en lecture).
+    |
+    | `reported_file` : JSON {"<composant>": "<version>"} qui alimente les
+    | versions qu'aucune source du panel ne connaît (plugins du serveur de jeu,
+    | plugins du site). Voir docs/claude/reference.md, « Versions ».
+    |
+    */
+
+    'versions' => [
+        'github_token' => env('GEO_GITHUB_TOKEN'),
+        'reported_file' => env('GEO_VERSIONS_FILE', storage_path('app/component-versions.json')),
+        'cache_ttl' => 600,
+        'timeout' => 4,
+    ],
+
 ];

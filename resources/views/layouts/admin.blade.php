@@ -71,6 +71,11 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.versions*') ? 'active' : '' }}" href="{{ route('admin.versions') }}">
+                        <i class="bi bi-boxes align-middle"></i> <span class="align-middle">{{ __('versions.sidebar') }}</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.mcp*') ? 'active' : '' }}" href="{{ route('admin.mcp') }}">
                         <i class="bi bi-robot align-middle"></i> <span class="align-middle">{{ __('mcp.sidebar') }}</span>
                     </a>

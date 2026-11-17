@@ -170,6 +170,11 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::middleware('superadmin')->group(function () {
         Route::get('/update', [UpdateController::class, 'index'])->name('admin.update');
         Route::post('/update', [UpdateController::class, 'update'])->name('admin.update.run');
+
+        // Versions des composants face à la dernière release GitHub : super-admin (appels sortants, état interne).
+        Route::get('/versions', [\App\Http\Controllers\Admin\VersionsController::class, 'index'])->name('admin.versions');
+        Route::post('/versions/refresh', [\App\Http\Controllers\Admin\VersionsController::class, 'refresh'])
+            ->middleware('throttle:6,1,versionsrefresh')->name('admin.versions.refresh');
     });
 
     Route::get('/two-factor', [AdminTwoFactorController::class, 'index'])->name('admin.two-factor.index');

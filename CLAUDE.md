@@ -36,3 +36,4 @@ Trouver le titre avec `grep -n "^## " docs/claude/reference.md`.
 | Succès, saisons, Wonder | « Succès », « Saisons », « Wonder » |
 | Tests E2E Playwright | « Tests E2E » |
 | Réseau, accès, limites connues | « Stabilité », « Accès / Limitations » |
+| Versions des composants, jeton GitHub | « Versions des composants » |
