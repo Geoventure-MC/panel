@@ -240,6 +240,65 @@ class VersionDashboard
 
     // ---------------------------------------------------------------- versions réelles
 
+    /** Clés acceptées dans le fichier de versions relevées (composants dont aucune autre source ne connaît la version). */
+    public static function reportedKeys(): array
+    {
+        return array_values(array_map(fn ($c) => $c['key'], array_filter(self::COMPONENTS, fn ($c) => $c['source'] === 'reported')));
+    }
+
+    /**
+     * Ajoute ou met à jour des versions relevées : seules les clés de {@see reportedKeys()} et les valeurs de forme
+     * « 1.2.3 » sont gardées ; le reste du fichier est conservé. Écriture atomique (fichier temporaire puis renommage).
+     *
+     * @param  array<string, string>  $versions
+     * @return array{written: array<string, string>, refused: list<string>}
+     */
+    public static function writeReported(array $versions): array
+    {
+        $path = config('geoventure.versions.reported_file');
+        if (! is_string($path) || $path === '') {
+            throw new \RuntimeException('Fichier de versions relevées non configuré (GEO_VERSIONS_FILE).');
+        }
+        $current = [];
+        if (is_file($path) && (@filesize($path) ?: 0) <= 65536) {
+            $json = json_decode((string) @file_get_contents($path), true);
+            if (is_array($json)) {
+                foreach ($json as $k => $v) {
+                    if (is_string($k) && is_string($v) && self::clean($v) !== null) {
+                        $current[strtolower($k)] = self::clean($v);
+                    }
+                }
+            }
+        }
+        $allowed = self::reportedKeys();
+        $written = [];
+        $refused = [];
+        foreach ($versions as $k => $v) {
+            $key = is_string($k) ? strtolower(trim($k)) : '';
+            $clean = is_string($v) ? self::clean($v) : null;
+            if (! in_array($key, $allowed, true) || $clean === null) {
+                $refused[] = (string) $k;
+                continue;
+            }
+            $current[$key] = $clean;
+            $written[$key] = $clean;
+        }
+        if ($written !== []) {
+            ksort($current);
+            $dir = dirname($path);
+            if (! is_dir($dir) && ! @mkdir($dir, 0775, true) && ! is_dir($dir)) {
+                throw new \RuntimeException('Dossier introuvable pour le fichier de versions.');
+            }
+            $tmp = $path . '.tmp';
+            if (@file_put_contents($tmp, json_encode($current, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n") === false || ! @rename($tmp, $path)) {
+                @unlink($tmp);
+                throw new \RuntimeException('Écriture du fichier de versions impossible.');
+            }
+        }
+
+        return ['written' => $written, 'refused' => $refused];
+    }
+
     /** @return array<string, array{version: string, at: ?string}> */
     public function reported(): array
     {

@@ -198,4 +198,23 @@ class VersionDashboardTest extends TestCase
         config(['geoventure.versions.reported_file' => $file]);
         $this->assertSame([], (new VersionDashboard())->reported(), 'fichier absent : aucune version devinée');
     }
+
+    public function test_ecriture_des_versions_relevees_filtre_et_conserve(): void
+    {
+        $file = tempnam(sys_get_temp_dir(), 'versions');
+        file_put_contents($file, json_encode(['geovigie' => '0.1.3']));
+        config(['geoventure.versions.reported_file' => $file]);
+
+        $r = VersionDashboard::writeReported(['GeoFactions' => 'v2.38.0', 'inconnu' => '1.0.0', 'geopasse' => 'pas une version']);
+        $this->assertSame(['geofactions' => '2.38.0'], $r['written'], 'seule la clé connue et la version valide sont gardées');
+        $this->assertSame(['inconnu', 'geopasse'], $r['refused']);
+
+        $back = (new VersionDashboard())->reported();
+        $this->assertSame('2.38.0', $back['geofactions']['version']);
+        $this->assertSame('0.1.3', $back['geovigie']['version'], 'les composants déjà relevés sont conservés');
+        $this->assertArrayNotHasKey('inconnu', $back);
+        $this->assertContains('geofactions', VersionDashboard::reportedKeys());
+        $this->assertNotContains('geomods', VersionDashboard::reportedKeys(), 'le mod se lit dans le modpack, pas ici');
+        @unlink($file);
+    }
 }

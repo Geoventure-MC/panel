@@ -246,6 +246,27 @@ class AdminTools
                     return $r;
                 }),
 
+            McpTool::make('versions_report_set', 'admin',
+                'Enregistre la version EN PLACE de composants que le panel ne peut pas lire lui-même (plugins du serveur de jeu, plugins du site), pour la page Admin → Versions. Appelé par le déploiement. Seules les clés connues et les versions de forme 1.2.3 sont gardées ; les autres composants déjà relevés sont conservés.',
+                [
+                    'versions' => ['type' => 'object', 'description' => 'Clé → version, ex. {"geofactions": "2.38.0", "geovigie": "0.1.5"}. Clés : ' . implode(', ', \App\Services\VersionDashboard::reportedKeys()) . '.',
+                        'additionalProperties' => ['type' => 'string', 'maxLength' => 40]],
+                ], ['versions'],
+                ['versions' => 'required|array|min:1|max:20'],
+                function (array $a, McpContext $ctx) {
+                    try {
+                        $r = \App\Services\VersionDashboard::writeReported($a['versions']);
+                    } catch (\RuntimeException $e) {
+                        throw new McpToolError($e->getMessage());
+                    }
+                    if ($r['written'] === []) {
+                        throw new McpToolError('Aucune version gardée (clés ou versions invalides : ' . implode(', ', $r['refused']) . ').');
+                    }
+                    $ctx->audit('versions.report', null, [], $r);
+
+                    return $r;
+                }),
+
             McpTool::make('modpack_rollback', 'admin',
                 'Annule la dernière publication d\'un mod : remet la version précédente (dernière sauvegarde du même préfixe, ex. « geomods ») et met de côté l\'actuelle. Les joueurs reçoivent la version restaurée au prochain lancement.',
                 [
