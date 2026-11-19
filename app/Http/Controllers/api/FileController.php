@@ -131,7 +131,11 @@ class FileController extends Controller
                 } else {
                     $hash = hash_file('sha1', $path);
                     $size = filesize($path);
-                    $url = url('storage/' . $urlPrefix . '/' . $relativePath);
+                    // Cloudflare garde les fichiers 4 h : un jar republié sous le même nom resterait l'ancien et
+                    // le launcher refuserait son empreinte. L'empreinte dans l'adresse change l'entrée du cache à
+                    // chaque nouveau contenu ; le nom encodé évite aussi qu'un « + » tombe sur une autre copie.
+                    $encode = implode('/', array_map('rawurlencode', explode('/', $relativePath)));
+                    $url = url('storage/' . $urlPrefix . '/' . $encode) . '?v=' . substr($hash, 0, 12);
 
                     $files[] = [
                         'path' => $relativePath,
