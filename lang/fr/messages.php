@@ -2,6 +2,7 @@
 
 return [
     'sidebar' => [
+        'diagnostics' => 'Diagnostics launcher',
         'sso' => 'Connexion unique',
         'game_commands' => "Commandes jeu",
         'panel' => 'Panel',
@@ -98,6 +99,9 @@ return [
         'none' => 'Aucune',
     ],
     'general' => [
+        'legacy' => 'Ancien launcher',
+        'legacy_help' => "Lu seulement par l'ancien launcher (Electron). Le nouveau launcher vérifie toujours les fichiers et installe toujours son propre Java 17.",
+        'ram_help' => "Le nouveau launcher choisit la mémoire selon le PC du joueur (profils Économe, Équilibré, Performant). Ces valeurs ne servent que si le PC n'a pas pu être analysé.",
         'title' => 'Options Générales',
         'features' => 'Fonctionnalités',
         'mods_enabled' => 'Mods activés',
@@ -646,6 +650,25 @@ return [
         'score' => 'Score',
         'reward' => 'Récompense',
     ],
+    'diagnostics' => [
+        'title' => 'Diagnostics du launcher',
+        'help' => "Rapports envoyés par les joueurs avec le bouton « Diagnostic › Envoyer à l'équipe » du launcher. Mots de passe, jetons, e-mails et chemins personnels sont masqués par le launcher. Gardés :days jours.",
+        'search' => 'Rechercher (joueur, cause…)',
+        'pending' => 'À traiter (:count)',
+        'all' => 'Tous les rapports',
+        'date' => 'Date',
+        'summary' => 'Résumé',
+        'launcher' => 'Launcher',
+        'system' => 'Système',
+        'handled' => 'Marquer comme traité',
+        'reopen' => 'Remettre à traiter',
+        'empty' => 'Aucun rapport.',
+        'report' => 'Rapport n° :id',
+        'back' => 'Retour',
+        'download' => 'Télécharger',
+        'delete' => 'Supprimer',
+        'confirm_delete' => 'Supprimer ce rapport ?',
+    ],
     'stats' => [
         'days' => ":days j",
         'export_csv' => "Exporter en CSV",
@@ -655,6 +678,14 @@ return [
         'new_vs_returning' => ":new nouveaux · :back revenants",
         'reliability' => "Disponibilité",
         'error_rate' => ":rate % d'échecs (:count)",
+        'crash_causes' => 'Plantages du jeu par cause (launcher Rust)',
+        'crash_causes_help' => "Cause trouvée par le launcher dans le rapport de plantage ou le journal du jeu. Le détail d'un cas : page Diagnostics launcher.",
+        'crash' => [
+            'out_of_memory' => 'Manque de mémoire', 'ram_reserve' => 'RAM trop haute pour le PC', 'java_version' => 'Mauvaise version de Java',
+            'duplicate_mods' => 'Mod en double', 'mod_dependency' => 'Dépendance de mod manquante', 'mixin' => 'Conflit entre mods',
+            'gpu_driver' => 'Pilote graphique', 'native_crash' => 'Plantage natif (pilote ou Java)', 'disk_full' => 'Disque plein',
+            'shader' => 'Shaders ou pack de ressources', 'unknown' => 'Cause non reconnue',
+        ],
         'players_online' => "Joueurs connectés",
         'peak' => "pic : :n joueurs",
         'average' => "Moyenne",
@@ -810,6 +841,8 @@ return [
     ],
 
     'flash' => [
+        'diagnostic_updated' => 'Rapport mis à jour.',
+        'diagnostic_deleted' => 'Rapport supprimé.',
         'wonder_saved' => "Wonder : enregistré et envoyé au serveur.",
         'wonder_deleted' => "Wonder : supprimé.",
         'wonder_score_saved' => "Note enregistrée.",

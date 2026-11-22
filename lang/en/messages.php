@@ -2,6 +2,7 @@
 
 return [
     'sidebar' => [
+        'diagnostics' => 'Launcher diagnostics',
         'sso' => 'Single sign-on',
         'game_commands' => 'Game commands',
         'panel' => 'Panel',
@@ -98,6 +99,9 @@ return [
         'none' => 'None',
     ],
     'general' => [
+        'legacy' => 'Old launcher',
+        'legacy_help' => 'Only read by the old (Electron) launcher. The new launcher always checks files and always installs its own Java 17.',
+        'ram_help' => "The new launcher picks the memory from the player's PC (Light, Balanced, High profiles). These values are only used when the PC could not be analysed.",
         'title' => 'General Options',
         'features' => 'Features',
         'mods_enabled' => 'Mods Enabled',
@@ -646,6 +650,25 @@ return [
         'score' => 'Score',
         'reward' => 'Reward',
     ],
+    'diagnostics' => [
+        'title' => 'Launcher diagnostics',
+        'help' => "Reports sent by players with the launcher's “Diagnostics › Send to the team” button. Passwords, tokens, e-mails and personal paths are hidden by the launcher. Kept for :days days.",
+        'search' => 'Search (player, cause…)',
+        'pending' => 'To handle (:count)',
+        'all' => 'All reports',
+        'date' => 'Date',
+        'summary' => 'Summary',
+        'launcher' => 'Launcher',
+        'system' => 'System',
+        'handled' => 'Mark as handled',
+        'reopen' => 'Mark as to handle',
+        'empty' => 'No reports.',
+        'report' => 'Report #:id',
+        'back' => 'Back',
+        'download' => 'Download',
+        'delete' => 'Delete',
+        'confirm_delete' => 'Delete this report?',
+    ],
     'stats' => [
         'days' => ":days d",
         'export_csv' => "Export as CSV",
@@ -655,6 +678,14 @@ return [
         'new_vs_returning' => ":new new · :back returning",
         'reliability' => "Uptime",
         'error_rate' => ":rate % failures (:count)",
+        'crash_causes' => 'Game crashes by cause (Rust launcher)',
+        'crash_causes_help' => 'Cause found by the launcher in the crash report or game log. Details of a case: Launcher diagnostics page.',
+        'crash' => [
+            'out_of_memory' => 'Out of memory', 'ram_reserve' => 'RAM too high for the PC', 'java_version' => 'Wrong Java version',
+            'duplicate_mods' => 'Duplicate mod', 'mod_dependency' => 'Missing mod dependency', 'mixin' => 'Mod conflict',
+            'gpu_driver' => 'Graphics driver', 'native_crash' => 'Native crash (driver or Java)', 'disk_full' => 'Disk full',
+            'shader' => 'Shaders or resource pack', 'unknown' => 'Unrecognised cause',
+        ],
         'players_online' => "Players online",
         'peak' => "peak: :n players",
         'average' => "Average",
@@ -810,6 +841,8 @@ return [
     ],
 
     'flash' => [
+        'diagnostic_updated' => 'Report updated.',
+        'diagnostic_deleted' => 'Report deleted.',
         'wonder_saved' => "Wonder: saved and sent to the server.",
         'wonder_deleted' => "Wonder: deleted.",
         'wonder_score_saved' => "Score saved.",

@@ -42,6 +42,8 @@ use App\Http\Controllers\api\LauncherContentController;
 use App\Http\Controllers\api\ServerStatusController;
 use App\Http\Controllers\api\ServerHistoryController;
 use App\Http\Controllers\api\TelemetryController;
+use App\Http\Controllers\api\DiagnosticController;
+use App\Http\Controllers\AdminDiagnosticController;
 use App\Http\Controllers\api\LeaderboardController;
 use App\Http\Controllers\api\CollectController;
 use App\Http\Controllers\api\FactionController;
@@ -239,6 +241,11 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::post('/game-commands', [AdminGameCommandController::class, 'store'])->middleware('superadmin')->name('admin.game-commands.store');
 
     Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
+    Route::get('/diagnostics', [AdminDiagnosticController::class, 'index'])->name('admin.diagnostics');
+    Route::get('/diagnostics/{diagnostic}', [AdminDiagnosticController::class, 'show'])->name('admin.diagnostics.show');
+    Route::get('/diagnostics/{diagnostic}/download', [AdminDiagnosticController::class, 'download'])->name('admin.diagnostics.download');
+    Route::patch('/diagnostics/{diagnostic}/toggle', [AdminDiagnosticController::class, 'toggle'])->name('admin.diagnostics.toggle');
+    Route::delete('/diagnostics/{diagnostic}', [AdminDiagnosticController::class, 'destroy'])->name('admin.diagnostics.destroy');
     Route::get('/stats/export.csv', [StatsController::class, 'export'])->name('admin.stats.export');
 
     Route::get('/monitor', [\App\Http\Controllers\AdminMonitorController::class, 'index'])->name('admin.monitor');
@@ -306,6 +313,8 @@ Route::prefix('utils')->middleware(['throttle:120,1,utils'])->group(function () 
     Route::get('/servers-status', [ServerStatusController::class, 'getServersStatus']);
     Route::get('/servers-history', [ServerHistoryController::class, 'getHistory']);
     Route::post('/telemetry', [TelemetryController::class, 'store'])->middleware('throttle:30,1,telemetry');
+    // Rapports « Diagnostic › Envoyer à l'équipe » du launcher (taille et nombre limités dans le contrôleur).
+    Route::post('/diagnostic', [DiagnosticController::class, 'store'])->middleware('throttle:3,1,diagnostic');
     Route::get('/leaderboards', [LeaderboardController::class, 'getLeaderboards']);
     Route::get('/collecte', [CollectController::class, 'getCollecte']);
     Route::get('/factions', [FactionController::class, 'getFactions']);

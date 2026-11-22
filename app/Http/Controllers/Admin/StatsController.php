@@ -312,7 +312,18 @@ class StatsController extends Controller
             ->pluck('total', 'event');
 
         $launches = (int) ($byEvent['launch'] ?? 0);
-        $errors = (int) ($byEvent['crash'] ?? 0) + (int) ($byEvent['launch_error'] ?? 0);
+        // Ancien launcher : « crash », « minecraft_crash » ; launcher Rust : « game_crash:<cause> ».
+        $errors = 0;
+        $causes = [];
+        foreach ($byEvent as $event => $total) {
+            if (in_array($event, ['crash', 'launch_error', 'minecraft_crash'], true) || str_starts_with($event, 'game_crash')) {
+                $errors += (int) $total;
+            }
+            if (str_starts_with($event, 'game_crash:')) {
+                $causes[substr($event, 11)] = (int) $total;
+            }
+        }
+        arsort($causes);
 
         return [
             'uptime'     => $uptime,
@@ -321,6 +332,7 @@ class StatsController extends Controller
             'eventData'  => array_map('intval', $byEvent->values()->toArray()),
             'errorRate'  => $launches > 0 ? round($errors * 100 / $launches, 1) : 0.0,
             'errorCount' => $errors,
+            'crashCauses' => $causes,
         ];
     }
 

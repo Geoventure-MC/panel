@@ -187,6 +187,26 @@
     </div>
 </div>
 
+@if (!empty($crashCauses))
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-bug me-1"></i> {{ __('messages.stats.crash_causes') }}
+            </div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    @foreach ($crashCauses as $cause => $total)
+                        <tr><td>{{ __('messages.stats.crash.' . $cause) !== 'messages.stats.crash.' . $cause ? __('messages.stats.crash.' . $cause) : $cause }}</td><td class="text-end fw-semibold">{{ $total }}</td></tr>
+                    @endforeach
+                </table>
+                <p class="text-muted small mt-2 mb-0">{{ __('messages.stats.crash_causes_help') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 @if (!empty($eventLabels))
 <div class="row">
     <div class="col-12 mb-4">

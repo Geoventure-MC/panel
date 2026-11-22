@@ -34,9 +34,11 @@
                     <div class="row row-cols-1 row-cols-md-2 g-3">
                         @php
                             $switches = [
-                                ['id' => 'mods_enabled', 'label' => __('messages.general.mods_enabled')],
-                                ['id' => 'file_verification', 'label' => __('messages.general.file_verification')],
-                                ['id' => 'embedded_java', 'label' => __('messages.general.embedded_java')],
+                                // legacy : lus seulement par l'ancien launcher (Electron). Le launcher Rust vérifie toujours
+                                // les fichiers, installe toujours son Java et n'a pas d'interrupteur des mods.
+                                ['id' => 'mods_enabled', 'label' => __('messages.general.mods_enabled'), 'legacy' => true],
+                                ['id' => 'file_verification', 'label' => __('messages.general.file_verification'), 'legacy' => true],
+                                ['id' => 'embedded_java', 'label' => __('messages.general.embedded_java'), 'legacy' => true],
                                 ['id' => 'email_verified', 'label' => __('messages.general.email_verified')],
                                 ['id' => 'role_display', 'label' => __('messages.general.role_display')],
                                 ['id' => 'money_display', 'label' => __('messages.general.money_display')],
@@ -54,6 +56,9 @@
                                            value="1"
                                            {{ old($switch['id'], $options->{$switch['id']}) ? 'checked' : '' }}>
                                     <label class="form-check-label" for="{{ $switch['id'] }}">{{ $switch['label'] }}</label>
+                                    @if (!empty($switch['legacy']))
+                                        <span class="badge bg-secondary ms-1" title="{{ __('messages.general.legacy_help') }}">{{ __('messages.general.legacy') }}</span>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach
@@ -73,6 +78,7 @@
                                value="{{ old('game_folder_name', $options->game_folder_name) }}">
                     </div>
 
+                    <div class="form-text mb-2">{{ __('messages.general.ram_help') }}</div>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="default_min_ram" class="form-label">{{ __('messages.general.min_ram') }}</label>

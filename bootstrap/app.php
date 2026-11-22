@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Endpoint télémétrie appelé par le launcher (pas de session/CSRF).
         $middleware->validateCsrfTokens(except: [
             'utils/telemetry',
+            'utils/diagnostic', // rapports du launcher (Diagnostic › Envoyer à l'équipe)
             'utils/achievements/unlock',
             'utils/seasons/sync',
             'api/geoventure/season-archive', // alias de utils/seasons/sync (même jeton) : sans cela il répondait toujours 419

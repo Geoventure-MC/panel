@@ -10,7 +10,7 @@ Panel d'administration web (Laravel 11, PHP 8.2, Blade, Bootstrap). Il configure
 
 ## Contrat avec le launcher : à ne pas casser
 
-Le launcher lit `routes/web.php` : `/utils/api` (config), `/utils/mods`, `/utils/notifications`, `/utils/servers-status`, `/utils/community-mods`, `/utils/leaderboards`, `/utils/factions`, `/utils/achievements`, `/utils/seasons`, `/utils/wonder`, `/utils/telemetry` (POST), `/data` (fichiers du modpack). Contrôleurs dans `App\Http\Controllers\api\*`. Changer une réponse impose de vérifier le launcher. Détail : `docs/claude/reference.md`, « Contrat Panel ↔ Launcher ».
+Le launcher lit `routes/web.php` : `/utils/api` (config), `/utils/mods`, `/utils/notifications`, `/utils/servers-status`, `/utils/community-mods`, `/utils/leaderboards`, `/utils/factions`, `/utils/achievements`, `/utils/seasons`, `/utils/wonder`, `/utils/telemetry` (POST), `/utils/diagnostic` (POST, rapports du launcher), `/utils/servers-history`, `/utils/launcher-content`, `/utils/game-events`, `/data` (fichiers du modpack). Contrôleurs dans `App\Http\Controllers\api\*`. Changer une réponse impose de vérifier le launcher. Détail : `docs/claude/reference.md`, « Contrat Panel ↔ Launcher ».
 
 ## Conventions
 

@@ -141,6 +141,11 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
+                    <a class="sidebar-link {{ request()->routeIs('admin.diagnostics*') ? 'active' : '' }}" href="{{ route('admin.diagnostics') }}">
+                        <i class="bi bi-heart-pulse align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.diagnostics') }}</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
                     <a class="sidebar-link {{ request()->routeIs('admin.stats') ? 'active' : '' }}" href="{{ route('admin.stats') }}">
                         <i class="bi bi-bar-chart align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.stats') }}</span>
                     </a>
