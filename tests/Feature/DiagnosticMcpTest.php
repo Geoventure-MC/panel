@@ -8,7 +8,7 @@ use App\Models\McpSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/** Lecture des diagnostics du launcher par l'API MCP (portée read). */
+/** Diagnostics du launcher par l'API MCP : lecture (portée read) et marquage (portée write). */
 class DiagnosticMcpTest extends TestCase
 {
     use RefreshDatabase;
@@ -70,6 +70,31 @@ class DiagnosticMcpTest extends TestCase
         $d = $this->diagnostic();
         $this->assertTrue($this->tool('diagnostic_get', ['id' => 9999])['error']);
         $this->tool('diagnostic_get', ['id' => $d->id]);
+        $this->assertFalse($d->fresh()->handled);
+    }
+
+    public function test_le_marquage_exige_la_portee_write_et_la_confirmation(): void
+    {
+        $d = $this->diagnostic();
+        $args = ['id' => $d->id, 'handled' => true, 'confirm' => true];
+        $this->assertTrue($this->tool('diagnostic_mark', $args)['error']);
+        $this->assertFalse($d->fresh()->handled);
+        McpKey::query()->update(['scope' => 'write']);
+        $this->assertTrue($this->tool('diagnostic_mark', ['id' => $d->id, 'handled' => true])['error']);
+        $this->assertFalse($d->fresh()->handled);
+        $this->assertTrue($this->tool('diagnostic_mark', ['id' => 9999, 'handled' => true, 'confirm' => true])['error']);
+    }
+
+    public function test_le_marquage_change_seulement_l_etat_et_se_rejoue_sans_effet(): void
+    {
+        McpKey::query()->update(['scope' => 'write']);
+        $d = $this->diagnostic();
+        $args = ['id' => $d->id, 'handled' => true, 'confirm' => true];
+        $this->assertTrue($this->tool('diagnostic_mark', $args)['data']['changed']);
+        $this->assertTrue($d->fresh()->handled);
+        $this->assertSame('texte', $d->fresh()->report);
+        $this->assertFalse($this->tool('diagnostic_mark', $args)['data']['changed']);
+        $this->assertTrue($this->tool('diagnostic_mark', ['handled' => false] + $args)['data']['changed']);
         $this->assertFalse($d->fresh()->handled);
     }
 }

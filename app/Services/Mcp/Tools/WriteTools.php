@@ -4,6 +4,7 @@ namespace App\Services\Mcp\Tools;
 
 use App\Models\Achievement;
 use App\Models\CommunityMod;
+use App\Models\LauncherDiagnostic;
 use App\Models\OptionsNotification;
 use App\Models\OptionsSecurity;
 use App\Models\WonderEdition;
@@ -52,6 +53,25 @@ class WriteTools
                     $ctx->audit('notification.create', $n, [], ['type' => $n->type, 'message' => $n->message, 'url' => $n->url, 'expires_at' => Support::iso($n->expires_at)]);
 
                     return ['id' => $n->id, 'type' => $n->type, 'active' => true, 'expires_at' => Support::iso($n->expires_at)];
+                }),
+
+            McpTool::make('diagnostic_mark', 'write',
+                'Marque un diagnostic du launcher comme traité (handled=true) ou à traiter (handled=false). Ne modifie ni ne supprime son contenu.',
+                [
+                    'id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'Identifiant donné par diagnostics_list.'],
+                    'handled' => ['type' => 'boolean', 'description' => 'true = traité, false = à traiter.'],
+                ], ['id', 'handled'],
+                ['id' => 'required|integer|min:1', 'handled' => 'required|boolean'],
+                function (array $a, McpContext $ctx) {
+                    $d = LauncherDiagnostic::query()->select(['id', 'handled'])->find($a['id']) ?? throw new McpToolError('Diagnostic introuvable.');
+                    $before = (bool) $d->handled;
+                    $after = (bool) $a['handled'];
+                    if ($before !== $after) {
+                        $d->update(['handled' => $after]);
+                        $ctx->audit('diagnostic.mark', $d, ['handled' => $before], ['handled' => $after]);
+                    }
+
+                    return ['id' => $d->id, 'handled' => $after, 'changed' => $before !== $after];
                 }),
 
             McpTool::make('game_event_set', 'write',
