@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="UTF-8">
@@ -8,7 +8,8 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title')</title>
+    <title>@yield('title') · Nexus</title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/nexus.png') }}">
 
     <script>
         (function() {
@@ -31,248 +32,114 @@
 
 <body>
 <div class="wrapper">
-    <nav id="sidebar" class="sidebar js-sidebar">
+    @php
+        $isSuper = auth()->user()->isSuperAdmin();
+        // Menu regroupé : [route, motif actif, icône, libellé, réservé super-admin, lien externe].
+        $menu = [
+            'pilotage' => ['icon' => 'bi-speedometer2', 'items' => [
+                ['admin.dashboard.live', 'admin.dashboard.live', 'bi-broadcast', __('messages.sidebar.live_dashboard'), false],
+                ['admin.monitor', 'admin.monitor*', 'bi-activity', __('messages.sidebar.monitor'), false],
+                ['admin.stats', 'admin.stats', 'bi-bar-chart', __('messages.sidebar.stats'), false],
+                ['admin.analytics.overview', 'admin.analytics.*', 'bi-graph-up-arrow', __('analytics.sidebar'), false],
+                ['admin.diagnostics', 'admin.diagnostics*', 'bi-heart-pulse', __('messages.sidebar.diagnostics'), false],
+            ]],
+            'instances' => ['icon' => 'bi-hdd-stack', 'items' => [
+                ['admin.server', 'admin.server', 'bi-hdd-network', __('messages.sidebar.server'), true],
+                ['admin.loader', 'admin.loader', 'bi-cloud-arrow-down', __('messages.sidebar.loader'), true],
+                ['admin.file-manager', 'admin.file-manager', 'bi-folder2-open', __('messages.sidebar.file_manager'), true],
+                ['admin.mods', 'admin.mods', 'bi-box', __('messages.sidebar.optional_mods'), true],
+                ['admin.community-mods', 'admin.community-mods*', 'bi-puzzle', __('messages.sidebar.community_mods'), false],
+                ['admin.ignore', 'admin.ignore', 'bi-slash-circle', __('messages.sidebar.ignore'), true],
+                ['admin.whitelist', 'admin.whitelist', 'bi-list-check', __('messages.sidebar.whitelist'), true],
+            ]],
+            'launcher' => ['icon' => 'bi-rocket-takeoff', 'items' => [
+                ['admin.general', 'admin.general', 'bi-sliders', __('messages.sidebar.general'), true],
+                ['admin.ui', 'admin.ui', 'bi-display', __('messages.sidebar.ui'), true],
+                ['admin.bg', 'admin.bg', 'bi-image', __('messages.sidebar.background'), true],
+                ['admin.launcher-content', 'admin.launcher-content*', 'bi-layout-text-window-reverse', __('messages.sidebar.launcher_content'), false],
+                ['admin.notifications', 'admin.notifications*', 'bi-megaphone', __('messages.sidebar.notifications'), false],
+                ['admin.changelog', 'admin.changelog*', 'bi-journal-text', __('messages.sidebar.changelog'), false],
+                ['admin.rpc', 'admin.rpc', 'bi-discord', __('messages.sidebar.rpc'), true],
+            ]],
+            'jeu' => ['icon' => 'bi-controller', 'items' => [
+                ['admin.game-events', 'admin.game-events*', 'bi-calendar-event', __('messages.sidebar.game_events'), true],
+                ['admin.scheduled-events', 'admin.scheduled-events', 'bi-calendar-week', __('messages.sidebar.scheduled_events'), false],
+                ['admin.game-commands', 'admin.game-commands*', 'bi-joystick', __('messages.sidebar.game_commands'), true],
+                ['admin.achievements', 'admin.achievements*', 'bi-award', __('messages.sidebar.achievements'), false],
+                ['admin.seasons', 'admin.seasons', 'bi-flag', __('messages.sidebar.seasons'), false],
+                ['admin.wonder', 'admin.wonder*', 'bi-buildings', __('messages.sidebar.wonder'), false],
+                ['admin.moderation.index', 'admin.moderation.*', 'bi-shield-exclamation', __('moderation.sidebar'), false],
+                ['players.index', null, 'bi-trophy', __('messages.dashboard.title'), false, true],
+            ]],
+            'admin' => ['icon' => 'bi-gear', 'items' => [
+                ['admin.users', 'admin.users', 'bi-people', __('messages.sidebar.users'), true],
+                ['admin.security', 'admin.security', 'bi-lock', __('messages.sidebar.security_link'), true],
+                ['admin.two-factor.index', 'admin.two-factor*', 'bi-shield-lock', __('messages.sidebar.two_factor'), false],
+                ['admin.sso', 'admin.sso*', 'bi-key', __('messages.sidebar.sso'), true],
+                ['admin.audit.index', 'admin.audit.*', 'bi-clock-history', __('messages.sidebar.audit'), false],
+                ['admin.config', 'admin.config', 'bi-gear-wide-connected', __('messages.sidebar.config'), true],
+                ['admin.versions', 'admin.versions*', 'bi-boxes', __('versions.sidebar'), true],
+                ['admin.mcp', 'admin.mcp*', 'bi-robot', __('mcp.sidebar'), true],
+                ['admin.update', 'admin.update', 'bi-arrow-repeat', __('messages.sidebar.update'), true],
+            ]],
+        ];
+        try {
+            $navInstances = \App\Models\OptionsServer::orderByDesc('is_default')->orderBy('server_id')->get();
+        } catch (\Throwable $e) {
+            $navInstances = collect();
+        }
+    @endphp
+    <nav id="sidebar" class="sidebar js-sidebar nexus-sidebar">
         <div class="sidebar-content js-simplebar">
-            <a class="sidebar-brand text-white" href="{{ route('admin.index') }}">
-                <img src="{{ asset('assets/img/logo.png') }}" alt="Logo" class="sidebar-brand-img">
+            <a class="sidebar-brand nexus-brand" href="{{ route('admin.index') }}">
+                <img src="{{ asset('assets/img/nexus.png') }}" alt="Nexus" class="nexus-brand-logo">
+                <span class="nexus-brand-text">
+                    <strong>Nexus</strong>
+                    <small>{{ __('messages.sidebar.brand_sub') }}</small>
+                </span>
             </a>
-            <ul class="sidebar-nav">
-                <li class="sidebar-header">
-                        {{ __('messages.sidebar.panel') }}
+
+            @if($navInstances->isNotEmpty())
+            <div class="nexus-instances">
+                @foreach($navInstances as $inst)
+                    @php
+                        $instSlug = $inst->instance_slug ?: \Illuminate\Support\Str::slug($inst->server_name ?? '');
+                        $instLogo = in_array($instSlug, ['geoventure', 'elandor', 'pokeland'], true) ? asset('assets/img/instance_' . $instSlug . '.png') : null;
+                    @endphp
+                    <a class="nexus-instance" href="{{ $isSuper ? route('admin.server') : '#' }}" title="{{ $inst->server_name }} — {{ $inst->server_ip }}:{{ $inst->server_port }}" style="--inst: {{ $inst->theme_color ?: '#64748b' }}">
+                        @if($instLogo)<img src="{{ $instLogo }}" alt="">@else<i class="bi bi-hdd"></i>@endif
+                        <span>{{ $inst->server_name }}</span>
+                        @if(in_array($inst->channel, ['both', 'test'], true))<em class="nexus-chip">{{ __('messages.sidebar.test_chip') }}</em>@endif
+                    </a>
+                @endforeach
+            </div>
+            @endif
+
+            <ul class="sidebar-nav nexus-nav">
+                @foreach($menu as $key => $group)
+                    @php
+                        $items = array_values(array_filter($group['items'], fn ($it) => !$it[4] || $isSuper));
+                        $open = collect($items)->contains(fn ($it) => $it[1] && request()->routeIs($it[1]));
+                    @endphp
+                    @continue(empty($items))
+                    <li class="sidebar-item nexus-group">
+                        <a class="sidebar-link nexus-group-toggle {{ $open ? '' : 'collapsed' }}" data-bs-toggle="collapse" href="#nav-{{ $key }}" role="button" aria-expanded="{{ $open ? 'true' : 'false' }}" aria-controls="nav-{{ $key }}">
+                            <i class="bi {{ $group['icon'] }} align-middle"></i>
+                            <span class="align-middle">{{ __('messages.sidebar.group_' . $key) }}</span>
+                        </a>
+                        <ul id="nav-{{ $key }}" class="sidebar-dropdown list-unstyled collapse {{ $open ? 'show' : '' }}">
+                            @foreach($items as $it)
+                                <li class="sidebar-item">
+                                    <a class="sidebar-link {{ $it[1] && request()->routeIs($it[1]) ? 'active' : '' }}" href="{{ route($it[0]) }}" @if(!empty($it[5])) target="_blank" rel="noopener" @endif>
+                                        <i class="bi {{ $it[2] }} align-middle"></i> <span class="align-middle">{{ $it[3] }}</span>
+                                        @if(!empty($it[5]))<i class="bi bi-box-arrow-up-right nexus-ext"></i>@endif
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
                     </li>
-                    <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.dashboard.live') ? 'active' : '' }}" href="{{ route('admin.dashboard.live') }}">
-                        <i class="bi bi-speedometer2 align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.live_dashboard') }}</span>
-                    </a>
-                </li>
-                    @if(auth()->user()->isSuperAdmin())
-                    <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.users') ? 'active' : '' }}" href="{{ route('admin.users') }}">
-                        <i class="bi bi-people align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.users') }}</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.config') ? 'active' : '' }}" href="{{ route('admin.config') }}">
-                        <i class="bi bi-gear align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.config') }}</span>
-                    </a>
-                </li>
-                @endif
-                @if(auth()->user()->isSuperAdmin())
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.file-manager') ? 'active' : '' }}" href="{{ route('admin.file-manager') }}">
-                        <i class="bi bi-folder align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.file_manager') }}</span>
-                    </a>
-                </li>
-                @endif
-                @if(auth()->user()->isSuperAdmin())
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.update') ? 'active' : '' }}" href="{{ route('admin.update') }}">
-                        <i class="bi bi-sort-numeric-up-alt align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.update') }}</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.versions*') ? 'active' : '' }}" href="{{ route('admin.versions') }}">
-                        <i class="bi bi-boxes align-middle"></i> <span class="align-middle">{{ __('versions.sidebar') }}</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.mcp*') ? 'active' : '' }}" href="{{ route('admin.mcp') }}">
-                        <i class="bi bi-robot align-middle"></i> <span class="align-middle">{{ __('mcp.sidebar') }}</span>
-                    </a>
-                </li>
-                @endif
-                @if(auth()->user()->isSuperAdmin())
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.game-events*') ? 'active' : '' }}" href="{{ route('admin.game-events') }}">
-                        <i class="bi bi-calendar-event align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.game_events') }}</span>
-                    </a>
-                </li>
-                @endif
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}" href="{{ route('admin.notifications') }}">
-                        <i class="bi bi-megaphone align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.notifications') }}</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a class="sidebar-link" href="{{ route('players.index') }}" target="_blank" rel="noopener">
-                        <i class="bi bi-trophy align-middle"></i> <span class="align-middle">{{ __('messages.dashboard.title') }}</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.changelog*') ? 'active' : '' }}" href="{{ route('admin.changelog') }}">
-                        <i class="bi bi-journal-text align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.changelog') }}</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.achievements*') ? 'active' : '' }}" href="{{ route('admin.achievements') }}">
-                        <i class="bi bi-trophy align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.achievements') }}</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.seasons') ? 'active' : '' }}" href="{{ route('admin.seasons') }}">
-                        <i class="bi bi-calendar-event align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.seasons') }}</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.wonder*') ? 'active' : '' }}" href="{{ route('admin.wonder') }}">
-                        <i class="bi bi-buildings align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.wonder') }}</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.scheduled-events') ? 'active' : '' }}" href="{{ route('admin.scheduled-events') }}">
-                        <i class="bi bi-calendar-week align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.scheduled_events') }}</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.audit.*') ? 'active' : '' }}" href="{{ route('admin.audit.index') }}">
-                        <i class="bi bi-clock-history align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.audit') }}</span>
-                    </a>
-                </li>
-                @if(auth()->user()->isSuperAdmin())
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.game-commands*') ? 'active' : '' }}" href="{{ route('admin.game-commands') }}">
-                        <i class="bi bi-joystick align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.game_commands') }}</span>
-                    </a>
-                </li>
-                @endif
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.monitor*') ? 'active' : '' }}" href="{{ route('admin.monitor') }}">
-                        <i class="bi bi-activity align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.monitor') }}</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.diagnostics*') ? 'active' : '' }}" href="{{ route('admin.diagnostics') }}">
-                        <i class="bi bi-heart-pulse align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.diagnostics') }}</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.stats') ? 'active' : '' }}" href="{{ route('admin.stats') }}">
-                        <i class="bi bi-bar-chart align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.stats') }}</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.analytics.*') ? 'active' : '' }}" href="{{ route('admin.analytics.overview') }}">
-                        <i class="bi bi-graph-up-arrow align-middle"></i> <span class="align-middle">{{ __('analytics.sidebar') }}</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.moderation.*') ? 'active' : '' }}" href="{{ route('admin.moderation.index') }}">
-                        <i class="bi bi-shield-exclamation align-middle"></i> <span class="align-middle">{{ __('moderation.sidebar') }}</span>
-                    </a>
-                </li>
-                @if(auth()->user()->isSuperAdmin())
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.sso*') ? 'active' : '' }}" href="{{ route('admin.sso') }}">
-                        <i class="bi bi-shield-lock align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.sso') }}</span>
-                    </a>
-                </li>
-                @endif
-                <li class="sidebar-header">
-                    {{ __('messages.sidebar.configuration') }}
-                </li>
-                
-                @if(auth()->user()->isSuperAdmin())
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.general') ? 'active' : '' }}" href="{{ route('admin.general') }}">
-                        <i class="bi bi-sliders align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.general') }}</span>
-                    </a>
-                </li>
-                @endif
-                @if(auth()->user()->isSuperAdmin())
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.rpc') ? 'active' : '' }}" href="{{ route('admin.rpc') }}">
-                        <i class="bi bi-cpu align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.rpc') }}</span>
-                    </a>
-                </li>
-                @endif
-                @if(auth()->user()->isSuperAdmin())
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.server') ? 'active' : '' }}" href="{{ route('admin.server') }}">
-                        <i class="bi bi-hdd align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.server') }}</span>
-                    </a>
-                </li>
-                @endif
-
-                <li class="sidebar-header">
-                    {{ __('messages.sidebar.security_header') }}
-                </li>
-                @if(auth()->user()->isSuperAdmin())
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.security') ? 'active' : '' }}" href="{{ route('admin.security') }}">
-                        <i class="bi bi-lock align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.security_link') }}</span>
-                    </a>
-                </li>
-                @endif
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.two-factor*') ? 'active' : '' }}" href="{{ route('admin.two-factor.index') }}">
-                        <i class="bi bi-shield-lock align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.two_factor') }}</span>
-                    </a>
-                </li>
-                @if(auth()->user()->isSuperAdmin())
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.whitelist') ? 'active' : '' }}" href="{{ route('admin.whitelist') }}">
-                        <i class="bi bi-list-check align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.whitelist') }}</span>
-                    </a>
-                </li>
-                @endif
-                
-
-                <li class="sidebar-header">
-                    {{ __('messages.sidebar.client') }}
-                </li>
-                
-                @if(auth()->user()->isSuperAdmin())
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.mods') ? 'active' : '' }}" href="{{ route('admin.mods') }}">
-                        <i class="bi bi-box align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.optional_mods') }}</span>
-                    </a>
-                </li>
-                @endif
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.community-mods*') ? 'active' : '' }}" href="{{ route('admin.community-mods') }}">
-                        <i class="bi bi-puzzle align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.community_mods') }}</span>
-                    </a>
-                </li>
-                @if(auth()->user()->isSuperAdmin())
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.loader') ? 'active' : '' }}" href="{{ route('admin.loader') }}">
-                        <i class="bi bi-cloud-arrow-down"></i> <span class="align-middle">{{ __('messages.sidebar.loader') }}</span>
-                    </a>
-                </li>
-                @endif
-                @if(auth()->user()->isSuperAdmin())
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.ignore') ? 'active' : '' }}" href="{{ route('admin.ignore') }}">
-                        <i class="bi bi-slash align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.ignore') }}</span>
-                    </a>
-                </li>
-                @endif
-
-                <li class="sidebar-header">
-                    {{ __('messages.sidebar.interface') }}
-                </li>
-                @if(auth()->user()->isSuperAdmin())
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.ui') ? 'active' : '' }}" href="{{ route('admin.ui') }}">
-                        <i class="bi bi-display align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.ui') }}</span>
-                    </a>
-                </li>
-                @endif
-                @if(auth()->user()->isSuperAdmin())
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.bg') ? 'active' : '' }}" href="{{ route('admin.bg') }}">
-                        <i class="bi bi-image align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.background') }}</span>
-                    </a>
-                </li>
-                @endif
-                <li class="sidebar-item">
-                    <a class="sidebar-link {{ request()->routeIs('admin.launcher-content*') ? 'active' : '' }}" href="{{ route('admin.launcher-content') }}">
-                        <i class="bi bi-layout-text-window-reverse align-middle"></i> <span class="align-middle">{{ __('messages.sidebar.launcher_content') }}</span>
-                    </a>
-                </li>
-
+                @endforeach
             </ul>
-
         </div>
     </nav>
 
@@ -287,10 +154,6 @@
                     {{ __('messages.navbar.discord') }}
                 </a>
 
-                <a href="https://centralcorp.github.io/" class="btn btn-outline-secondary mx-1" target="_blank" rel="noopener noreferrer">
-                    <i class="bi bi-journals"></i>
-                    {{ __('messages.navbar.documentation') }}
-                </a>
             </div>
             <div class="ms-auto d-flex align-items-center">
                 <button class="btn btn-outline-secondary" id="themeToggle" data-bs-toggle="tooltip" data-bs-placement="bottom" aria-label="{{ __('messages.navbar.theme_dark') }}" data-bs-original-title="{{ __('messages.navbar.theme_dark') }}">

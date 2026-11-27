@@ -40,6 +40,149 @@
             </div>
         @endif
 
+        @if(!$options)
+            <div class="alert alert-light border small d-flex align-items-center">
+                <i class="bi bi-info-circle me-2"></i> {{ __('messages.server.config_error') }}
+            </div>
+        @endif
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="fw-bold mb-0">{{ __('messages.server.instances_title') }}</h5>
+                <span class="text-muted small">{{ __('messages.server.instances_hint') }}</span>
+            </div>
+            @if(empty($servers))
+                <div class="alert alert-info d-flex align-items-center">
+                    <i class="bi bi-info-circle me-2"></i> {{ __('messages.server.no_servers') }}
+                </div>
+            @else
+                <div class="row g-3 mb-4">
+                    @foreach($servers as $server)
+                        @php
+                            $slug = $server['instance_slug'] ?: '';
+                            $color = $server['theme_color'] ?: '#64748b';
+                            $bundled = in_array($slug, ['geoventure', 'elandor', 'pokeland'], true) ? asset('assets/img/instance_' . $slug . '.png') : null;
+                            $logo = $server['icon_url'] ?: $bundled;
+                            $channel = $server['channel'] ?? 'stable';
+                            $loaderLabel = $server['loader_activation']
+                                ? (($server['loader_type'] === 'neoForge' ? 'NeoForge' : ucfirst($server['loader_type'] ?: 'forge')) . ' ' . ($server['loader_build_version'] ?: ''))
+                                : __('messages.server.vanilla');
+                            $isDefault = $defaultServers[$server['id']] ?? false;
+                        @endphp
+                        <div class="col-12 col-xl-4 col-lg-6">
+                            <div class="card nexus-inst-card h-100 shadow-sm" style="--inst: {{ $color }}">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        @if($logo)
+                                            <img src="{{ $logo }}" alt="" class="nexus-inst-logo">
+                                        @else
+                                            <div class="nexus-inst-logo d-flex align-items-center justify-content-center"><i class="bi bi-hdd fs-4"></i></div>
+                                        @endif
+                                        <div class="flex-grow-1 min-w-0">
+                                            <h5 class="mb-0 text-truncate">{{ $server['name'] }}</h5>
+                                            <code class="small">{{ $slug ?: '—' }}</code>
+                                        </div>
+                                        @if($isDefault)
+                                            <span class="badge bg-success-subtle text-success-emphasis" title="{{ __('messages.server.is_default') }}"><i class="bi bi-star-fill"></i></span>
+                                        @endif
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-1 mb-3">
+                                        <span class="badge rounded-pill text-bg-secondary">MC {{ $server['minecraft_version'] ?: '?' }}</span>
+                                        <span class="badge rounded-pill text-bg-info">{{ trim($loaderLabel) }}</span>
+                                        @if(in_array($channel, ['stable', 'both'], true))<span class="badge rounded-pill text-bg-primary">Stable</span>@endif
+                                        @if(in_array($channel, ['test', 'both'], true))<span class="badge rounded-pill text-bg-warning">Test</span>@endif
+                                        @if(!empty($server['allowed_roles']))<span class="badge rounded-pill text-bg-danger" title="{{ $server['allowed_roles'] }}"><i class="bi bi-lock-fill"></i> {{ __('messages.server.restricted') }}</span>@endif
+                                    </div>
+                                    <dl class="row small mb-0 nexus-inst-facts">
+                                        <dt class="col-5 text-muted">{{ __('messages.server.address') }}</dt>
+                                        <dd class="col-7"><code>{{ $server['address'] }}:{{ $server['port'] }}</code></dd>
+                                        <dt class="col-5 text-muted">{{ __('messages.server.data_folder') }}</dt>
+                                        <dd class="col-7"><code>{{ $server['data_folder'] ?: ($slug ?: 'data/') }}</code></dd>
+                                        @if(in_array($channel, ['test', 'both'], true))
+                                            <dt class="col-5 text-muted">{{ __('messages.server.test_target') }}</dt>
+                                            <dd class="col-7"><code>{{ ($server['test_ip'] ?: $server['address']) }}:{{ $server['test_port'] ?: $server['port'] }}</code></dd>
+                                            <dt class="col-5 text-muted">{{ __('messages.server.test_roles_short') }}</dt>
+                                            <dd class="col-7 text-truncate" title="{{ $server['test_roles'] }}">{{ $server['test_roles'] }}</dd>
+                                        @endif
+                                    </dl>
+                                </div>
+                                <div class="card-footer bg-transparent d-flex flex-wrap gap-2 align-items-center">
+                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#edit-{{ $server['id'] }}">
+                                        <i class="bi bi-pencil me-1"></i>{{ __('messages.server.edit') }}
+                                    </button>
+                                    <form action="{{ route('admin.server.updateIcon', $server['id']) }}" method="POST" enctype="multipart/form-data" class="d-inline">
+                                        @csrf
+                                        <label class="btn btn-sm btn-outline-secondary mb-0" title="{{ __('messages.server.upload_icon') }}">
+                                            <i class="bi bi-image"></i>
+                                            <input type="file" name="icon" class="d-none" accept="image/*" onchange="this.form.submit()">
+                                        </label>
+                                    </form>
+                                    @if($server['icon_local'])
+                                        <form action="{{ route('admin.server.deleteIcon', $server['id']) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="{{ __('messages.server.delete_icon') }}" onclick="return confirm('{{ __('messages.server.confirm_delete_icon') }}')"><i class="bi bi-image-alt"></i></button>
+                                        </form>
+                                    @endif
+                                    @if(!$isDefault)
+                                        <form method="POST" action="{{ route('admin.server.set-default') }}" class="d-inline set-default-form">
+                                            @csrf
+                                            <input type="hidden" name="server_id" value="{{ $server['id'] }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-success" title="{{ __('messages.server.set_default') }}"><i class="bi bi-star"></i></button>
+                                        </form>
+                                    @endif
+                                    <form action="{{ route('admin.server.delete', $server['id']) }}" method="POST" class="d-inline ms-auto" onsubmit="return confirm('{{ __('messages.server.confirm_delete') }}')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ __('messages.server.delete') }}"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </div>
+                                <div class="collapse" id="edit-{{ $server['id'] }}">
+                                    <form action="{{ route('admin.server.edit', $server['id']) }}" method="POST" class="border-top p-3 nexus-inst-form">
+                                        @csrf
+                                        <div class="row g-2">
+                                            <div class="col-8"><label class="form-label mb-1 small">{{ __('messages.server.name') }}</label><input type="text" name="server_name" class="form-control form-control-sm" value="{{ $server['name'] }}" required></div>
+                                            <div class="col-4"><label class="form-label mb-1 small">{{ __('messages.server.instance_slug') }}</label><input type="text" name="instance_slug" class="form-control form-control-sm" value="{{ $server['instance_slug'] }}" placeholder="geoventure"></div>
+                                            <div class="col-8"><label class="form-label mb-1 small">{{ __('messages.server.address') }}</label><input type="text" name="server_ip" class="form-control form-control-sm" value="{{ $server['address'] }}" required></div>
+                                            <div class="col-4"><label class="form-label mb-1 small">{{ __('messages.server.port') }}</label><input type="text" name="server_port" class="form-control form-control-sm" value="{{ $server['port'] }}" required></div>
+                                            <div class="col-4"><label class="form-label mb-1 small">{{ __('messages.server.mc_version') }}</label><input type="text" name="minecraft_version" class="form-control form-control-sm" value="{{ $server['minecraft_version'] }}" placeholder="1.20.1"></div>
+                                            <div class="col-4"><label class="form-label mb-1 small">{{ __('messages.server.loader_type') }}</label>
+                                                <select name="loader_type" class="form-select form-select-sm">
+                                                    @foreach(['forge' => 'Forge', 'neoForge' => 'NeoForge', 'fabric' => 'Fabric', 'quilt' => 'Quilt'] as $lv => $ll)
+                                                        <option value="{{ $lv }}" {{ ($server['loader_type'] ?: 'forge') === $lv ? 'selected' : '' }}>{{ $ll }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="col-4"><label class="form-label mb-1 small">{{ __('messages.server.loader_build') }}</label><input type="text" name="loader_build_version" class="form-control form-control-sm" value="{{ $server['loader_build_version'] }}" placeholder="1.20.1-47.4.23"></div>
+                                            <div class="col-12">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" name="loader_activation" value="1" id="loader-act-{{ $server['id'] }}" {{ $server['loader_activation'] ? 'checked' : '' }}>
+                                                    <label class="form-check-label small" for="loader-act-{{ $server['id'] }}">{{ __('messages.server.loader_enable') }}</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-6"><label class="form-label mb-1 small">{{ __('messages.server.data_folder') }}</label><input type="text" name="data_folder" class="form-control form-control-sm" value="{{ $server['data_folder'] }}" placeholder="{{ $server['instance_slug'] }}"></div>
+                                            <div class="col-3"><label class="form-label mb-1 small">{{ __('messages.server.theme_color') }}</label><input type="color" name="theme_color" class="form-control form-control-sm form-control-color w-100" value="{{ $server['theme_color'] ?: '#64748b' }}"></div>
+                                            <div class="col-3"><label class="form-label mb-1 small">{{ __('messages.server.type') }}</label><input type="text" name="type" class="form-control form-control-sm" value="{{ $server['type'] }}"></div>
+                                            <div class="col-12"><label class="form-label mb-1 small">{{ __('messages.server.channel') }}</label>
+                                                <select name="channel" class="form-select form-select-sm">
+                                                    <option value="both" {{ $channel === 'both' ? 'selected' : '' }}>{{ __('messages.server.channel_both') }}</option>
+                                                    <option value="stable" {{ $channel === 'stable' ? 'selected' : '' }}>{{ __('messages.server.channel_stable') }}</option>
+                                                    <option value="test" {{ $channel === 'test' ? 'selected' : '' }}>{{ __('messages.server.channel_test') }}</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-12"><label class="form-label mb-1 small">{{ __('messages.server.allowed_roles') }}</label><input type="text" name="allowed_roles" class="form-control form-control-sm" value="{{ $server['allowed_roles'] ?? '' }}" placeholder="{{ __('messages.server.allowed_roles_ph') }}"></div>
+                                            <div class="col-12"><label class="form-label mb-1 small">{{ __('messages.server.test_roles') }}</label><input type="text" name="test_roles" class="form-control form-control-sm" value="{{ $server['test_roles'] ?? '' }}" placeholder="Admin, Fondateur, Staff, Testeur"></div>
+                                            <div class="col-6"><label class="form-label mb-1 small">{{ __('messages.server.test_ip') }}</label><input type="text" name="test_ip" class="form-control form-control-sm" value="{{ $server['test_ip'] ?? '' }}" placeholder="{{ $server['address'] }}"></div>
+                                            <div class="col-2"><label class="form-label mb-1 small">{{ __('messages.server.port') }}</label><input type="text" name="test_port" class="form-control form-control-sm" value="{{ $server['test_port'] ?? '' }}" placeholder="{{ $server['port'] }}"></div>
+                                            <div class="col-4"><label class="form-label mb-1 small">{{ __('messages.server.test_folder') }}</label><input type="text" name="test_data_folder" class="form-control form-control-sm" value="{{ $server['test_data_folder'] ?? '' }}" placeholder="{{ ($server['instance_slug'] ?: 'test') . '-test' }}"></div>
+                                            <div class="col-12 text-end"><button type="submit" class="btn btn-sm btn-success"><i class="bi bi-check-lg me-1"></i>{{ __('messages.common.save') }}</button></div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="alert alert-info small"><i class="bi bi-info-circle me-2"></i>{{ __('messages.server.default_info') }}</div>
+            @endif
         {{-- Formulaire d'ajout manuel d'un serveur (toujours disponible) --}}
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
@@ -110,8 +253,9 @@
                             <div class="col-md-2">
                                 <label class="form-label">Canal par défaut</label>
                                 <select name="channel" class="form-select">
-                                    <option value="stable" selected>Stable</option>
-                                    <option value="test">Test</option>
+                                    <option value="stable" selected>{{ __('messages.server.channel_stable') }}</option>
+                                    <option value="both">{{ __('messages.server.channel_both') }}</option>
+                                    <option value="test">{{ __('messages.server.channel_test') }}</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -146,218 +290,6 @@
             </div>
         </div>
 
-        @if(!$options)
-            <div class="alert alert-warning d-flex align-items-center">
-                <i class="fas fa-cogs me-2"></i> {{ __('messages.server.config_error') }}
-            </div>
-        @endif
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-white border-bottom">
-                    <h5 class="card-title mb-0">{{ __('messages.server.synced_servers') }}</h5>
-                </div>
-                <div class="card-body">
-                    @if(empty($servers))
-                        <div class="alert alert-info d-flex align-items-center">
-                            <i class="fas fa-info-circle me-2"></i> {{ __('messages.server.no_servers') }}
-                        </div>
-                    @else
-                        <div class="table-responsive">
-                            <table class="table table-bordered align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>{{ __('messages.server.name') }}</th>
-                                        <th>{{ __('messages.server.instance') }}</th>
-                                        <th>{{ __('messages.server.address') }}</th>
-                                        <th>{{ __('messages.server.port') }}</th>
-                                        <th>{{ __('messages.server.type') }}</th>
-                                        <th>{{ __('messages.server.icon') }}</th>
-                                        <th class="text-center" style="width: 240px;">{{ __('messages.common.actions') }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($servers as $server)
-                                        <tr>
-                                            <td><strong>{{ $server['name'] }}</strong></td>
-                                            <td>
-                                                @if($server['instance_slug'])
-                                                    <code>{{ $server['instance_slug'] }}</code>
-                                                @else
-                                                    <span class="text-muted">—</span>
-                                                @endif
-                                            </td>
-                                            <td><code>{{ $server['address'] }}</code></td>
-                                            <td>{{ $server['port'] }}</td>
-                                            <td><span class="badge bg-info">{{ $server['type'] }}</span></td>
-                                            <td>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    @if($server['icon_url'])
-                                                        <img src="{{ $server['icon_url'] }}"
-                                                             alt="{{ __('messages.server.icon') }}"
-                                                             class="img-thumbnail rounded-circle"
-                                                             style="max-width: 40px; max-height: 40px;">
-                                                        @if($server['icon_local'])
-                                                            <span class="badge bg-success" title="{{ __('messages.server.icon_local') }}">
-                                                                <i class="bi bi-hdd"></i>
-                                                            </span>
-                                                        @endif
-                                                    @else
-                                                        <span class="text-muted">{{ __('messages.common.none') }}</span>
-                                                    @endif
-
-                                                    {{-- Upload icon form --}}
-                                                    <form action="{{ route('admin.server.updateIcon', $server['id']) }}" method="POST" enctype="multipart/form-data" class="d-inline">
-                                                        @csrf
-                                                        <label class="btn btn-sm btn-outline-secondary" title="{{ __('messages.server.upload_icon') }}">
-                                                            <i class="bi bi-upload"></i>
-                                                            <input type="file" name="icon" class="d-none" accept="image/*" onchange="this.form.submit()">
-                                                        </label>
-                                                    </form>
-
-                                                    {{-- Delete local icon form --}}
-                                                    @if($server['icon_local'])
-                                                        <form action="{{ route('admin.server.deleteIcon', $server['id']) }}" method="POST" class="d-inline">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ __('messages.server.delete_icon') }}" onclick="return confirm('{{ __('messages.server.confirm_delete_icon') }}')">
-                                                                <i class="bi bi-trash"></i>
-                                                            </button>
-                                                        </form>
-                                                    @endif
-                                                </div>
-                                            </td>
-                                            <td class="text-center">
-                                                <div class="d-flex flex-column gap-2 align-items-center">
-                                                    @if(!($defaultServers[$server['id']] ?? false))
-                                                        <form method="POST" action="{{ route('admin.server.set-default') }}" style="display: inline;" class="set-default-form">
-                                                            @csrf
-                                                            <input type="hidden" name="server_id" value="{{ $server['id'] }}">
-                                                            <button type="submit" class="btn btn-sm btn-primary">
-                                                                <i class="bi bi-star"></i> {{ __('messages.server.set_default') }}
-                                                            </button>
-                                                        </form>
-                                                    @else
-                                                        <span class="text-success fw-bold">
-                                                            <i class="bi bi-check-circle-fill"></i> {{ __('messages.server.is_default') }}
-                                                        </span>
-                                                    @endif
-                                                    <div class="btn-group btn-group-sm">
-                                                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#edit-{{ $server['id'] }}" title="{{ __('messages.server.edit') }}">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </button>
-                                                        <form action="{{ route('admin.server.delete', $server['id']) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('messages.server.confirm_delete') }}')">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-outline-danger" title="{{ __('messages.server.delete') }}">
-                                                                <i class="bi bi-trash"></i>
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {{-- Ligne d'édition repliable --}}
-                                        <tr class="collapse" id="edit-{{ $server['id'] }}">
-                                            <td colspan="6" class="bg-light">
-                                                <form action="{{ route('admin.server.edit', $server['id']) }}" method="POST">
-                                                    @csrf
-                                                    <div class="row g-2 align-items-end">
-                                                        <div class="col-md-4">
-                                                            <label class="form-label mb-1">{{ __('messages.server.name') }}</label>
-                                                            <input type="text" name="server_name" class="form-control form-control-sm" value="{{ $server['name'] }}" required>
-                                                        </div>
-                                                        <div class="col-md-4">
-                                                            <label class="form-label mb-1">{{ __('messages.server.address') }}</label>
-                                                            <input type="text" name="server_ip" class="form-control form-control-sm" value="{{ $server['address'] }}" required>
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="form-label mb-1">{{ __('messages.server.port') }}</label>
-                                                            <input type="text" name="server_port" class="form-control form-control-sm" value="{{ $server['port'] }}" required>
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="form-label mb-1">{{ __('messages.server.type') }}</label>
-                                                            <input type="text" name="type" class="form-control form-control-sm" value="{{ $server['type'] }}">
-                                                        </div>
-
-                                                        {{-- Champs multi-instance --}}
-                                                        <div class="col-md-3">
-                                                            <label class="form-label mb-1">{{ __('messages.server.instance_slug') }}</label>
-                                                            <input type="text" name="instance_slug" class="form-control form-control-sm" value="{{ $server['instance_slug'] }}" placeholder="geoventure">
-                                                        </div>
-                                                        <div class="col-md-3">
-                                                            <label class="form-label mb-1">{{ __('messages.server.data_folder') }}</label>
-                                                            <input type="text" name="data_folder" class="form-control form-control-sm" value="{{ $server['data_folder'] }}" placeholder="{{ $server['instance_slug'] }}">
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="form-label mb-1">{{ __('messages.server.mc_version') }}</label>
-                                                            <input type="text" name="minecraft_version" class="form-control form-control-sm" value="{{ $server['minecraft_version'] }}" placeholder="1.20.1">
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="form-label mb-1">{{ __('messages.server.loader_type') }}</label>
-                                                            <input type="text" name="loader_type" class="form-control form-control-sm" value="{{ $server['loader_type'] }}" placeholder="forge">
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="form-label mb-1">{{ __('messages.server.loader_build') }}</label>
-                                                            <input type="text" name="loader_build_version" class="form-control form-control-sm" value="{{ $server['loader_build_version'] }}" placeholder="1.20.1-47.4.20">
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="form-label mb-1">{{ __('messages.server.theme_color') }}</label>
-                                                            <div class="input-group input-group-sm">
-                                                                @if(!empty($server['theme_color']))
-                                                                    <span class="input-group-text p-1"><span style="display:inline-block;width:18px;height:18px;border-radius:4px;background: {{ $server['theme_color'] }};"></span></span>
-                                                                @endif
-                                                                <input type="text" name="theme_color" class="form-control form-control-sm" value="{{ $server['theme_color'] }}" placeholder="#4ade80" pattern="#[0-9a-fA-F]{6}">
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="form-label mb-1">Canal par défaut</label>
-                                                            <select name="channel" class="form-select form-select-sm">
-                                                                <option value="stable" {{ ($server['channel'] ?? 'stable') === 'stable' ? 'selected' : '' }}>Stable</option>
-                                                                <option value="test" {{ ($server['channel'] ?? 'stable') === 'test' ? 'selected' : '' }}>Test</option>
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-5">
-                                                            <label class="form-label mb-1">Grades Azuriom autorisés (Stable — vide = tous)</label>
-                                                            <input type="text" name="allowed_roles" class="form-control form-control-sm" value="{{ $server['allowed_roles'] ?? '' }}" placeholder="Vide = public (ex: Joueur, VIP, Admin)">
-                                                        </div>
-                                                        <div class="col-md-5">
-                                                            <label class="form-label mb-1">Grades Azuriom autorisés (Instance Test)</label>
-                                                            <input type="text" name="test_roles" class="form-control form-control-sm" value="{{ $server['test_roles'] ?? '' }}" placeholder="Admin, Fondateur, Développeur, Staff, Testeur">
-                                                        </div>
-                                                        <div class="col-md-4">
-                                                            <label class="form-label mb-1">IP Serveur Test (optionnel)</label>
-                                                            <input type="text" name="test_ip" class="form-control form-control-sm" value="{{ $server['test_ip'] ?? '' }}" placeholder="{{ $server['address'] }}">
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="form-label mb-1">Port Test</label>
-                                                            <input type="text" name="test_port" class="form-control form-control-sm" value="{{ $server['test_port'] ?? '' }}" placeholder="{{ $server['port'] }}">
-                                                        </div>
-                                                        <div class="col-md-3">
-                                                            <label class="form-label mb-1">Dossier Modpack Test</label>
-                                                            <input type="text" name="test_data_folder" class="form-control form-control-sm" value="{{ $server['test_data_folder'] ?? '' }}" placeholder="{{ ($server['instance_slug'] ?: 'test') . '-test' }}">
-                                                        </div>
-                                                        <div class="col-md-12 d-flex align-items-center gap-3 mt-1">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" name="loader_activation" value="1" id="loader-act-{{ $server['id'] }}" {{ $server['loader_activation'] ? 'checked' : '' }}>
-                                                                <label class="form-check-label small" for="loader-act-{{ $server['id'] }}">{{ __('messages.server.loader_enable') }}</label>
-                                                            </div>
-                                                            <button type="submit" class="btn btn-sm btn-success ms-auto"><i class="bi bi-check-lg me-1"></i>{{ __('messages.common.save') }}</button>
-                                                        </div>
-                                                    </div>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="alert alert-info mt-3">
-                            <i class="bi bi-info-circle me-2"></i>
-                            <strong>{{ __('messages.server.default_info') }}</strong>
-                        </div>
-                    @endif
-                </div>
-            </div>
     </div>
 
     @if(!empty($servers))
@@ -368,7 +300,7 @@
 
                 forms.forEach(form => {
                     form.addEventListener('submit', function(e) {
-                        const serverName = this.closest('tr').querySelector('td:nth-child(2)').textContent.trim();
+                        const serverName = (this.closest('.card')?.querySelector('h5')?.textContent || '').trim();
 
                         if (!confirm(`{{ __('messages.server.confirm_default') }}`)) {
                             e.preventDefault();

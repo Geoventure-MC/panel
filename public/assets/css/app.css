@@ -7,3 +7,37 @@
     background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05), rgba(0, 123, 255, 0));
     color: #ffffff;
 }
+
+
+/* ── Menu Nexus (2026-11-27) : groupes repliables, logo, instances ── */
+.nexus-brand { display: flex; align-items: center; gap: .7rem; padding: 1.1rem 1.25rem .9rem; text-decoration: none; }
+.nexus-brand-logo { width: 40px; height: 40px; border-radius: 10px; box-shadow: 0 4px 14px rgba(0, 0, 0, .35); }
+.nexus-brand-text { display: flex; flex-direction: column; line-height: 1.1; color: #fff; }
+.nexus-brand-text strong { font-size: 1.15rem; letter-spacing: .02em; }
+.nexus-brand-text small { font-size: .72rem; color: rgba(255, 255, 255, .55); text-transform: uppercase; letter-spacing: .08em; }
+.nexus-instances { display: flex; flex-direction: column; gap: .35rem; padding: .25rem 1rem .9rem; border-bottom: 1px solid rgba(255, 255, 255, .07); margin-bottom: .5rem; }
+.nexus-instance { display: flex; align-items: center; gap: .55rem; padding: .4rem .6rem; border-radius: 8px; color: rgba(255, 255, 255, .85); text-decoration: none; font-size: .85rem; border-left: 3px solid var(--inst); background: rgba(255, 255, 255, .03); }
+.nexus-instance:hover { background: rgba(255, 255, 255, .07); color: #fff; }
+.nexus-instance img { width: 22px; height: 22px; border-radius: 5px; object-fit: cover; }
+.nexus-instance span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nexus-chip { font-style: normal; font-size: .65rem; padding: .05rem .4rem; border-radius: 999px; background: rgba(250, 204, 21, .15); color: #facc15; }
+.nexus-group-toggle { display: flex !important; align-items: center; font-weight: 600; }
+.nexus-nav .sidebar-dropdown .sidebar-link { padding-left: 2.6rem; font-size: .88rem; }
+.nexus-nav .sidebar-dropdown .sidebar-link:before { content: none; }
+.nexus-ext { font-size: .7rem; margin-left: .35rem; opacity: .6; }
+
+/* ── Fiches d'instance (page Serveurs) ── */
+.nexus-inst-card { border: 0; border-top: 4px solid var(--inst) !important; }
+.nexus-inst-logo { width: 52px; height: 52px; border-radius: 12px; object-fit: cover; background: rgba(127, 127, 127, .12); }
+.nexus-inst-facts dt, .nexus-inst-facts dd { margin-bottom: .25rem; }
+.nexus-inst-form { background: rgba(127, 127, 127, .05); }
+.min-w-0 { min-width: 0; }
+
+/* Menu aux couleurs du logo Nexus, identique en thème clair et sombre */
+.nexus-sidebar, .nexus-sidebar .sidebar-content { background: linear-gradient(180deg, #0f172a 0%, #111827 100%) !important; }
+.nexus-sidebar .sidebar-link, .nexus-sidebar .sidebar-link i { color: rgba(226, 232, 240, .78); background: transparent; }
+.nexus-sidebar .sidebar-link:hover, .nexus-sidebar .sidebar-link:hover i { color: #fff; }
+.nexus-sidebar .sidebar-link.active { background: linear-gradient(90deg, rgba(74, 222, 128, .16), rgba(74, 222, 128, 0)) !important; color: #fff !important; box-shadow: inset 3px 0 0 #4ade80; }
+.nexus-sidebar .sidebar-link.active i { color: #4ade80; }
+.nexus-sidebar .sidebar-dropdown { background: rgba(255, 255, 255, .02); }
+.nexus-sidebar .nexus-group-toggle { color: rgba(226, 232, 240, .92); }
