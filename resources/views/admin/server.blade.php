@@ -72,7 +72,7 @@
                                 <div class="card-body">
                                     <div class="d-flex align-items-center gap-3 mb-3">
                                         @if($logo)
-                                            <img src="{{ $logo }}" alt="" class="nexus-inst-logo">
+                                            <img src="{{ $logo }}" alt="" class="nexus-inst-logo" width="52" height="52">
                                         @else
                                             <div class="nexus-inst-logo d-flex align-items-center justify-content-center"><i class="bi bi-hdd fs-4"></i></div>
                                         @endif

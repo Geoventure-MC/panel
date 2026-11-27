@@ -27,7 +27,8 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/admin.css') }}">
     <link id="file-manager-css" rel="stylesheet" href="{{ asset('vendor/file-manager/css/file-manager.css') }}">
     <link id="file-manager-dark-css" rel="stylesheet" href="{{ asset('vendor/file-manager/css/file-manager-dark.css') }}" disabled>
-    <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}">
+    {{-- Version dans l'adresse : sinon navigateur et Cloudflare gardent l'ancienne feuille 12 h après une mise à jour. --}}
+    <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}?v={{ @filemtime(public_path('assets/css/app.css')) ?: config('app.version') }}">
 </head>
 
 <body>
@@ -92,7 +93,7 @@
     <nav id="sidebar" class="sidebar js-sidebar nexus-sidebar">
         <div class="sidebar-content js-simplebar">
             <a class="sidebar-brand nexus-brand" href="{{ route('admin.index') }}">
-                <img src="{{ asset('assets/img/nexus.png') }}" alt="Nexus" class="nexus-brand-logo">
+                <img src="{{ asset('assets/img/nexus.png') }}" alt="Nexus" class="nexus-brand-logo" width="40" height="40">
                 <span class="nexus-brand-text">
                     <strong>Nexus</strong>
                     <small>{{ __('messages.sidebar.brand_sub') }}</small>
@@ -107,7 +108,7 @@
                         $instLogo = in_array($instSlug, ['geoventure', 'elandor', 'pokeland'], true) ? asset('assets/img/instance_' . $instSlug . '.png') : null;
                     @endphp
                     <a class="nexus-instance" href="{{ $isSuper ? route('admin.server') : '#' }}" title="{{ $inst->server_name }} — {{ $inst->server_ip }}:{{ $inst->server_port }}" style="--inst: {{ $inst->theme_color ?: '#64748b' }}">
-                        @if($instLogo)<img src="{{ $instLogo }}" alt="">@else<i class="bi bi-hdd"></i>@endif
+                        @if($instLogo)<img src="{{ $instLogo }}" alt="" width="22" height="22">@else<i class="bi bi-hdd"></i>@endif
                         <span>{{ $inst->server_name }}</span>
                         @if(in_array($inst->channel, ['both', 'test'], true))<em class="nexus-chip">{{ __('messages.sidebar.test_chip') }}</em>@endif
                     </a>
