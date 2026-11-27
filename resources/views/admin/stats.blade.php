@@ -222,6 +222,7 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('assets/vendor/chart.umd.js') }}"></script>
 <script>
 (function () {
     if (typeof Chart === 'undefined') return;
@@ -245,8 +246,8 @@
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            legend: { display: false },
-            scales: { yAxes: [{ ticks: { beginAtZero: true, precision: 0 } }] },
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
         },
     });
 
@@ -276,8 +277,8 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                legend: { position: 'bottom' },
-                scales: { yAxes: [{ ticks: { beginAtZero: true, precision: 0 } }] },
+                plugins: { legend: { position: 'bottom' } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
             },
         });
     }
@@ -293,8 +294,8 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                legend: { display: false },
-                scales: { yAxes: [{ ticks: { beginAtZero: true, precision: 0 } }] },
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
             },
         });
     }
@@ -305,7 +306,7 @@
         new Chart(el, {
             type: 'doughnut',
             data: { labels: labels, datasets: [{ data: data, backgroundColor: palette }] },
-            options: { responsive: true, maintainAspectRatio: false, legend: { position: 'bottom' } },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } },
         });
     }
 

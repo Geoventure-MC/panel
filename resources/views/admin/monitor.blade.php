@@ -154,6 +154,7 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('assets/vendor/chart.umd.js') }}"></script>
 <script>
 (function () {
     if (typeof Chart === 'undefined') return;
@@ -171,13 +172,12 @@
                 ],
             },
             options: {
-                responsive: true, maintainAspectRatio: false, legend: {position: 'bottom'},
+                responsive: true, maintainAspectRatio: false,
+                plugins: {legend: {position: 'bottom'}},
                 scales: {
-                    xAxes: [{ticks: {maxTicksLimit: 12}}],
-                    yAxes: [
-                        {id: 'p', position: 'left', ticks: {beginAtZero: true, precision: 0}},
-                        {id: 'l', position: 'right', ticks: {beginAtZero: true}, gridLines: {drawOnChartArea: false}},
-                    ],
+                    x: {ticks: {maxTicksLimit: 12}},
+                    p: {position: 'left', beginAtZero: true, ticks: {precision: 0}},
+                    l: {position: 'right', beginAtZero: true, grid: {drawOnChartArea: false}},
                 },
             },
         });
